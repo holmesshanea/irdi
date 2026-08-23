@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 
 class MemberProfile extends Model
 {
@@ -22,6 +24,16 @@ class MemberProfile extends Model
         'profile_image',
         'directory_visible',
     ];
+
+    public function propertyReviewInvitations(): HasMany
+    {
+        return $this->hasMany(PropertyReviewInvitation::class);
+    }
+
+    public function propertyReviews(): HasMany
+    {
+        return $this->hasMany(PropertyReview::class);
+    }
 
     protected function casts(): array
     {

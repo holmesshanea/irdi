@@ -321,12 +321,99 @@
                                         $profileComplete = $missingProfileFields->isEmpty();
                                     @endphp
 
-                                    <div class="rounded-xl border border-zinc-200 p-5">
+                                    <div class="relative rounded-xl border border-zinc-200 p-5">
 
-                                        <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                                        @if ($profile->profile_type === 'detectorist')
+
+                                            <div
+                                                class="mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
+                                                x-data="{ open: false }"
+                                            >
+
+                                                <div class="text-right">
+
+                                                    <button
+                                                        type="button"
+                                                        class="text-sm font-medium text-irdi-green hover:underline"
+                                                        x-on:click="open = ! open"
+                                                    >
+                                                        Request Property Owner Review
+                                                    </button>
+
+                                                </div>
+
+                                                <div
+                                                    x-show="open"
+                                                    x-cloak
+                                                    class="mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
+                                                >
+
+                                                    <form
+                                                        action="{{ route('account.review-invitations.store', $profile) }}"
+                                                        method="POST"
+                                                    >
+                                                        @csrf
+
+                                                        <label
+                                                            for="reviewer_email_{{ $profile->id }}"
+                                                            class="block text-sm font-medium text-zinc-700"
+                                                        >
+                                                            Property Owner Email
+                                                        </label>
+
+                                                        <p class="mt-1 text-xs leading-5 text-zinc-500">
+                                                            IRDI will email the property owner a private, single-use feedback invitation.
+                                                        </p>
+
+                                                        <input
+                                                            id="reviewer_email_{{ $profile->id }}"
+                                                            name="reviewer_email"
+                                                            type="email"
+                                                            required
+                                                            placeholder="owner@example.com"
+                                                            class="mt-3 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+                                                        >
+
+                                                        @error('reviewer_email_' . $profile->id)
+                                                        <p class="mt-2 text-sm text-red-600">
+                                                            {{ $message }}
+                                                        </p>
+                                                        @enderror
+
+                                                        <div class="mt-4 flex justify-end gap-2">
+
+                                                            <flux:button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                x-on:click="open = false"
+                                                            >
+                                                                Cancel
+                                                            </flux:button>
+
+                                                            <flux:button
+                                                                type="submit"
+                                                                variant="primary"
+                                                                size="sm"
+                                                                icon="envelope"
+                                                            >
+                                                                Send Invitation
+                                                            </flux:button>
+
+                                                        </div>
+
+                                                    </form>
+
+                                                </div>
+
+                                            </div>
+
+                                        @endif
+
+                                        <div class="space-y-5">
 
                                             {{-- Profile information --}}
-                                            <div class="flex min-w-0 items-start gap-4">
+                                            <div class="flex min-w-0 items-start gap-4 lg:pr-64">
 
                                                 {{-- Profile image / fallback avatar --}}
                                                 <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-irdi-green text-lg font-semibold text-white">
@@ -394,7 +481,7 @@
                                             </div>
 
                                             {{-- Profile status and actions --}}
-                                            <div class="shrink-0">
+                                            <div>
 
                                                 {{-- Profile status --}}
                                                 <div class="mb-3">

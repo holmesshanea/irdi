@@ -3,6 +3,12 @@
 use Illuminate\Support\Facades\Route;
 use App\Models\MemberProfile;
 use Illuminate\Support\Facades\Storage;
+use App\Models\PropertyReviewInvitation;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use App\Models\PropertyReview;
+use Illuminate\Support\Facades\Mail;
+
 
 //PAGES
 Route::view('/', 'pages.home')->name('home');
@@ -84,4 +90,78 @@ Route::delete('/account/profiles/{profile}', function (MemberProfile $profile) {
     ->middleware(['auth', 'verified'])
     ->name('account.profiles.destroy');
 
+//REVIEWS
 
+Route::post('/account/profiles/{profile}/review-invitations', function (
+    Request $request,
+    MemberProfile $profile
+) {
+    if ($profile->user_id !== auth()->id()) {
+        abort(403);
+    }
+
+    if ($profile->profile_type !== 'detectorist') {
+        abort(403);
+    }
+
+    $validated = $request->validate([
+        'reviewer_email' => [
+            'required',
+            'email',
+            'max:255',
+        ],
+    ]);
+
+    $reviewerEmail = strtolower(trim($validated['reviewer_email']));
+
+    $alreadyReviewed = PropertyReview::query()
+        ->where('member_profile_id', $profile->id)
+        ->where('reviewer_email', $reviewerEmail)
+        ->exists();
+
+    if ($alreadyReviewed) {
+        return back()->withErrors([
+            'reviewer_email_' . $profile->id =>
+                'This email address has already submitted feedback for this Detectorist.',
+        ]);
+    }
+
+    $invitation = PropertyReviewInvitation::create([
+        'member_profile_id' => $profile->id,
+        'token' => Str::random(64),
+        'reviewer_email' => $reviewerEmail,
+        'expires_at' => now()->addDays(30),
+    ]);
+
+    $reviewUrl = route('property-reviews.show', [
+        'token' => $invitation->token,
+    ]);
+
+    Mail::send(
+        'mail.property-review-invitation',
+        [
+            'profile' => $profile,
+            'reviewUrl' => $reviewUrl,
+            'expiresAt' => $invitation->expires_at,
+        ],
+        function ($message) use ($reviewerEmail, $profile) {
+            $message
+                ->to($reviewerEmail)
+                ->subject(
+                    $profile->profile_name .
+                    ' has invited you to provide IRDI Property Owner Feedback'
+                );
+        }
+    );
+
+    return back()->with(
+        'status',
+        'Property owner feedback invitation sent to ' . $reviewerEmail . '.'
+    );
+})
+    ->middleware(['auth', 'verified'])
+    ->name('account.review-invitations.store');
+
+
+Route::livewire('/review/{token}', 'reviews.show')
+    ->name('property-reviews.show');
