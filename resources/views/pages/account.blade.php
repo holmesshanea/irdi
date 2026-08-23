@@ -326,7 +326,7 @@
                                         @if ($profile->profile_type === 'detectorist')
 
                                             <div
-                                                class="mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
+                                                class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
                                                 x-data="{ open: false }"
                                             >
 
@@ -345,7 +345,7 @@
                                                 <div
                                                     x-show="open"
                                                     x-cloak
-                                                    class="mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
+                                                    class="relative z-50 mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
                                                 >
 
                                                     <form

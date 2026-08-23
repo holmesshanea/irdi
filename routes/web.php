@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\PropertyReview;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\PropertyReviewInvitationMail;
 
 
 //PAGES
@@ -137,21 +138,12 @@ Route::post('/account/profiles/{profile}/review-invitations', function (
         'token' => $invitation->token,
     ]);
 
-    Mail::send(
-        'mail.property-review-invitation',
-        [
-            'profile' => $profile,
-            'reviewUrl' => $reviewUrl,
-            'expiresAt' => $invitation->expires_at,
-        ],
-        function ($message) use ($reviewerEmail, $profile) {
-            $message
-                ->to($reviewerEmail)
-                ->subject(
-                    $profile->profile_name .
-                    ' has invited you to provide IRDI Property Owner Feedback'
-                );
-        }
+    Mail::to($reviewerEmail)->send(
+        new PropertyReviewInvitationMail(
+            profile: $profile,
+            reviewUrl: $reviewUrl,
+            expiresAt: $invitation->expires_at->format('F j, Y'),
+        )
     );
 
     return back()->with(

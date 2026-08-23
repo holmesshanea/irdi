@@ -2,6 +2,7 @@
 
 use App\Models\PropertyReview;
 use App\Models\PropertyReviewInvitation;
+use App\Mail\PropertyReviewVerificationCodeMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -99,15 +100,10 @@ class extends Component
 
         $email = $this->invitation->reviewer_email;
 
-        Mail::raw(
-            "Your IRDI property owner feedback verification code is: {$code}\n\n"
-            . "This code expires in 10 minutes.\n\n"
-            . "If you did not request this code, you can ignore this email.",
-            function ($message) use ($email) {
-                $message
-                    ->to($email)
-                    ->subject('Your IRDI verification code');
-            }
+        Mail::to($email)->send(
+            new PropertyReviewVerificationCodeMail(
+                code: $code,
+            )
         );
 
         $this->verificationCode = '';
