@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureActiveMember;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,7 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'active-member' => \App\Http\Middleware\EnsureActiveMember::class,
+            'active-member' => EnsureActiveMember::class,
             'admin' => EnsureUserIsAdmin::class,
         ]);
     })

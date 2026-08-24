@@ -97,7 +97,7 @@ class MemberProfileFactory extends Factory
             'profile_type' => $profileType,
 
             'username' => Str::lower(
-                Str::slug($profileName) . '-' . fake()->unique()->numberBetween(1000, 999999)
+                Str::slug($profileName).'-'.fake()->unique()->numberBetween(1000, 999999)
             ),
 
             'profile_name' => $profileName,

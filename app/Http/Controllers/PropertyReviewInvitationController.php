@@ -44,8 +44,7 @@ class PropertyReviewInvitationController extends Controller
 
         if ($alreadyReviewed) {
             return back()->withErrors([
-                'reviewer_email_' . $profile->id =>
-                    'This email address has already submitted feedback for this Detectorist.',
+                'reviewer_email_'.$profile->id => 'This email address has already submitted feedback for this Detectorist.',
             ]);
         }
 
@@ -71,8 +70,8 @@ class PropertyReviewInvitationController extends Controller
         return back()->with(
             'status',
             'Property owner feedback invitation sent to '
-            . $reviewerEmail
-            . '.'
+            .$reviewerEmail
+            .'.'
         );
     }
 
@@ -126,8 +125,8 @@ class PropertyReviewInvitationController extends Controller
         return back()->with(
             'status',
             'Property owner feedback invitation resent to '
-            . $invitation->reviewer_email
-            . '.'
+            .$invitation->reviewer_email
+            .'.'
         );
     }
 

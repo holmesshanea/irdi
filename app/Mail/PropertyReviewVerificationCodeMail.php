@@ -14,8 +14,7 @@ class PropertyReviewVerificationCodeMail extends Mailable
 
     public function __construct(
         public string $code,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {

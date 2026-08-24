@@ -17,14 +17,13 @@ class PropertyReviewInvitationMail extends Mailable
         public MemberProfile $profile,
         public string $reviewUrl,
         public string $expiresAt,
-    ) {
-    }
+    ) {}
 
     public function envelope(): Envelope
     {
         return new Envelope(
             subject: $this->profile->profile_name
-            . ' has invited you to provide IRDI Property Owner Feedback',
+            .' has invited you to provide IRDI Property Owner Feedback',
         );
     }
 
