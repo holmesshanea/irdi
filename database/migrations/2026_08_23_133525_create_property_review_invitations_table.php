@@ -29,6 +29,8 @@ return new class extends Migration
 
             $table->timestamp('used_at')->nullable();
 
+            $table->timestamp('cancelled_at')->nullable();
+
             $table->timestamps();
 
             $table->index(['member_profile_id', 'expires_at']);

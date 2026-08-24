@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class PropertyReviewInvitation extends Model
 {
@@ -16,6 +17,7 @@ class PropertyReviewInvitation extends Model
         'email_verified_at',
         'expires_at',
         'used_at',
+        'cancelled_at',
     ];
 
     protected function casts(): array
@@ -25,6 +27,7 @@ class PropertyReviewInvitation extends Model
             'email_verified_at' => 'datetime',
             'expires_at' => 'datetime',
             'used_at' => 'datetime',
+            'cancelled_at' => 'datetime',
         ];
     }
 
@@ -33,9 +36,22 @@ class PropertyReviewInvitation extends Model
         return $this->belongsTo(MemberProfile::class);
     }
 
+    public function review(): HasOne
+    {
+        return $this->hasOne(
+            PropertyReview::class,
+            'property_review_invitation_id'
+        );
+    }
+
     public function isExpired(): bool
     {
         return $this->expires_at->isPast();
+    }
+
+    public function isCancelled(): bool
+    {
+        return $this->cancelled_at !== null;
     }
 
     public function isUsed(): bool
@@ -45,6 +61,8 @@ class PropertyReviewInvitation extends Model
 
     public function isAvailable(): bool
     {
-        return ! $this->isExpired() && ! $this->isUsed();
+        return ! $this->isExpired()
+            && ! $this->isUsed()
+            && ! $this->isCancelled();
     }
 }

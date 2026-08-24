@@ -57,6 +57,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'ethics_agreed_at' => 'datetime',
             'best_practices_agreed_at' => 'datetime',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
         ];
     }
 

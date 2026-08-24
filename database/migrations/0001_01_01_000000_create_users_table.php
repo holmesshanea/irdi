@@ -27,6 +27,7 @@ return new class extends Migration
 
             // IRDI membership
             $table->string('membership_status')->default('inactive');
+            $table->boolean('is_admin')->default(false);
             $table->date('member_since')->nullable();
             $table->timestamp('ethics_agreed_at')->nullable();
             $table->timestamp('best_practices_agreed_at')->nullable();

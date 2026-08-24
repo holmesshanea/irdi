@@ -38,6 +38,19 @@ return new class extends Migration
 
             $table->boolean('directory_visible')->default(false);
 
+            /*
+            |--------------------------------------------------------------------------
+            | Directory Indexes
+            |--------------------------------------------------------------------------
+            */
+
+            $table->index('directory_visible');
+            $table->index('profile_name');
+            $table->index('profile_type');
+            $table->index('country');
+            $table->index('state_province');
+            $table->index('city');
+
             $table->timestamps();
         });
     }

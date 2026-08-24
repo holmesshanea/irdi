@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PropertyReview extends Model
 {
@@ -25,6 +27,7 @@ class PropertyReview extends Model
             'communication_courtesy' => 'integer',
             'care_of_property' => 'integer',
             'would_allow_return' => 'boolean',
+            'hidden_at' => 'datetime',
         ];
     }
 
@@ -39,5 +42,15 @@ class PropertyReview extends Model
             PropertyReviewInvitation::class,
             'property_review_invitation_id'
         );
+    }
+
+    public function scopeVisible(Builder $query): Builder
+    {
+        return $query->whereNull('hidden_at');
+    }
+
+    public function moderations(): HasMany
+    {
+        return $this->hasMany(PropertyReviewModeration::class);
     }
 }

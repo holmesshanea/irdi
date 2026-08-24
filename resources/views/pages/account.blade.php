@@ -556,6 +556,19 @@
                                                         Member Card
                                                     </flux:button>
 
+                                                    @if ($profile->profile_type === 'detectorist')
+
+                                                        <flux:button
+                                                            href="{{ route('account.reviews') }}"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            icon="star"
+                                                        >
+                                                            My Reviews
+                                                        </flux:button>
+
+                                                    @endif
+
                                                     <form
                                                         action="{{ route('account.profiles.destroy', $profile) }}"
                                                         method="POST"

@@ -32,6 +32,10 @@ return new class extends Migration
 
             $table->text('comments')->nullable();
 
+            $table->timestamp('hidden_at')->nullable();
+
+            $table->text('moderation_note')->nullable();
+
             $table->timestamps();
 
             $table->index('reviewer_email');
