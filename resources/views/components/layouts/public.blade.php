@@ -119,7 +119,53 @@
         {{-- Authenticated navigation --}}
         @auth
 
-            <div class="ml-3 border-l border-zinc-300 pl-3">
+            @if (auth()->user()->is_admin)
+
+                <div
+                    class="relative ml-3 border-l border-zinc-300 pl-3"
+                    x-data="{ open: false }"
+                >
+
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:text-irdi-green"
+                        x-on:click="open = ! open"
+                        x-on:click.outside="open = false"
+                    >
+                        Admin
+
+                        <svg
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            aria-hidden="true"
+                            class="h-4 w-4"
+                        >
+                            <path
+                                fill-rule="evenodd"
+                                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
+                                clip-rule="evenodd"
+                            />
+                        </svg>
+                    </button>
+
+                    <div
+                        x-show="open"
+                        x-cloak
+                        class="absolute right-0 z-50 mt-2 w-52 rounded-lg border border-zinc-200 bg-white py-2 shadow-lg"
+                    >
+                        <a
+                            href="{{ route('admin.reviews.index') }}"
+                            class="block px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
+                        >
+                            Moderate Reviews
+                        </a>
+                    </div>
+
+                </div>
+
+            @endif
+
+            <div class="{{ auth()->user()->is_admin ? '' : 'ml-3 border-l border-zinc-300 pl-3' }}">
 
                 <flux:navbar.item
                     href="{{ route('account') }}"
@@ -257,6 +303,24 @@
 
         {{-- Authenticated navigation --}}
         @auth
+
+            @if (auth()->user()->is_admin)
+
+                <div class="my-4 border-t border-zinc-200"></div>
+
+                <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                    Admin
+                </div>
+
+                <flux:sidebar.item
+                    href="{{ route('admin.reviews.index') }}"
+                    :current="request()->routeIs('admin.reviews.*')"
+                    icon="shield-check"
+                >
+                    Moderate Reviews
+                </flux:sidebar.item>
+
+            @endif
 
             <div class="my-4 border-t border-zinc-200"></div>
 
