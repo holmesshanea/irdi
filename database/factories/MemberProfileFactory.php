@@ -16,6 +16,7 @@ class MemberProfileFactory extends Factory
 
     public function definition(): array
     {
+        /** @var 'detectorist'|'organization'|'vendor' $profileType */
         $profileType = fake()->randomElement([
             'detectorist',
             'organization',
@@ -28,6 +29,7 @@ class MemberProfileFactory extends Factory
             'vendor' => fake()->company(),
         };
 
+        /** @var array{city:string,state_province:string,country:string} $location */
         $location = fake()->randomElement([
             [
                 'city' => 'Saranac Lake',

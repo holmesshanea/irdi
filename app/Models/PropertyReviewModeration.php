@@ -14,11 +14,17 @@ class PropertyReviewModeration extends Model
         'note',
     ];
 
+    /**
+     * @return BelongsTo<PropertyReview, $this>
+     */
     public function propertyReview(): BelongsTo
     {
         return $this->belongsTo(PropertyReview::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

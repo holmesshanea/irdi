@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Database\Factories\MemberProfileFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MemberProfile extends Model
 {
+    /** @use HasFactory<MemberProfileFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -25,11 +28,17 @@ class MemberProfile extends Model
         'directory_visible',
     ];
 
+    /**
+     * @return HasMany<PropertyReviewInvitation, $this>
+     */
     public function propertyReviewInvitations(): HasMany
     {
         return $this->hasMany(PropertyReviewInvitation::class);
     }
 
+    /**
+     * @return HasMany<PropertyReview, $this>
+     */
     public function propertyReviews(): HasMany
     {
         return $this->hasMany(PropertyReview::class);
@@ -42,16 +51,23 @@ class MemberProfile extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function scopePublicDirectory($query)
+    /**
+     * @param  Builder<MemberProfile>  $query
+     * @return Builder<MemberProfile>
+     */
+    public function scopePublicDirectory(Builder $query): Builder
     {
         return $query
             ->where('directory_visible', true)
-            ->whereHas('user', function ($query) {
+            ->whereHas('user', function (Builder $query): void {
                 $query->where('membership_status', 'active');
             });
     }

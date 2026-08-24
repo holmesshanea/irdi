@@ -62,7 +62,7 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the user's initials
+     * Get the user's initials.
      */
     public function initials(): string
     {
@@ -73,6 +73,9 @@ class User extends Authenticatable implements MustVerifyEmail
             : $initials;
     }
 
+    /**
+     * @return HasMany<MemberProfile, $this>
+     */
     public function memberProfiles(): HasMany
     {
         return $this->hasMany(MemberProfile::class);

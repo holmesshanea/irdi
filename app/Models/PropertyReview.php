@@ -31,11 +31,17 @@ class PropertyReview extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<MemberProfile, $this>
+     */
     public function memberProfile(): BelongsTo
     {
         return $this->belongsTo(MemberProfile::class);
     }
 
+    /**
+     * @return BelongsTo<PropertyReviewInvitation, $this>
+     */
     public function invitation(): BelongsTo
     {
         return $this->belongsTo(
@@ -44,11 +50,18 @@ class PropertyReview extends Model
         );
     }
 
+    /**
+     * @param  Builder<PropertyReview>  $query
+     * @return Builder<PropertyReview>
+     */
     public function scopeVisible(Builder $query): Builder
     {
         return $query->whereNull('hidden_at');
     }
 
+    /**
+     * @return HasMany<PropertyReviewModeration, $this>
+     */
     public function moderations(): HasMany
     {
         return $this->hasMany(PropertyReviewModeration::class);

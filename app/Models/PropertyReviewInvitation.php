@@ -5,7 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon|null $verification_expires_at
+ * @property Carbon|null $email_verified_at
+ * @property Carbon|null $expires_at
+ * @property Carbon|null $used_at
+ * @property Carbon|null $cancelled_at
+ */
 class PropertyReviewInvitation extends Model
 {
     protected $fillable = [
@@ -31,11 +39,17 @@ class PropertyReviewInvitation extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<MemberProfile, $this>
+     */
     public function memberProfile(): BelongsTo
     {
         return $this->belongsTo(MemberProfile::class);
     }
 
+    /**
+     * @return HasOne<PropertyReview, $this>
+     */
     public function review(): HasOne
     {
         return $this->hasOne(
@@ -46,7 +60,7 @@ class PropertyReviewInvitation extends Model
 
     public function isExpired(): bool
     {
-        return $this->expires_at->isPast();
+        return $this->expires_at?->isPast() ?? true;
     }
 
     public function isCancelled(): bool
