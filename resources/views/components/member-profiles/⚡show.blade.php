@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\MemberProfile;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use tbQuar\Facades\Quar;
-use Illuminate\Support\Str;
 
 new
 #[Layout('components.layouts.public')]
@@ -43,32 +43,30 @@ class extends Component
             route('member-profiles.card', $profile) .
             '" width="100%" height="320" style="max-width:700px;border:0;" loading="lazy"></iframe>';
 
-        if ($profile->profile_type === 'detectorist') {
-            $reviewStats = $profile->propertyReviews()
-                ->visible()
-                ->selectRaw('
-            COUNT(*) as review_count,
-            SUM(CASE WHEN would_allow_return = 1 THEN 1 ELSE 0 END) as return_count,
-            AVG(
-                (
-                    respect_for_property
-                    + communication_courtesy
-                    + care_of_property
-                ) / 3.0
-            ) as average_rating
-        ')
-                ->first();
+        $reviewStats = $profile->propertyReviews()
+            ->visible()
+            ->selectRaw('
+                COUNT(*) as review_count,
+                SUM(CASE WHEN would_allow_return = 1 THEN 1 ELSE 0 END) as return_count,
+                AVG(
+                    (
+                        respect_for_property
+                        + communication_courtesy
+                        + care_of_property
+                    ) / 3.0
+                ) as average_rating
+            ')
+            ->first();
 
-            $this->propertyReviewCount = (int) $reviewStats->review_count;
+        $this->propertyReviewCount = (int) $reviewStats->review_count;
 
-            $this->wouldAllowReturnCount = (int) $reviewStats->return_count;
+        $this->wouldAllowReturnCount = (int) $reviewStats->return_count;
 
-            if ($this->propertyReviewCount >= 3) {
-                $this->propertyReviewRating = round(
-                    (float) $reviewStats->average_rating,
-                    1
-                );
-            }
+        if ($this->propertyReviewCount >= 3) {
+            $this->propertyReviewRating = round(
+                (float) $reviewStats->average_rating,
+                1
+            );
         }
     }
 };
@@ -99,26 +97,13 @@ class extends Component
 
                     @endif
 
-                    <div class="flex flex-wrap items-center justify-center gap-2">
-
-                        <flux:badge
-                            :color="match ($profile->profile_type) {
-                                'detectorist' => 'green',
-                                'organization' => 'blue',
-                                'vendor' => 'amber',
-                                default => 'zinc',
-                            }"
-                        >
-                            {{ ucfirst($profile->profile_type) }}
-                        </flux:badge>
-
-                        @if ($profile->user->membership_status === 'active')
+                    @if ($profile->user->membership_status === 'active')
+                        <div class="flex justify-center">
                             <flux:badge color="green" icon="check-circle">
                                 Active IRDI Member
                             </flux:badge>
-                        @endif
-
-                    </div>
+                        </div>
+                    @endif
 
                     <h1 class="mt-2 text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
                         {{ $profile->profile_name }}
@@ -154,17 +139,7 @@ class extends Component
     </section>
 
     <section class="bg-white">
-        <div
-            @class([
-                'mx-auto max-w-7xl px-6 lg:px-8',
-                'py-12' => $profile->bio
-                    || $profile->website
-                    || $profile->profile_type === 'detectorist',
-                'pt-4 pb-12' => ! $profile->bio
-                    && ! $profile->website
-                    && $profile->profile_type !== 'detectorist',
-            ])
-        >
+        <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
 
             <div class="mx-auto max-w-3xl">
 
@@ -177,12 +152,7 @@ class extends Component
                             <div>
 
                                 <h2 class="text-lg font-semibold text-irdi-green">
-                                    {{ match ($profile->profile_type) {
-                                        'vendor' => 'About the Business',
-                                        'organization' => 'About the Organization',
-                                        'detectorist' => 'Bio',
-                                        default => 'About',
-                                    } }}
+                                    Bio
                                 </h2>
 
                                 <p class="mt-4 whitespace-pre-line leading-7 text-zinc-700">
@@ -220,112 +190,108 @@ class extends Component
 
                 @endif
 
-                @if ($profile->profile_type === 'detectorist')
+                <flux:card class="@if($profile->bio || $profile->website) mt-6 @endif p-6">
 
-                    <flux:card class="@if($profile->bio || $profile->website) mt-6 @endif p-6">
+                    <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
 
-                        <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
 
-                            <div>
+                            <h2 class="text-lg font-semibold text-irdi-green">
+                                Property Owner Feedback
+                            </h2>
 
-                                <h2 class="text-lg font-semibold text-irdi-green">
-                                    Property Owner Feedback
-                                </h2>
-
-                                <p class="mt-2 text-sm leading-6 text-zinc-600">
-                                    Feedback is submitted through individual IRDI review invitations and requires email verification.
-                                    IRDI does not independently verify property ownership.
-                                </p>
-
-                            </div>
-
-                            <flux:badge color="green">
-                                {{ $propertyReviewCount }}
-                                {{ Str::plural('Review', $propertyReviewCount) }}
-                            </flux:badge>
+                            <p class="mt-2 text-sm leading-6 text-zinc-600">
+                                Feedback is submitted through individual IRDI review invitations and requires email verification.
+                                IRDI does not independently verify property ownership.
+                            </p>
 
                         </div>
 
-                        @if ($propertyReviewCount === 0)
+                        <flux:badge color="green">
+                            {{ $propertyReviewCount }}
+                            {{ Str::plural('Review', $propertyReviewCount) }}
+                        </flux:badge>
 
-                            <div class="mt-6 rounded-lg bg-zinc-50 p-5">
+                    </div>
 
-                                <p class="text-sm text-zinc-600">
-                                    This Detectorist has not received any property owner feedback yet.
+                    @if ($propertyReviewCount === 0)
+
+                        <div class="mt-6 rounded-lg bg-zinc-50 p-5">
+
+                            <p class="text-sm text-zinc-600">
+                                This member has not received any property owner feedback yet.
+                            </p>
+
+                        </div>
+
+                    @else
+
+                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+
+                            <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
+
+                                <p class="text-sm font-medium text-zinc-500">
+                                    Property Owner Rating
                                 </p>
 
-                            </div>
-
-                        @else
-
-                            <div class="mt-6 grid gap-4 sm:grid-cols-2">
-
-                                <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
-
-                                    <p class="text-sm font-medium text-zinc-500">
-                                        Property Owner Rating
-                                    </p>
-
-                                    @if ($propertyReviewRating !== null)
-
-                                        <p class="mt-2 text-3xl font-bold text-irdi-green">
-                                            {{ number_format($propertyReviewRating, 1) }}
-                                            <span class="text-base font-medium text-zinc-500">
-                                                / 5
-                                            </span>
-                                        </p>
-
-                                        <p class="mt-2 text-sm text-zinc-500">
-                                            Based on {{ $propertyReviewCount }}
-                                            {{ Str::plural('review', $propertyReviewCount) }}.
-                                        </p>
-
-                                    @else
-
-                                        <p class="mt-2 text-lg font-semibold text-irdi-green">
-                                            {{ $propertyReviewCount }}
-                                            {{ Str::plural('Property Owner Review', $propertyReviewCount) }}
-                                        </p>
-
-                                        <p class="mt-2 text-sm leading-6 text-zinc-500">
-                                            More feedback is needed before a public rating is displayed.
-                                        </p>
-
-                                    @endif
-
-                                </div>
-
-                                <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
-
-                                    <p class="text-sm font-medium text-zinc-500">
-                                        Would Allow This Detectorist to Return
-                                    </p>
+                                @if ($propertyReviewRating !== null)
 
                                     <p class="mt-2 text-3xl font-bold text-irdi-green">
-                                        {{ $wouldAllowReturnCount }}
+                                        {{ number_format($propertyReviewRating, 1) }}
                                         <span class="text-base font-medium text-zinc-500">
-                                            of {{ $propertyReviewCount }}
+                                            / 5
                                         </span>
                                     </p>
 
-                                    @if ($propertyReviewCount > 0)
+                                    <p class="mt-2 text-sm text-zinc-500">
+                                        Based on {{ $propertyReviewCount }}
+                                        {{ Str::plural('review', $propertyReviewCount) }}.
+                                    </p>
 
-                                        <p class="mt-2 text-sm text-zinc-500">
-                                            {{ round(($wouldAllowReturnCount / $propertyReviewCount) * 100) }}%
-                                            of reviewers would allow this Detectorist to return.
-                                        </p>
+                                @else
 
-                                    @endif
+                                    <p class="mt-2 text-lg font-semibold text-irdi-green">
+                                        {{ $propertyReviewCount }}
+                                        {{ Str::plural('Property Owner Review', $propertyReviewCount) }}
+                                    </p>
 
-                                </div>
+                                    <p class="mt-2 text-sm leading-6 text-zinc-500">
+                                        More feedback is needed before a public rating is displayed.
+                                    </p>
+
+                                @endif
 
                             </div>
 
-                        @endif
+                            <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
 
-                    </flux:card>
+                                <p class="text-sm font-medium text-zinc-500">
+                                    Would Allow This Member to Return
+                                </p>
 
-                @endif
+                                <p class="mt-2 text-3xl font-bold text-irdi-green">
+                                    {{ $wouldAllowReturnCount }}
+                                    <span class="text-base font-medium text-zinc-500">
+                                        of {{ $propertyReviewCount }}
+                                    </span>
+                                </p>
+
+                                @if ($propertyReviewCount > 0)
+
+                                    <p class="mt-2 text-sm text-zinc-500">
+                                        {{ round(($wouldAllowReturnCount / $propertyReviewCount) * 100) }}%
+                                        of reviewers would allow this member to return.
+                                    </p>
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                    @endif
+
+                </flux:card>
 
                 @if (auth()->check() && $profile->user_id === auth()->id())
 
@@ -361,14 +327,9 @@ class extends Component
 
                                                 <flux:badge
                                                     size="sm"
-                                                    :color="match ($profile->profile_type) {
-                                                        'detectorist' => 'green',
-                                                        'organization' => 'blue',
-                                                        'vendor' => 'amber',
-                                                        default => 'zinc',
-                                                    }"
+                                                    color="green"
                                                 >
-                                                    IRDI {{ ucfirst($profile->profile_type) }}
+                                                    IRDI Member
                                                 </flux:badge>
 
                                                 @if ($profile->user->membership_status === 'active')

@@ -21,10 +21,10 @@ class extends Component
             return;
         }
 
-        foreach ($user->memberProfiles as $profile) {
-            if ($profile->profile_image) {
-                Storage::disk('public')->delete($profile->profile_image);
-            }
+        if ($user->memberProfile?->profile_image) {
+            Storage::disk('public')->delete(
+                $user->memberProfile->profile_image
+            );
         }
 
         auth()->logout();
@@ -52,7 +52,7 @@ class extends Component
 
                 <div class="mt-6 rounded-lg bg-red-50 p-5 text-sm text-red-800">
                     Deleting your account is permanent. Your IRDI account, membership,
-                    all associated profiles, and uploaded profile images will be deleted.
+                    member profile, and uploaded profile image will be deleted.
                 </div>
 
                 <flux:card class="mt-8 p-6">

@@ -15,12 +15,9 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('user_id')
+                ->unique()
                 ->constrained()
                 ->cascadeOnDelete();
-
-            $table->string('profile_type');
-
-            $table->unique(['user_id', 'profile_type']);
 
             $table->string('username')->unique();
 
@@ -46,7 +43,6 @@ return new class extends Migration
 
             $table->index('directory_visible');
             $table->index('profile_name');
-            $table->index('profile_type');
             $table->index('country');
             $table->index('state_province');
             $table->index('city');

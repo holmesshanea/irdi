@@ -21,10 +21,6 @@ class PropertyReviewInvitationController extends Controller
             abort(403);
         }
 
-        if ($profile->profile_type !== 'detectorist') {
-            abort(403);
-        }
-
         $validated = $request->validate([
             'reviewer_email' => [
                 'required',
@@ -44,7 +40,7 @@ class PropertyReviewInvitationController extends Controller
 
         if ($alreadyReviewed) {
             return back()->withErrors([
-                'reviewer_email_'.$profile->id => 'This email address has already submitted feedback for this Detectorist.',
+                'reviewer_email_'.$profile->id => 'This email address has already submitted feedback for this IRDI member.',
             ]);
         }
 
@@ -81,10 +77,6 @@ class PropertyReviewInvitationController extends Controller
         $profile = $invitation->memberProfile;
 
         if ($profile->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        if ($profile->profile_type !== 'detectorist') {
             abort(403);
         }
 
@@ -136,10 +128,6 @@ class PropertyReviewInvitationController extends Controller
         $profile = $invitation->memberProfile;
 
         if ($profile->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        if ($profile->profile_type !== 'detectorist') {
             abort(403);
         }
 

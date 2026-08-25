@@ -227,10 +227,10 @@
                                         <span
                                             x-data
                                             x-text="new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    }).format(new Date('{{ auth()->user()->ethics_agreed_at->toIso8601String() }}'))"
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            }).format(new Date('{{ auth()->user()->ethics_agreed_at->toIso8601String() }}'))"
                                         ></span>
                                     </p>
                                 @endif
@@ -262,10 +262,10 @@
                                         <span
                                             x-data
                                             x-text="new Intl.DateTimeFormat(undefined, {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    }).format(new Date('{{ auth()->user()->best_practices_agreed_at->toIso8601String() }}'))"
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            }).format(new Date('{{ auth()->user()->best_practices_agreed_at->toIso8601String() }}'))"
                                         ></span>
                                     </p>
                                 @endif
@@ -287,388 +287,289 @@
                     </section>
                 @endif
 
-                {{-- Member Profiles --}}
+                {{-- Member Profile --}}
                 <section class="mt-10">
 
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold tracking-tight text-irdi-green">
-                            Member Profiles
+                            Member Profile
                         </h2>
 
                         <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                         <p class="mt-4 text-sm text-zinc-600">
-                            Create and manage your Detectorist, Organization, and Vendor profiles.
+                            Create and manage your public IRDI member profile.
                         </p>
                     </div>
 
                     <flux:card class="p-6">
 
-                        @if (auth()->user()->memberProfiles->isNotEmpty())
-
-                            <div class="space-y-4">
-
-                                @foreach (auth()->user()->memberProfiles as $profile)
-                                    @php
-                                        $missingProfileFields = collect([
-                                            'profile image' => filled($profile->profile_image),
-                                            'city' => filled($profile->city),
-                                            'state/province' => filled($profile->state_province),
-                                            'country' => filled($profile->country),
-                                            'bio' => filled($profile->bio),
-                                        ])->reject();
-
-                                        $profileComplete = $missingProfileFields->isEmpty();
-                                    @endphp
-
-                                    <div class="relative rounded-xl border border-zinc-200 p-5">
-
-                                        @if ($profile->profile_type === 'detectorist')
-
-                                            <div
-                                                class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
-                                                x-data="{ open: false }"
-                                            >
-
-                                                <div class="text-right">
-
-                                                    <button
-                                                        type="button"
-                                                        class="text-sm font-medium text-irdi-green hover:underline"
-                                                        x-on:click="open = ! open"
-                                                    >
-                                                        Request Property Owner Review
-                                                    </button>
-
-                                                </div>
-
-                                                <div
-                                                    x-show="open"
-                                                    x-cloak
-                                                    class="relative z-50 mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
-                                                >
-
-                                                    <form
-                                                        action="{{ route('account.review-invitations.store', $profile) }}"
-                                                        method="POST"
-                                                    >
-                                                        @csrf
-
-                                                        <label
-                                                            for="reviewer_email_{{ $profile->id }}"
-                                                            class="block text-sm font-medium text-zinc-700"
-                                                        >
-                                                            Property Owner Email
-                                                        </label>
-
-                                                        <p class="mt-1 text-xs leading-5 text-zinc-500">
-                                                            IRDI will email the property owner a private, single-use feedback invitation.
-                                                        </p>
-
-                                                        <input
-                                                            id="reviewer_email_{{ $profile->id }}"
-                                                            name="reviewer_email"
-                                                            type="email"
-                                                            required
-                                                            placeholder="owner@example.com"
-                                                            class="mt-3 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
-                                                        >
-
-                                                        @error('reviewer_email_' . $profile->id)
-                                                        <p class="mt-2 text-sm text-red-600">
-                                                            {{ $message }}
-                                                        </p>
-                                                        @enderror
-
-                                                        <div class="mt-4 flex justify-end gap-2">
-
-                                                            <flux:button
-                                                                type="button"
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                x-on:click="open = false"
-                                                            >
-                                                                Cancel
-                                                            </flux:button>
-
-                                                            <flux:button
-                                                                type="submit"
-                                                                variant="primary"
-                                                                size="sm"
-                                                                icon="envelope"
-                                                            >
-                                                                Send Invitation
-                                                            </flux:button>
-
-                                                        </div>
-
-                                                    </form>
-
-                                                </div>
-
-                                            </div>
-
-                                        @endif
-
-                                        <div class="space-y-5">
-
-                                            {{-- Profile information --}}
-                                            <div class="flex min-w-0 items-start gap-4 lg:pr-64">
-
-                                                {{-- Profile image / fallback avatar --}}
-                                                <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-irdi-green text-lg font-semibold text-white">
-
-                                                    @if ($profile->profile_image)
-
-                                                        <img
-                                                            src="{{ asset('storage/' . $profile->profile_image) }}"
-                                                            alt="{{ $profile->profile_name }}"
-                                                            class="h-full w-full object-cover"
-                                                        >
-
-                                                    @else
-
-                                                        {{ strtoupper(substr($profile->profile_name, 0, 1)) }}
-
-                                                    @endif
-
-                                                </div>
-
-                                                <div class="min-w-0">
-
-                                                    {{-- Profile type --}}
-                                                    <flux:badge
-                                                        size="sm"
-                                                        :color="match ($profile->profile_type) {
-                                                            'detectorist' => 'green',
-                                                            'organization' => 'blue',
-                                                            'vendor' => 'amber',
-                                                            default => 'zinc',
-                                                        }"
-                                                    >
-                                                        {{ ucfirst($profile->profile_type) }}
-                                                    </flux:badge>
-
-                                                    {{-- Profile name --}}
-                                                    <p class="mt-2 text-lg font-semibold text-irdi-green">
-                                                        {{ $profile->profile_name }}
-                                                    </p>
-
-                                                    {{-- Username --}}
-                                                    <p class="mt-1 text-sm text-zinc-600">
-                                                        {{ '@' . $profile->username }}
-                                                    </p>
-
-                                                    {{-- Location --}}
-                                                    @if (
-                                                        $profile->city
-                                                        || $profile->state_province
-                                                        || $profile->country
-                                                    )
-
-                                                        <p class="mt-2 text-sm text-zinc-600">
-                                                            {{ collect([
-                                                                $profile->city,
-                                                                $profile->state_province,
-                                                                $profile->country,
-                                                            ])->filter()->implode(', ') }}
-                                                        </p>
-
-                                                    @endif
-
-                                                </div>
-
-                                            </div>
-
-                                            {{-- Profile status and actions --}}
-                                            <div>
-
-                                                {{-- Profile status --}}
-                                                <div class="mb-3">
-
-                                                    <div class="flex flex-wrap gap-2 lg:justify-end">
-
-                                                        @if ($profile->directory_visible)
-
-                                                            <flux:badge color="green">
-                                                                Directory Visible
-                                                            </flux:badge>
-
-                                                        @else
-
-                                                            <flux:badge color="zinc">
-                                                                Directory Hidden
-                                                            </flux:badge>
-
-                                                        @endif
-
-                                                        @if ($profileComplete)
-
-                                                            <flux:badge color="green">
-                                                                Profile Complete
-                                                            </flux:badge>
-
-                                                        @else
-
-                                                            <flux:badge color="amber">
-                                                                Needs Attention
-                                                            </flux:badge>
-
-                                                        @endif
-
-                                                    </div>
-
-                                                    @unless ($profileComplete)
-                                                        <p class="mt-2 text-sm text-amber-700 lg:text-right">
-                                                            Missing: {{ $missingProfileFields->keys()->implode(', ') }}.
-                                                        </p>
-                                                    @endunless
-
-                                                </div>
-
-                                                {{-- Profile actions --}}
-                                                <div class="flex flex-wrap items-center gap-3">
-
-                                                    <flux:button
-                                                        href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}"
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        icon="eye"
-                                                    >
-                                                        View Profile
-                                                    </flux:button>
-
-                                                    <flux:button
-                                                        :href="route('account.profiles.edit', $profile)"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        icon="pencil-square"
-                                                    >
-                                                        Edit
-                                                    </flux:button>
-
-                                                    <flux:button
-                                                        href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}#member-card"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        icon="identification"
-                                                    >
-                                                        Member Card
-                                                    </flux:button>
-
-                                                    @if ($profile->profile_type === 'detectorist')
-
-                                                        <flux:button
-                                                            href="{{ route('account.reviews') }}"
-                                                            variant="outline"
-                                                            size="sm"
-                                                            icon="star"
-                                                        >
-                                                            My Reviews
-                                                        </flux:button>
-
-                                                    @endif
-
-                                                    <form
-                                                        action="{{ route('account.profiles.destroy', $profile) }}"
-                                                        method="POST"
-                                                        onsubmit="return confirm('Are you sure you want to permanently delete this profile? This will not delete your IRDI account or membership.');"
-                                                    >
-                                                        @csrf
-                                                        @method('DELETE')
-
-                                                        <flux:button
-                                                            type="submit"
-                                                            variant="danger"
-                                                            size="sm"
-                                                            icon="trash"
-                                                        >
-                                                            Delete
-                                                        </flux:button>
-                                                    </form>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                @endforeach
-
-                            </div>
-
-                        @else
-
-                            <p class="text-sm text-zinc-500">
-                                You have not created any IRDI profiles yet.
-                            </p>
-
-                        @endif
-
-                        @if (
-                            auth()->user()->membership_status === 'active'
-                            && auth()->user()->memberProfiles()->count() < 3
-                        )
+                        @if (auth()->user()->memberProfile)
 
                             @php
-                                $existingProfileTypes = auth()->user()
-                                    ->memberProfiles()
-                                    ->pluck('profile_type')
-                                    ->all();
+                                $profile = auth()->user()->memberProfile;
 
-                                $availableProfileTypes = collect([
-                                    'detectorist' => 'Detectorist',
-                                    'organization' => 'Organization',
-                                    'vendor' => 'Vendor',
-                                ])->reject(
-                                    fn ($label, $type) => in_array($type, $existingProfileTypes)
-                                );
+                                $missingProfileFields = collect([
+                                    'profile image' => filled($profile->profile_image),
+                                    'city' => filled($profile->city),
+                                    'state/province' => filled($profile->state_province),
+                                    'country' => filled($profile->country),
+                                    'bio' => filled($profile->bio),
+                                ])->reject();
+
+                                $profileComplete = $missingProfileFields->isEmpty();
                             @endphp
 
-                            <div class="mt-6 border-t border-zinc-200 pt-6">
+                            <div class="relative rounded-xl border border-zinc-200 p-5">
 
-                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div
+                                    class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
+                                    x-data="{ open: false }"
+                                >
 
-                                    <div>
-                                        <p class="text-sm text-zinc-600">
-                                            You can create up to three profiles, but you can only have one of each type:
-                                            Detectorist, Organization, and Vendor.
-                                        </p>
+                                    <div class="text-right">
 
-                                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <button
+                                            type="button"
+                                            class="text-sm font-medium text-irdi-green hover:underline"
+                                            x-on:click="open = ! open"
+                                        >
+                                            Request Property Owner Review
+                                        </button>
 
-                                            <span class="text-sm font-medium text-zinc-900">
-                                                Still available:
-                                            </span>
-
-                                            @foreach ($availableProfileTypes as $type => $label)
-
-                                                <flux:badge
-                                                    size="sm"
-                                                    :color="match ($type) {
-                                                        'detectorist' => 'green',
-                                                        'organization' => 'blue',
-                                                        'vendor' => 'amber',
-                                                        default => 'zinc',
-                                                    }"
-                                                >
-                                                    {{ $label }}
-                                                </flux:badge>
-
-                                            @endforeach
-
-                                        </div>
                                     </div>
 
-                                    <flux:button
-                                        href="{{ route('member-profiles.create') }}"
-                                        variant="primary"
-                                        icon="plus"
+                                    <div
+                                        x-show="open"
+                                        x-cloak
+                                        class="relative z-50 mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
                                     >
-                                        Create a Profile
-                                    </flux:button>
+
+                                        <form
+                                            action="{{ route('account.review-invitations.store', $profile) }}"
+                                            method="POST"
+                                        >
+                                            @csrf
+
+                                            <label
+                                                for="reviewer_email_{{ $profile->id }}"
+                                                class="block text-sm font-medium text-zinc-700"
+                                            >
+                                                Property Owner Email
+                                            </label>
+
+                                            <p class="mt-1 text-xs leading-5 text-zinc-500">
+                                                IRDI will email the property owner a private, single-use feedback invitation.
+                                            </p>
+
+                                            <input
+                                                id="reviewer_email_{{ $profile->id }}"
+                                                name="reviewer_email"
+                                                type="email"
+                                                required
+                                                placeholder="owner@example.com"
+                                                class="mt-3 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
+                                            >
+
+                                            @error('reviewer_email_' . $profile->id)
+                                            <p class="mt-2 text-sm text-red-600">
+                                                {{ $message }}
+                                            </p>
+                                            @enderror
+
+                                            <div class="mt-4 flex justify-end gap-2">
+
+                                                <flux:button
+                                                    type="button"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    x-on:click="open = false"
+                                                >
+                                                    Cancel
+                                                </flux:button>
+
+                                                <flux:button
+                                                    type="submit"
+                                                    variant="primary"
+                                                    size="sm"
+                                                    icon="envelope"
+                                                >
+                                                    Send Invitation
+                                                </flux:button>
+
+                                            </div>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="space-y-5">
+
+                                    {{-- Profile information --}}
+                                    <div class="flex min-w-0 items-start gap-4 lg:pr-64">
+
+                                        {{-- Profile image / fallback avatar --}}
+                                        <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-irdi-green text-lg font-semibold text-white">
+
+                                            @if ($profile->profile_image)
+
+                                                <img
+                                                    src="{{ asset('storage/' . $profile->profile_image) }}"
+                                                    alt="{{ $profile->profile_name }}"
+                                                    class="h-full w-full object-cover"
+                                                >
+
+                                            @else
+
+                                                {{ strtoupper(substr($profile->profile_name, 0, 1)) }}
+
+                                            @endif
+
+                                        </div>
+
+                                        <div class="min-w-0">
+
+                                            <flux:badge
+                                                size="sm"
+                                                color="green"
+                                            >
+                                                IRDI Member
+                                            </flux:badge>
+
+                                            <p class="mt-2 text-lg font-semibold text-irdi-green">
+                                                {{ $profile->profile_name }}
+                                            </p>
+
+                                            <p class="mt-1 text-sm text-zinc-600">
+                                                {{ '@' . $profile->username }}
+                                            </p>
+
+                                            @if (
+                                                $profile->city
+                                                || $profile->state_province
+                                                || $profile->country
+                                            )
+
+                                                <p class="mt-2 text-sm text-zinc-600">
+                                                    {{ collect([
+                                                        $profile->city,
+                                                        $profile->state_province,
+                                                        $profile->country,
+                                                    ])->filter()->implode(', ') }}
+                                                </p>
+
+                                            @endif
+
+                                        </div>
+
+                                    </div>
+
+                                    {{-- Profile status and actions --}}
+                                    <div>
+
+                                        <div class="mb-3">
+
+                                            <div class="flex flex-wrap gap-2 lg:justify-end">
+
+                                                @if ($profile->directory_visible)
+
+                                                    <flux:badge color="green">
+                                                        Directory Visible
+                                                    </flux:badge>
+
+                                                @else
+
+                                                    <flux:badge color="zinc">
+                                                        Directory Hidden
+                                                    </flux:badge>
+
+                                                @endif
+
+                                                @if ($profileComplete)
+
+                                                    <flux:badge color="green">
+                                                        Profile Complete
+                                                    </flux:badge>
+
+                                                @else
+
+                                                    <flux:badge color="amber">
+                                                        Needs Attention
+                                                    </flux:badge>
+
+                                                @endif
+
+                                            </div>
+
+                                            @unless ($profileComplete)
+                                                <p class="mt-2 text-sm text-amber-700 lg:text-right">
+                                                    Missing: {{ $missingProfileFields->keys()->implode(', ') }}.
+                                                </p>
+                                            @endunless
+
+                                        </div>
+
+                                        <div class="flex flex-wrap items-center gap-3">
+
+                                            <flux:button
+                                                href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}"
+                                                variant="ghost"
+                                                size="sm"
+                                                icon="eye"
+                                            >
+                                                View Profile
+                                            </flux:button>
+
+                                            <flux:button
+                                                :href="route('account.profiles.edit', $profile)"
+                                                variant="outline"
+                                                size="sm"
+                                                icon="pencil-square"
+                                            >
+                                                Edit
+                                            </flux:button>
+
+                                            <flux:button
+                                                href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}#member-card"
+                                                variant="outline"
+                                                size="sm"
+                                                icon="identification"
+                                            >
+                                                Member Card
+                                            </flux:button>
+
+                                            <flux:button
+                                                href="{{ route('account.reviews') }}"
+                                                variant="outline"
+                                                size="sm"
+                                                icon="star"
+                                            >
+                                                My Reviews
+                                            </flux:button>
+
+                                            <form
+                                                action="{{ route('account.profiles.destroy', $profile) }}"
+                                                method="POST"
+                                                onsubmit="return confirm('Are you sure you want to permanently delete your profile? This will not delete your IRDI account or membership.');"
+                                            >
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <flux:button
+                                                    type="submit"
+                                                    variant="danger"
+                                                    size="sm"
+                                                    icon="trash"
+                                                >
+                                                    Delete
+                                                </flux:button>
+                                            </form>
+
+                                        </div>
+
+                                    </div>
 
                                 </div>
 
@@ -676,13 +577,31 @@
 
                         @elseif (auth()->user()->membership_status === 'active')
 
-                            <p class="mt-6 text-sm text-zinc-500">
-                                You have created all three available IRDI profile types.
-                            </p>
+                            <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
+                                <div>
+                                    <p class="font-medium text-zinc-900">
+                                        Create your IRDI member profile
+                                    </p>
+
+                                    <p class="mt-1 text-sm text-zinc-600">
+                                        Your profile identifies you in the Member Directory and gives you access to your public member card and property owner reviews.
+                                    </p>
+                                </div>
+
+                                <flux:button
+                                    href="{{ route('member-profiles.create') }}"
+                                    variant="primary"
+                                    icon="plus"
+                                >
+                                    Create Profile
+                                </flux:button>
+
+                            </div>
 
                         @else
 
-                            <p class="mt-6 text-sm text-zinc-500">
+                            <p class="text-sm text-zinc-500">
                                 Activate your IRDI membership before creating a member profile.
                             </p>
 
@@ -703,7 +622,7 @@
                         <div class="mt-2 h-1 w-16 bg-red-500"></div>
 
                         <p class="mt-4 text-sm text-zinc-600">
-                            Permanently delete your IRDI account and all associated membership data and profiles.
+                            Permanently delete your IRDI account and all associated membership data and profile information.
                         </p>
                     </div>
 
@@ -711,8 +630,8 @@
 
                         <div class="rounded-lg bg-red-50 p-4">
                             <p class="text-sm text-red-800">
-                                Deleting your account is permanent. Your IRDI account, membership,
-                                and all associated Detectorist, Organization, and Vendor profiles
+                                Deleting your account is permanent. Your IRDI account,
+                                membership, member profile, reviews, and associated data
                                 will be deleted.
                             </p>
                         </div>

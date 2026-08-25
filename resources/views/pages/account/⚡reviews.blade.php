@@ -8,15 +8,14 @@ new
 #[Layout('components.layouts.public')]
 class extends Component
 {
-    public function getDetectoristProfilesProperty()
+    public function getMemberProfileProperty(): ?MemberProfile
     {
         return MemberProfile::query()
             ->where('user_id', auth()->id())
-            ->where('profile_type', 'detectorist')
             ->with([
                 'propertyReviewInvitations.review',
             ])
-            ->get();
+            ->first();
     }
 };
 ?>
@@ -45,297 +44,291 @@ class extends Component
             </h1>
 
             <p class="mt-3 max-w-2xl text-zinc-600">
-                View property owner review invitations and reviews connected to your Detectorist profile.
+                View property owner review invitations and reviews connected to your IRDI member profile.
             </p>
         </div>
 
-        @if ($this->detectoristProfiles->isEmpty())
+        @if (! $this->memberProfile)
 
             <div class="rounded-xl border border-zinc-200 bg-white p-8">
                 <h2 class="text-lg font-semibold text-zinc-900">
-                    No Detectorist Profile
+                    No Member Profile
                 </h2>
 
                 <p class="mt-2 text-sm text-zinc-600">
-                    Property owner reviews are available for Detectorist profiles.
+                    Create your IRDI member profile before requesting property owner reviews.
                 </p>
             </div>
 
         @else
 
-            <div class="space-y-8">
+            @php
+                $profile = $this->memberProfile;
 
-                @foreach ($this->detectoristProfiles as $profile)
+                $completedCount = $profile->propertyReviewInvitations
+                    ->filter(fn ($invitation) => $invitation->isUsed())
+                    ->count();
 
-                    <div class="rounded-xl border border-zinc-200 bg-white p-6">
+                $cancelledCount = $profile->propertyReviewInvitations
+                    ->filter(fn ($invitation) => $invitation->isCancelled())
+                    ->count();
 
-                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                $expiredCount = $profile->propertyReviewInvitations
+                    ->filter(
+                        fn ($invitation) =>
+                            ! $invitation->isUsed()
+                            && ! $invitation->isCancelled()
+                            && $invitation->isExpired()
+                    )
+                    ->count();
 
-                            <div>
-                                <h2 class="text-xl font-semibold text-zinc-900">
-                                    {{ $profile->profile_name }}
-                                </h2>
+                $pendingCount = $profile->propertyReviewInvitations
+                    ->filter(fn ($invitation) => $invitation->isAvailable())
+                    ->count();
+            @endphp
 
-                                <p class="text-sm text-zinc-500">
-                                    {{ '@' . $profile->username }}
-                                </p>
-                            </div>
+            <div class="rounded-xl border border-zinc-200 bg-white p-6">
 
-                            <span class="inline-flex w-fit rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                                {{ $profile->propertyReviewInvitations->count() }}
-                                {{ Str::plural('Invitation', $profile->propertyReviewInvitations->count()) }}
-                            </span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 
+                    <div>
+                        <h2 class="text-xl font-semibold text-zinc-900">
+                            {{ $profile->profile_name }}
+                        </h2>
+
+                        <p class="text-sm text-zinc-500">
+                            {{ '@' . $profile->username }}
+                        </p>
+                    </div>
+
+                    <span class="inline-flex w-fit rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
+                        {{ $profile->propertyReviewInvitations->count() }}
+                        {{ Str::plural('Invitation', $profile->propertyReviewInvitations->count()) }}
+                    </span>
+
+                </div>
+
+                <div class="mt-6 flex flex-wrap gap-2">
+
+                    <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                        {{ $completedCount }} Completed
+                    </span>
+
+                    <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                        {{ $pendingCount }} Pending
+                    </span>
+
+                    <span class="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
+                        {{ $expiredCount }} Expired
+                    </span>
+
+                    <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
+                        {{ $cancelledCount }} Cancelled
+                    </span>
+
+                </div>
+
+                <div class="mt-6">
+
+                    @if ($profile->propertyReviewInvitations->isEmpty())
+
+                        <div class="rounded-lg bg-zinc-50 p-6 text-center">
+                            <p class="text-sm text-zinc-600">
+                                You have not created any property owner review invitations yet.
+                            </p>
                         </div>
 
-                        @php
-                            $completedCount = $profile->propertyReviewInvitations
-                                ->filter(fn ($invitation) => $invitation->isUsed())
-                                ->count();
+                    @else
 
-                            $cancelledCount = $profile->propertyReviewInvitations
-                                ->filter(fn ($invitation) => $invitation->isCancelled())
-                                ->count();
+                        <div class="space-y-4">
 
-                            $expiredCount = $profile->propertyReviewInvitations
-                                ->filter(
-                                    fn ($invitation) =>
-                                        ! $invitation->isUsed()
-                                        && ! $invitation->isCancelled()
-                                        && $invitation->isExpired()
-                                )
-                                ->count();
+                            @foreach (
+                                $profile->propertyReviewInvitations
+                                    ->sortByDesc('created_at')
+                                as $invitation
+                            )
 
-                            $pendingCount = $profile->propertyReviewInvitations
-                                ->filter(fn ($invitation) => $invitation->isAvailable())
-                                ->count();
-                        @endphp
+                                <div class="rounded-lg border border-zinc-200 p-5">
 
-                        <div class="mt-6 flex flex-wrap gap-2">
+                                    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-                            <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                                {{ $completedCount }} Completed
-                            </span>
+                                        <div>
 
-                            <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                                {{ $pendingCount }} Pending
-                            </span>
+                                            <p class="font-medium text-zinc-900">
+                                                {{ $invitation->reviewer_email }}
+                                            </p>
 
-                            <span class="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                                {{ $expiredCount }} Expired
-                            </span>
+                                            <p class="mt-1 text-sm text-zinc-500">
+                                                Sent {{ $invitation->created_at->format('F j, Y') }}
+                                            </p>
 
-                            <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
-                                {{ $cancelledCount }} Cancelled
-                            </span>
+                                            @if ($invitation->isCancelled())
+                                                <p class="mt-1 text-xs text-zinc-500">
+                                                    Cancelled {{ $invitation->cancelled_at->format('F j, Y') }}
+                                                </p>
+                                            @endif
 
-                        </div>
+                                        </div>
 
-                        <div class="mt-6">
+                                        <div class="flex flex-wrap items-center gap-2">
 
-                            @if ($profile->propertyReviewInvitations->isEmpty())
+                                            @if ($invitation->isUsed())
 
-                                <div class="rounded-lg bg-zinc-50 p-6 text-center">
-                                    <p class="text-sm text-zinc-600">
-                                        You have not created any property owner review invitations yet.
-                                    </p>
-                                </div>
+                                                <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+                                                    Completed
+                                                </span>
 
-                            @else
+                                            @elseif ($invitation->isCancelled())
 
-                                <div class="space-y-4">
+                                                <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
+                                                    Cancelled
+                                                </span>
 
-                                    @foreach (
-                                        $profile->propertyReviewInvitations
-                                            ->sortByDesc('created_at')
-                                        as $invitation
-                                    )
+                                            @elseif ($invitation->isExpired())
 
-                                        <div class="rounded-lg border border-zinc-200 p-5">
+                                                <span class="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
+                                                    Expired
+                                                </span>
 
-                                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                            @else
 
-                                                <div>
+                                                <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                                                    Pending
+                                                </span>
 
-                                                    <p class="font-medium text-zinc-900">
-                                                        {{ $invitation->reviewer_email }}
-                                                    </p>
+                                            @endif
 
-                                                    <p class="mt-1 text-sm text-zinc-500">
-                                                        Sent {{ $invitation->created_at->format('F j, Y') }}
-                                                    </p>
+                                            @if (
+                                                ! $invitation->isUsed()
+                                                && ! $invitation->isCancelled()
+                                            )
 
-                                                    @if ($invitation->isCancelled())
-                                                        <p class="mt-1 text-xs text-zinc-500">
-                                                            Cancelled {{ $invitation->cancelled_at->format('F j, Y') }}
-                                                        </p>
-                                                    @endif
+                                                <form
+                                                    action="{{ route('account.review-invitations.resend', $invitation) }}"
+                                                    method="POST"
+                                                >
+                                                    @csrf
 
-                                                </div>
+                                                    <flux:button
+                                                        type="submit"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        icon="arrow-path"
+                                                    >
+                                                        Resend
+                                                    </flux:button>
+                                                </form>
 
-                                                <div class="flex flex-wrap items-center gap-2">
+                                                <form
+                                                    action="{{ route('account.review-invitations.cancel', $invitation) }}"
+                                                    method="POST"
+                                                    onsubmit="return confirm('Cancel this property owner review invitation?');"
+                                                >
+                                                    @csrf
 
-                                                    @if ($invitation->isUsed())
+                                                    <flux:button
+                                                        type="submit"
+                                                        variant="danger"
+                                                        size="sm"
+                                                        icon="x-mark"
+                                                    >
+                                                        Cancel
+                                                    </flux:button>
+                                                </form>
 
-                                                        <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                                                            Completed
-                                                        </span>
+                                            @endif
 
-                                                    @elseif ($invitation->isCancelled())
+                                        </div>
 
-                                                        <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
-                                                            Cancelled
-                                                        </span>
+                                    </div>
 
-                                                    @elseif ($invitation->isExpired())
+                                    @if ($invitation->review)
 
-                                                        <span class="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                                                            Expired
-                                                        </span>
+                                        <div class="mt-5 border-t border-zinc-100 pt-5">
 
-                                                    @else
+                                            @if ($invitation->review->hidden_at)
 
-                                                        <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                                                            Pending
-                                                        </span>
+                                                <p class="text-sm text-zinc-500">
+                                                    This review is currently unavailable.
+                                                </p>
 
-                                                    @endif
+                                            @else
 
-                                                    @if (
-                                                        ! $invitation->isUsed()
-                                                        && ! $invitation->isCancelled()
-                                                    )
+                                                <div class="space-y-4">
 
-                                                        <form
-                                                            action="{{ route('account.review-invitations.resend', $invitation) }}"
-                                                            method="POST"
-                                                        >
-                                                            @csrf
-
-                                                            <flux:button
-                                                                type="submit"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                icon="arrow-path"
-                                                            >
-                                                                Resend
-                                                            </flux:button>
-                                                        </form>
-
-                                                        <form
-                                                            action="{{ route('account.review-invitations.cancel', $invitation) }}"
-                                                            method="POST"
-                                                            onsubmit="return confirm('Cancel this property owner review invitation?');"
-                                                        >
-                                                            @csrf
-
-                                                            <flux:button
-                                                                type="submit"
-                                                                variant="danger"
-                                                                size="sm"
-                                                                icon="x-mark"
-                                                            >
-                                                                Cancel
-                                                            </flux:button>
-                                                        </form>
-
-                                                    @endif
-
-                                                </div>
-
-                                            </div>
-
-                                            @if ($invitation->review)
-
-                                                <div class="mt-5 border-t border-zinc-100 pt-5">
-
-                                                    @if ($invitation->review->hidden_at)
-
-                                                        <p class="text-sm text-zinc-500">
-                                                            This review is currently unavailable.
+                                                    <div>
+                                                        <p class="text-sm font-medium text-zinc-900">
+                                                            Review received
                                                         </p>
 
-                                                    @else
+                                                        <p class="mt-1 text-sm text-zinc-600">
+                                                            Submitted {{ $invitation->review->created_at->format('F j, Y') }}
+                                                        </p>
+                                                    </div>
 
-                                                        <div class="space-y-4">
+                                                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-                                                            <div>
-                                                                <p class="text-sm font-medium text-zinc-900">
-                                                                    Review received
-                                                                </p>
+                                                        <div class="rounded-lg bg-zinc-50 p-4">
 
-                                                                <p class="mt-1 text-sm text-zinc-600">
-                                                                    Submitted {{ $invitation->review->created_at->format('F j, Y') }}
-                                                                </p>
-                                                            </div>
+                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                Respect for Property
+                                                            </p>
 
-                                                            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                {{ $invitation->review->respect_for_property }}/5
+                                                            </p>
 
-                                                                <div class="rounded-lg bg-zinc-50 p-4">
+                                                        </div>
 
-                                                                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                        Respect for Property
-                                                                    </p>
+                                                        <div class="rounded-lg bg-zinc-50 p-4">
 
-                                                                    <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                        {{ $invitation->review->respect_for_property }}/5
-                                                                    </p>
+                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                Communication & Courtesy
+                                                            </p>
 
-                                                                </div>
+                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                {{ $invitation->review->communication_courtesy }}/5
+                                                            </p>
 
-                                                                <div class="rounded-lg bg-zinc-50 p-4">
+                                                        </div>
 
-                                                                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                        Communication & Courtesy
-                                                                    </p>
+                                                        <div class="rounded-lg bg-zinc-50 p-4">
 
-                                                                    <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                        {{ $invitation->review->communication_courtesy }}/5
-                                                                    </p>
+                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                Care of Property
+                                                            </p>
 
-                                                                </div>
+                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                {{ $invitation->review->care_of_property }}/5
+                                                            </p>
 
-                                                                <div class="rounded-lg bg-zinc-50 p-4">
+                                                        </div>
 
-                                                                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                        Care of Property
-                                                                    </p>
+                                                        <div class="rounded-lg bg-zinc-50 p-4">
 
-                                                                    <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                        {{ $invitation->review->care_of_property }}/5
-                                                                    </p>
+                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                Would Allow Return
+                                                            </p>
 
-                                                                </div>
+                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                {{ $invitation->review->would_allow_return ? 'Yes' : 'No' }}
+                                                            </p>
 
-                                                                <div class="rounded-lg bg-zinc-50 p-4">
+                                                        </div>
 
-                                                                    <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                        Would Allow Return
-                                                                    </p>
+                                                    </div>
 
-                                                                    <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                        {{ $invitation->review->would_allow_return ? 'Yes' : 'No' }}
-                                                                    </p>
+                                                    @if ($invitation->review->comments)
 
-                                                                </div>
+                                                        <div>
 
-                                                            </div>
+                                                            <p class="text-sm font-medium text-zinc-900">
+                                                                Property Owner Comments
+                                                            </p>
 
-                                                            @if ($invitation->review->comments)
-
-                                                                <div>
-
-                                                                    <p class="text-sm font-medium text-zinc-900">
-                                                                        Property Owner Comments
-                                                                    </p>
-
-                                                                    <p class="mt-2 whitespace-pre-line text-sm leading-6 text-zinc-600">
-                                                                        {{ $invitation->review->comments }}
-                                                                    </p>
-
-                                                                </div>
-
-                                                            @endif
+                                                            <p class="mt-2 whitespace-pre-line text-sm leading-6 text-zinc-600">
+                                                                {{ $invitation->review->comments }}
+                                                            </p>
 
                                                         </div>
 
@@ -347,17 +340,17 @@ class extends Component
 
                                         </div>
 
-                                    @endforeach
+                                    @endif
 
                                 </div>
 
-                            @endif
+                            @endforeach
 
                         </div>
 
-                    </div>
+                    @endif
 
-                @endforeach
+                </div>
 
             </div>
 

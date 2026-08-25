@@ -1,8 +1,8 @@
 <?php
 
+use App\Mail\PropertyReviewVerificationCodeMail;
 use App\Models\PropertyReview;
 use App\Models\PropertyReviewInvitation;
-use App\Mail\PropertyReviewVerificationCodeMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -40,10 +40,6 @@ class extends Component
             ->where('token', $token)
             ->firstOrFail();
 
-        if ($this->invitation->memberProfile->profile_type !== 'detectorist') {
-            abort(404);
-        }
-
         if (! $this->invitation->reviewer_email) {
             abort(404);
         }
@@ -71,7 +67,7 @@ class extends Component
             max(3, strlen($local) - $visibleCharacters)
         );
 
-        return $visible . $masked . '@' . $domain;
+        return $visible.$masked.'@'.$domain;
     }
 
     public function sendVerificationCode(): void
@@ -189,10 +185,6 @@ class extends Component
                 ->lockForUpdate()
                 ->findOrFail($this->invitation->id);
 
-            if ($invitation->memberProfile->profile_type !== 'detectorist') {
-                abort(404);
-            }
-
             if ($invitation->isUsed()) {
                 $this->addError(
                     'reviewSubmission',
@@ -223,7 +215,7 @@ class extends Component
             if ($alreadyReviewed) {
                 $this->addError(
                     'reviewSubmission',
-                    'This email address has already submitted feedback for this Detectorist.'
+                    'This email address has already submitted feedback for this IRDI member.'
                 );
 
                 return;
@@ -310,7 +302,7 @@ class extends Component
                     </h2>
 
                     <p class="mt-2 text-sm text-amber-800">
-                        Please ask the Detectorist to create a new property owner feedback invitation.
+                        Please ask the IRDI member to create a new property owner feedback invitation.
                     </p>
 
                 </div>
@@ -371,7 +363,7 @@ class extends Component
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                How well did the Detectorist respect your property and any boundaries or conditions you established?
+                                How well did the IRDI member respect your property and any boundaries or conditions you established?
                             </p>
 
                             <flux:select
@@ -401,7 +393,7 @@ class extends Component
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                How would you rate the Detectorist's communication, professionalism, and courtesy?
+                                How would you rate the IRDI member's communication, professionalism, and courtesy?
                             </p>
 
                             <flux:select
@@ -431,7 +423,7 @@ class extends Component
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                How well did the Detectorist care for the land, including filling holes and leaving the property in good condition?
+                                How well did the IRDI member care for the land, including filling holes and leaving the property in good condition?
                             </p>
 
                             <flux:select
@@ -457,11 +449,11 @@ class extends Component
                         <div>
 
                             <label class="block text-sm font-semibold text-irdi-green">
-                                Would you allow this Detectorist to return?
+                                Would you allow this IRDI member to return?
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                Based on this experience, would you give this Detectorist permission to detect on your property again?
+                                Based on this experience, would you give this IRDI member permission to detect on your property again?
                             </p>
 
                             <flux:select
@@ -491,7 +483,7 @@ class extends Component
                             <flux:textarea
                                 wire:model="comments"
                                 label="Comments About Your Experience"
-                                description="Optional. Please keep your comments focused on your experience with this Detectorist."
+                                description="Optional. Please keep your comments focused on your experience with this IRDI member."
                                 rows="5"
                             />
 

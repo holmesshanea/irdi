@@ -1,8 +1,8 @@
 <?php
 
+use App\Models\MemberProfile;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use App\Models\MemberProfile;
 use Livewire\WithPagination;
 
 new
@@ -12,7 +12,6 @@ class extends Component
     use WithPagination;
 
     public string $search = '';
-    public string $profileType = '';
     public string $country = '';
     public string $stateProvince = '';
     public string $city = '';
@@ -21,7 +20,6 @@ class extends Component
     public function getHasActiveFiltersProperty(): bool
     {
         return $this->search !== ''
-            || $this->profileType !== ''
             || $this->country !== ''
             || $this->stateProvince !== ''
             || $this->city !== '';
@@ -38,9 +36,6 @@ class extends Component
                         ->where('profile_name', 'like', '%' . $this->search . '%')
                         ->orWhere('username', 'like', '%' . $this->search . '%');
                 });
-            })
-            ->when($this->profileType, function ($query) {
-                $query->where('profile_type', $this->profileType);
             })
             ->when($this->country, function ($query) {
                 $query->where('country', $this->country);
@@ -129,11 +124,6 @@ class extends Component
         $this->resetPage();
     }
 
-    public function updatedProfileType(): void
-    {
-        $this->resetPage();
-    }
-
     public function updatedCountry(): void
     {
         $this->stateProvince = '';
@@ -161,7 +151,6 @@ class extends Component
     {
         $this->reset([
             'search',
-            'profileType',
             'country',
             'stateProvince',
             'city',
@@ -197,7 +186,7 @@ class extends Component
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
 
-            <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
 
                 <div class="md:col-span-2 lg:col-span-2">
                     <flux:input
@@ -207,24 +196,6 @@ class extends Component
                         icon="magnifying-glass"
                     />
                 </div>
-
-                <flux:select wire:model.live="profileType">
-                    <flux:select.option value="">
-                        All Profile Types
-                    </flux:select.option>
-
-                    <flux:select.option value="detectorist">
-                        Detectorist
-                    </flux:select.option>
-
-                    <flux:select.option value="organization">
-                        Organization
-                    </flux:select.option>
-
-                    <flux:select.option value="vendor">
-                        Vendor
-                    </flux:select.option>
-                </flux:select>
 
                 <flux:select wire:model.live="country">
                     <flux:select.option value="">
@@ -312,7 +283,7 @@ class extends Component
 
                 <div
                     wire:loading
-                    wire:target="search,profileType,country,stateProvince,city,sort,clearFilters"
+                    wire:target="search,country,stateProvince,city,sort,clearFilters"
                     class="text-sm text-zinc-500"
                 >
                     Updating results...
@@ -360,20 +331,7 @@ class extends Component
                                         {{ '@' . $profile->username }}
                                     </div>
 
-                                    <div class="mt-3 flex flex-wrap items-center gap-2">
-
-                                        <flux:badge
-                                            size="sm"
-                                            :color="match ($profile->profile_type) {
-            'detectorist' => 'green',
-            'organization' => 'blue',
-            'vendor' => 'amber',
-            default => 'zinc',
-        }"
-                                        >
-                                            {{ ucfirst($profile->profile_type) }}
-                                        </flux:badge>
-
+                                    <div class="mt-3">
                                         <flux:badge
                                             size="sm"
                                             color="green"
@@ -381,11 +339,10 @@ class extends Component
                                         >
                                             Active Member
                                         </flux:badge>
-
                                     </div>
 
                                     @if ($profile->city || $profile->state_province || $profile->country)
-                                        <flux:text class="mt-1">
+                                        <flux:text class="mt-2">
                                             {{ collect([
                                                 $profile->city,
                                                 $profile->state_province,

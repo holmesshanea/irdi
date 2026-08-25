@@ -16,7 +16,6 @@ class MemberProfile extends Model
 
     protected $fillable = [
         'user_id',
-        'profile_type',
         'username',
         'profile_name',
         'city',

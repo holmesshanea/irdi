@@ -146,7 +146,7 @@ class extends Component
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg text-zinc-600">
-                    Update your IRDI {{ ucfirst($profile->profile_type) }} profile.
+                    Update your IRDI member profile.
                 </p>
 
             </div>
@@ -199,7 +199,7 @@ class extends Component
                         </p>
 
                         <p class="mt-1 mb-4 text-sm text-zinc-500">
-                            Add an image to represent this profile in the IRDI Member Directory and on its public profile page.
+                            Add an image to represent you in the IRDI Member Directory and on your public profile page.
                         </p>
 
                         <div class="flex items-start gap-6">
@@ -264,12 +264,7 @@ class extends Component
 
                     <flux:input
                         wire:model="profileName"
-                        :label="match ($profile->profile_type) {
-                            'vendor' => 'Business Name',
-                            'organization' => 'Organization Name',
-                            'detectorist' => 'Display Name',
-                            default => 'Profile Name',
-                        }"
+                        label="Display Name"
                         required
                     />
 
@@ -286,24 +281,7 @@ class extends Component
                         </h2>
 
                         <p class="mt-1 text-sm text-zinc-500">
-                            @switch($profile->profile_type)
-
-                                @case('detectorist')
-                                    Add your general location so other members can see where you're based. Do not enter a street address.
-                                    @break
-
-                                @case('organization')
-                                    Add the general location where your organization is based or primarily operates. Do not enter a street address.
-                                    @break
-
-                                @case('vendor')
-                                    Add the general location where your business is based or primarily operates. Do not enter a street address.
-                                    @break
-
-                                @default
-                                    Add the general location you want displayed on this profile. Do not enter a street address.
-
-                            @endswitch
+                            Add your general location so other members can see where you're based. Do not enter a street address.
                         </p>
 
                         <div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -330,13 +308,8 @@ class extends Component
 
                     <flux:textarea
                         wire:model.live="bio"
-                        :label="match ($profile->profile_type) {
-                            'vendor' => 'About the Business',
-                            'organization' => 'About the Organization',
-                            'detectorist' => 'Bio',
-                            default => 'Bio',
-                        }"
-                        description="This information will be displayed publicly on the profile."
+                        label="Bio"
+                        description="This information will be displayed publicly on your profile."
                         rows="5"
                     />
 
@@ -355,7 +328,7 @@ class extends Component
                     <flux:switch
                         wire:model="directoryVisible"
                         label="Show this profile in the Member Directory"
-                        description="When enabled, this profile can appear in the public IRDI Member Directory and anyone can view its public profile page."
+                        description="When enabled, your profile can appear in the public IRDI Member Directory and anyone can view your public profile page."
                     />
 
                     <div class="flex items-center gap-3">

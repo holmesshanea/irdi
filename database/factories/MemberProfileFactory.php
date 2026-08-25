@@ -16,18 +16,7 @@ class MemberProfileFactory extends Factory
 
     public function definition(): array
     {
-        /** @var 'detectorist'|'organization'|'vendor' $profileType */
-        $profileType = fake()->randomElement([
-            'detectorist',
-            'organization',
-            'vendor',
-        ]);
-
-        $profileName = match ($profileType) {
-            'detectorist' => fake()->name(),
-            'organization' => fake()->company(),
-            'vendor' => fake()->company(),
-        };
+        $profileName = fake()->name();
 
         /** @var array{city:string,state_province:string,country:string} $location */
         $location = fake()->randomElement([
@@ -95,8 +84,6 @@ class MemberProfileFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-
-            'profile_type' => $profileType,
 
             'username' => Str::lower(
                 Str::slug($profileName).'-'.fake()->unique()->numberBetween(1000, 999999)
