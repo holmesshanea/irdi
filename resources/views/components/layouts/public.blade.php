@@ -36,10 +36,10 @@
         <img
             src="{{ asset('irdi-logo.png') }}"
             alt="IRDI logo"
-            class="h-9 w-9 rounded-full object-contain"
+            class="h-9 w-9 rounded-full object-contain lg:h-14 lg:w-14"
         >
 
-        <span class="text-lg font-bold text-irdi-green">
+        <span class="text-lg font-bold text-irdi-green lg:text-xl">
             IRDI
         </span>
     </a>
@@ -91,7 +91,6 @@
             Contact
         </flux:navbar.item>
 
-
         {{-- Guest navigation --}}
         @guest
 
@@ -114,7 +113,6 @@
             </flux:navbar.item>
 
         @endguest
-
 
         {{-- Authenticated navigation --}}
         @auth
@@ -195,7 +193,6 @@
 
 </flux:header>
 
-
 {{-- Mobile navigation --}}
 <flux:sidebar
     sticky
@@ -274,7 +271,6 @@
             Contact
         </flux:sidebar.item>
 
-
         {{-- Guest navigation --}}
         @guest
 
@@ -299,7 +295,6 @@
             </flux:sidebar.item>
 
         @endguest
-
 
         {{-- Authenticated navigation --}}
         @auth
@@ -354,12 +349,10 @@
 
 </flux:sidebar>
 
-
 {{-- Main content --}}
 <flux:main container class="py-12">
     {{ $slot }}
 </flux:main>
-
 
 {{-- Footer --}}
 <footer class="[grid-area:footer] border-t border-zinc-200 bg-zinc-50">
@@ -370,18 +363,37 @@
 
             {{-- IRDI identity --}}
             <div>
-                <p class="text-lg font-bold text-irdi-green">
-                    IRDI
-                </p>
 
-                <p class="mt-1 text-sm text-zinc-600">
-                    The International Responsible Detectorist Institute
-                </p>
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+
+                    <a
+                        href="{{ route('home') }}"
+                        class="shrink-0"
+                    >
+                        <img
+                            src="{{ asset('irdi-logo.png') }}"
+                            alt="IRDI logo"
+                            class="h-20 w-20 rounded-full object-contain"
+                        >
+                    </a>
+
+                    <div>
+                        <p class="text-lg font-bold text-irdi-green">
+                            IRDI
+                        </p>
+
+                        <p class="mt-1 text-sm text-zinc-600">
+                            The International Responsible Detectorist Institute
+                        </p>
+                    </div>
+
+                </div>
 
                 <p class="mt-4 max-w-sm text-sm leading-6 text-zinc-500">
                     Promoting ethical metal detecting, responsible stewardship,
                     and respect for our shared history.
                 </p>
+
             </div>
 
             {{-- Footer navigation --}}
