@@ -17,27 +17,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::create([
+        User::create([
             'name' => 'Shane Holmes',
             'email' => 'holmesshanea@yahoo.com',
             'email_verified_at' => now(),
             'is_admin' => true,
-            'membership_status' => 'active',
-            'member_since' => now(),
+
             'ethics_agreed_at' => now(),
             'best_practices_agreed_at' => now(),
-            'password' => Hash::make('Colvin1Blake2!'),
-        ]);
+            'membership_status' => 'active',
+            'member_since' => now(),
 
-        MemberProfile::create([
-            'user_id' => $user->id,
-            'username' => 'shaneholmes',
-            'profile_name' => 'Shane Holmes',
-            'city' => 'Saranac Lake',
-            'state_province' => 'New York',
-            'country' => 'United States',
-            'bio' => 'IRDI Member and responsible metal detectorist.',
-            'directory_visible' => true,
+            'password' => Hash::make('Colvin1Blake2!'),
         ]);
     }
 }
