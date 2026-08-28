@@ -415,11 +415,29 @@
 
                                             @if ($profile->profile_image)
 
-                                                <img
-                                                    src="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
-                                                    alt="{{ $profile->profile_name }}"
-                                                    class="h-full w-full object-cover"
-                                                >
+                                                @php
+                                                    try {
+                                                        $profileImageUrl = \Illuminate\Support\Facades\Storage::disk(
+                                                            config('filesystems.profile_images_disk', 'public')
+                                                        )->url($profile->profile_image);
+                                                    } catch (\Throwable $e) {
+                                                        $profileImageUrl = null;
+                                                    }
+                                                @endphp
+
+                                                @if ($profileImageUrl)
+
+                                                    <img
+                                                        src="{{ $profileImageUrl }}"
+                                                        alt="{{ $profile->profile_name }}"
+                                                        class="h-full w-full object-cover"
+                                                    >
+
+                                                @else
+
+                                                    {{ strtoupper(substr($profile->profile_name, 0, 1)) }}
+
+                                                @endif
 
                                             @else
 
