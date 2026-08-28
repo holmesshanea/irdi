@@ -22,7 +22,7 @@ class extends Component
         }
 
         if ($user->memberProfile?->profile_image) {
-            Storage::disk('public')->delete(
+            Storage::disk(config('filesystems.profile_images_disk', 'public'))->delete(
                 $user->memberProfile->profile_image
             );
         }

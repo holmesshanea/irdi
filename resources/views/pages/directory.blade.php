@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\MemberProfile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -308,7 +309,7 @@ class extends Component
                                     @if ($profile->profile_image)
 
                                         <img
-                                            src="{{ asset('storage/' . $profile->profile_image) }}"
+                                            src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
                                             alt="{{ $profile->profile_name }}"
                                             class="h-full w-full object-cover"
                                         >

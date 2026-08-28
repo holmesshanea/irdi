@@ -416,7 +416,7 @@
                                             @if ($profile->profile_image)
 
                                                 <img
-                                                    src="{{ asset('storage/' . $profile->profile_image) }}"
+                                                    src="{{ \Illuminate\Support\Facades\Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
                                                     alt="{{ $profile->profile_name }}"
                                                     class="h-full w-full object-cover"
                                                 >

@@ -53,10 +53,16 @@ class extends Component
         $this->website = $profile->website ?: 'https://';
     }
 
+    private function profileImageDisk(): string
+    {
+        return (string) config('filesystems.profile_images_disk', 'public');
+    }
+
     public function removeProfileImage(): void
     {
         if ($this->profile->profile_image) {
-            Storage::disk('public')->delete($this->profile->profile_image);
+            Storage::disk($this->profileImageDisk())
+                ->delete($this->profile->profile_image);
 
             $this->profile->update([
                 'profile_image' => null,
@@ -99,11 +105,17 @@ class extends Component
         ]);
 
         if ($this->profileImage) {
+            $disk = $this->profileImageDisk();
+
             if ($this->profile->profile_image) {
-                Storage::disk('public')->delete($this->profile->profile_image);
+                Storage::disk($disk)
+                    ->delete($this->profile->profile_image);
             }
 
-            $imagePath = $this->profileImage->store('profile-images', 'public');
+            $imagePath = $this->profileImage->store(
+                'profile-images',
+                $disk
+            );
 
             $this->profile->profile_image = $imagePath;
             $this->profile->save();
@@ -220,7 +232,7 @@ class extends Component
                                 @elseif ($profile->profile_image)
 
                                     <img
-                                        src="{{ asset('storage/' . $profile->profile_image) }}"
+                                        src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
                                         alt="{{ $profile->profile_name }}"
                                         class="h-32 w-32 rounded-full object-cover"
                                     >

@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\MemberProfile;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -84,7 +85,7 @@ class extends Component
                     @if ($profile->profile_image)
 
                         <img
-                            src="{{ asset('storage/' . $profile->profile_image) }}"
+                            src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
                             alt="{{ $profile->profile_name }}"
                             class="mx-auto mb-6 h-32 w-32 rounded-full object-cover"
                         >
@@ -308,7 +309,7 @@ class extends Component
                                         @if ($profile->profile_image)
 
                                             <img
-                                                src="{{ asset('storage/' . $profile->profile_image) }}"
+                                                src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
                                                 alt="{{ $profile->profile_name }}"
                                                 class="h-20 w-20 shrink-0 rounded-full object-cover"
                                             >

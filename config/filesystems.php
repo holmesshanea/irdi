@@ -17,12 +17,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Profile Images Disk
+    |--------------------------------------------------------------------------
+    |
+    | Profile images can use different storage disks depending on the
+    | environment. Use "public" locally and "s3" in production.
+    |
+    */
+
+    'profile_images_disk' => env('PROFILE_IMAGES_DISK', 'public'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Filesystem Disks
     |--------------------------------------------------------------------------
     |
-    | Below you may configure as many filesystem disks as necessary, and you
-    | may even configure multiple disks for the same driver. Examples for
-    | most supported storage drivers are configured here for reference.
+    | Below you may configure as many filesystem disks as necessary, and
+    | you may even configure multiple disks for the same driver. Examples
+    | for most supported storage drivers are configured here for reference.
     |
     | Supported drivers: "local", "ftp", "sftp", "s3"
     |
@@ -56,6 +68,7 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'visibility' => 'public',
             'throw' => false,
             'report' => false,
         ],
