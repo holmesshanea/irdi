@@ -164,3 +164,4 @@ Route::livewire('/admin/reviews', 'admin.reviews.index')
 Route::livewire('/admin/reviews/{review}', 'admin.reviews.show')
     ->middleware(['auth', 'verified'])
     ->name('admin.reviews.show');
+
