@@ -184,5 +184,25 @@ Route::livewire('/admin/reviews', 'admin.reviews.index')
     ->name('admin.reviews.index');
 
 Route::livewire('/admin/reviews/{review}', 'admin.reviews.show')
-    ->middleware(['auth', 'verified'])
+    ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.reviews.show');
+
+/*
+|--------------------------------------------------------------------------
+| Message Reports
+|--------------------------------------------------------------------------
+*/
+
+Route::livewire(
+    '/admin/message-reports',
+    'admin.message-reports.index'
+)
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.message-reports.index');
+
+Route::livewire(
+    '/admin/message-reports/{report}',
+    'admin.message-reports.show'
+)
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.message-reports.show');
