@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\MemberBlock;
 use App\Models\MemberProfile;
 use App\Models\Message;
 use App\Notifications\NewMemberMessageNotification;
@@ -89,6 +90,33 @@ class extends Component
          */
         if ($this->profile->user->membership_status !== 'active') {
             abort(404);
+        }
+
+        /*
+         * The recipient may block this sender.
+         *
+         * Blocking overrides normal messaging and reply permissions.
+         */
+        $recipientBlockedSender = MemberBlock::query()
+            ->where('blocker_id', $this->profile->user_id)
+            ->where('blocked_id', $sender->id)
+            ->exists();
+
+        if ($recipientBlockedSender) {
+            abort(403);
+        }
+
+        /*
+         * If the sender has blocked the recipient, they may not
+         * continue messaging that member either.
+         */
+        $senderBlockedRecipient = MemberBlock::query()
+            ->where('blocker_id', $sender->id)
+            ->where('blocked_id', $this->profile->user_id)
+            ->exists();
+
+        if ($senderBlockedRecipient) {
+            abort(403);
         }
 
         /*

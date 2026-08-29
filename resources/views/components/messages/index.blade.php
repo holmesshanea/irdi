@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Models\Message;
@@ -14,9 +13,18 @@ class extends Component
 
     public string $tab = 'inbox';
 
+    /**
+     * @var array<int, int|string>
+     */
+    public array $selectedMessages = [];
+
+    public bool $selectAll = false;
+
     public function showInbox(): void
     {
         $this->tab = 'inbox';
+
+        $this->clearSelection();
 
         $this->resetPage();
     }
@@ -25,7 +33,132 @@ class extends Component
     {
         $this->tab = 'sent';
 
+        $this->clearSelection();
+
         $this->resetPage();
+    }
+
+    public function updatedSelectAll(bool $value): void
+    {
+        if (! $value) {
+            $this->selectedMessages = [];
+
+            return;
+        }
+
+        $this->selectedMessages = $this->visibleMessageIds();
+    }
+
+    public function updatedSelectedMessages(): void
+    {
+        $visibleIds = $this->visibleMessageIds();
+
+        $selectedIds = collect($this->selectedMessages)
+            ->map(fn ($id) => (int) $id)
+            ->intersect($visibleIds)
+            ->values()
+            ->all();
+
+        $this->selectAll = count($visibleIds) > 0
+            && count($selectedIds) === count($visibleIds);
+    }
+
+    public function deleteSelected(): void
+    {
+        $userId = auth()->id();
+
+        $selectedIds = collect($this->selectedMessages)
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($selectedIds === []) {
+            return;
+        }
+
+        if ($this->tab === 'sent') {
+            Message::query()
+                ->where('sender_id', $userId)
+                ->whereNull('sender_deleted_at')
+                ->whereIn('id', $selectedIds)
+                ->update([
+                    'sender_deleted_at' => now(),
+                ]);
+        } else {
+            Message::query()
+                ->where('recipient_id', $userId)
+                ->whereNull('recipient_deleted_at')
+                ->whereIn('id', $selectedIds)
+                ->update([
+                    'recipient_deleted_at' => now(),
+                ]);
+        }
+
+        $this->clearSelection();
+
+        session()->flash('status', 'Selected messages deleted.');
+    }
+
+    public function clearCurrentFolder(): void
+    {
+        $userId = auth()->id();
+
+        if ($this->tab === 'sent') {
+            Message::query()
+                ->where('sender_id', $userId)
+                ->whereNull('sender_deleted_at')
+                ->update([
+                    'sender_deleted_at' => now(),
+                ]);
+
+            session()->flash('status', 'Your Sent messages have been cleared.');
+        } else {
+            Message::query()
+                ->where('recipient_id', $userId)
+                ->whereNull('recipient_deleted_at')
+                ->update([
+                    'recipient_deleted_at' => now(),
+                ]);
+
+            session()->flash('status', 'Your Inbox has been cleared.');
+        }
+
+        $this->clearSelection();
+
+        $this->resetPage();
+    }
+
+    private function clearSelection(): void
+    {
+        $this->selectedMessages = [];
+        $this->selectAll = false;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function visibleMessageIds(): array
+    {
+        $userId = auth()->id();
+
+        return $this->tab === 'sent'
+            ? Message::query()
+                ->where('sender_id', $userId)
+                ->whereNull('sender_deleted_at')
+                ->latest()
+                ->limit(15)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all()
+            : Message::query()
+                ->where('recipient_id', $userId)
+                ->whereNull('recipient_deleted_at')
+                ->latest()
+                ->limit(15)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
     }
 
     public function with(): array
@@ -35,17 +168,20 @@ class extends Component
         $messages = $this->tab === 'sent'
             ? Message::query()
                 ->where('sender_id', $userId)
+                ->whereNull('sender_deleted_at')
                 ->with('recipient.memberProfile')
                 ->latest()
                 ->paginate(15)
             : Message::query()
                 ->where('recipient_id', $userId)
+                ->whereNull('recipient_deleted_at')
                 ->with('sender.memberProfile')
                 ->latest()
                 ->paginate(15);
 
         $unreadCount = Message::query()
             ->where('recipient_id', $userId)
+            ->whereNull('recipient_deleted_at')
             ->whereNull('read_at')
             ->count();
 
@@ -61,6 +197,12 @@ class extends Component
     <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
 
         <div class="mx-auto max-w-4xl">
+
+            @if (session('status'))
+                <div class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+                    {{ session('status') }}
+                </div>
+            @endif
 
             <div class="text-center">
 
@@ -78,27 +220,48 @@ class extends Component
 
             <flux:card class="mt-10 p-6">
 
-                <div class="flex flex-wrap items-center gap-3 border-b border-zinc-200 pb-5">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-5">
 
-                    <flux:button
-                        type="button"
-                        wire:click="showInbox"
-                        :variant="$tab === 'inbox' ? 'primary' : 'outline'"
-                    >
-                        Inbox
+                    <div class="flex flex-wrap items-center gap-3">
 
-                        @if ($unreadCount > 0)
-                            ({{ $unreadCount }})
-                        @endif
-                    </flux:button>
+                        <flux:button
+                            type="button"
+                            wire:click="showInbox"
+                            :variant="$tab === 'inbox' ? 'primary' : 'outline'"
+                        >
+                            Inbox
 
-                    <flux:button
-                        type="button"
-                        wire:click="showSent"
-                        :variant="$tab === 'sent' ? 'primary' : 'outline'"
-                    >
-                        Sent
-                    </flux:button>
+                            @if ($unreadCount > 0)
+                                ({{ $unreadCount }})
+                            @endif
+                        </flux:button>
+
+                        <flux:button
+                            type="button"
+                            wire:click="showSent"
+                            :variant="$tab === 'sent' ? 'primary' : 'outline'"
+                        >
+                            Sent
+                        </flux:button>
+
+                    </div>
+
+                    @if ($messages->count() > 0)
+
+                        <flux:button
+                            type="button"
+                            wire:click="clearCurrentFolder"
+                            wire:confirm="{{ $tab === 'inbox'
+                                ? 'Clear Inbox? This will remove all messages from your Inbox. This does not remove them from the sender\'s Sent messages.'
+                                : 'Clear Sent Messages? This will remove all messages from your Sent list. Recipients will still keep their copies.'
+                            }}"
+                            variant="danger"
+                            size="sm"
+                        >
+                            {{ $tab === 'inbox' ? 'Clear Inbox' : 'Clear Sent' }}
+                        </flux:button>
+
+                    @endif
 
                 </div>
 
@@ -120,6 +283,37 @@ class extends Component
 
                     @else
 
+                        <div class="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-zinc-50 px-3 py-3">
+
+                            <label class="flex cursor-pointer items-center gap-2 text-sm font-medium text-zinc-700">
+
+                                <input
+                                    type="checkbox"
+                                    wire:model.live="selectAll"
+                                    class="size-4 rounded border-zinc-300 text-irdi-green focus:ring-irdi-green"
+                                >
+
+                                Select All
+
+                            </label>
+
+                            @if (count($selectedMessages) > 0)
+
+                                <flux:button
+                                    type="button"
+                                    wire:click="deleteSelected"
+                                    wire:confirm="Delete the selected messages? They will be removed from your {{ $tab === 'inbox' ? 'Inbox' : 'Sent messages' }}, but the other member will keep their copy."
+                                    variant="danger"
+                                    size="sm"
+                                    icon="trash"
+                                >
+                                    Delete Selected ({{ count($selectedMessages) }})
+                                </flux:button>
+
+                            @endif
+
+                        </div>
+
                         <div class="divide-y divide-zinc-200">
 
                             @foreach ($messages as $message)
@@ -134,91 +328,110 @@ class extends Component
                                         : $message->sender;
                                 @endphp
 
-                                <a
-                                    href="{{ route('messages.show', $message) }}"
-                                    wire:navigate
-                                    class="block rounded-lg px-3 py-4 transition hover:bg-zinc-50"
+                                <div
+                                    wire:key="message-{{ $message->id }}"
+                                    class="flex items-start gap-3 rounded-lg px-3 py-4 transition hover:bg-zinc-50"
                                 >
 
-                                    <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                    <div class="pt-1">
 
-                                        <div class="min-w-0">
+                                        <input
+                                            type="checkbox"
+                                            value="{{ $message->id }}"
+                                            wire:model.live="selectedMessages"
+                                            aria-label="Select message {{ $message->subject }}"
+                                            class="size-4 rounded border-zinc-300 text-irdi-green focus:ring-irdi-green"
+                                        >
 
-                                            <div class="flex flex-wrap items-center gap-2">
+                                    </div>
 
-                                                <p
-                                                    class="
-                                                        text-sm text-zinc-600
-                                                        @if (
-                                                            $tab === 'inbox'
-                                                            && $message->read_at === null
-                                                        )
-                                                            font-bold text-irdi-green
+                                    <a
+                                        href="{{ route('messages.show', $message) }}"
+                                        wire:navigate
+                                        class="min-w-0 flex-1"
+                                    >
+
+                                        <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+
+                                            <div class="min-w-0">
+
+                                                <div class="flex flex-wrap items-center gap-2">
+
+                                                    <p
+                                                        class="
+                                                            text-sm text-zinc-600
+                                                            @if (
+                                                                $tab === 'inbox'
+                                                                && $message->read_at === null
+                                                            )
+                                                                font-bold text-irdi-green
+                                                            @endif
+                                                        "
+                                                    >
+                                                        @if ($tab === 'sent')
+                                                            To:
+                                                        @else
+                                                            From:
                                                         @endif
-                                                    "
-                                                >
-                                                    @if ($tab === 'sent')
-                                                        To:
-                                                    @else
-                                                        From:
+
+                                                        {{ $otherProfile?->profile_name ?? $otherUser->name }}
+                                                    </p>
+
+                                                    @if ($otherProfile)
+
+                                                        <span class="text-sm text-zinc-400">
+                                                            {{ '@' . $otherProfile->username }}
+                                                        </span>
+
                                                     @endif
 
-                                                    {{ $otherProfile?->profile_name ?? $otherUser->name }}
-                                                </p>
-
-                                                @if ($otherProfile)
-
-                                                    <span class="text-sm text-zinc-400">
-                                                        {{ '@' . $otherProfile->username }}
-                                                    </span>
-
-                                                @endif
-
-                                                @if (
-                                                    $tab === 'inbox'
-                                                    && $message->read_at === null
-                                                )
-
-                                                    <flux:badge
-                                                        size="sm"
-                                                        color="amber"
-                                                    >
-                                                        Unread
-                                                    </flux:badge>
-
-                                                @endif
-
-                                            </div>
-
-                                            <p
-                                                class="
-                                                    mt-2 truncate
                                                     @if (
                                                         $tab === 'inbox'
                                                         && $message->read_at === null
                                                     )
-                                                        font-semibold text-zinc-900
-                                                    @else
-                                                        text-zinc-800
-                                                    @endif
-                                                "
-                                            >
-                                                {{ $message->subject }}
-                                            </p>
 
-                                            <p class="mt-1 line-clamp-2 text-sm text-zinc-500">
-                                                {{ $message->body }}
+                                                        <flux:badge
+                                                            size="sm"
+                                                            color="amber"
+                                                        >
+                                                            Unread
+                                                        </flux:badge>
+
+                                                    @endif
+
+                                                </div>
+
+                                                <p
+                                                    class="
+                                                        mt-2 truncate
+                                                        @if (
+                                                            $tab === 'inbox'
+                                                            && $message->read_at === null
+                                                        )
+                                                            font-semibold text-zinc-900
+                                                        @else
+                                                            text-zinc-800
+                                                        @endif
+                                                    "
+                                                >
+                                                    {{ $message->subject }}
+                                                </p>
+
+                                                <p class="mt-1 line-clamp-2 text-sm text-zinc-500">
+                                                    {{ $message->body }}
+                                                </p>
+
+                                            </div>
+
+                                            <p class="shrink-0 text-xs text-zinc-500">
+                                                {{ $message->created_at->format('M j, Y g:i A') }}
                                             </p>
 
                                         </div>
 
-                                        <p class="shrink-0 text-xs text-zinc-500">
-                                            {{ $message->created_at->format('M j, Y g:i A') }}
-                                        </p>
+                                    </a>
 
-                                    </div>
-
-                                </a>
+                                </div>
 
                             @endforeach
 

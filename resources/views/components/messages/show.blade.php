@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\MemberBlock;
 use App\Models\Message;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -14,9 +15,6 @@ class extends Component
     {
         $userId = auth()->id();
 
-        /*
-         * Only the sender or recipient may view this message.
-         */
         if (
             $message->sender_id !== $userId
             && $message->recipient_id !== $userId
@@ -24,14 +22,25 @@ class extends Component
             abort(403);
         }
 
+        if (
+            $message->sender_id === $userId
+            && $message->sender_deleted_at !== null
+        ) {
+            abort(404);
+        }
+
+        if (
+            $message->recipient_id === $userId
+            && $message->recipient_deleted_at !== null
+        ) {
+            abort(404);
+        }
+
         $this->message = $message->load([
             'sender.memberProfile',
             'recipient.memberProfile',
         ]);
 
-        /*
-         * Mark the message as read only when the recipient opens it.
-         */
         if (
             $message->recipient_id === $userId
             && $message->read_at === null
@@ -66,6 +75,92 @@ class extends Component
     {
         return $this->message->recipient_id === auth()->id();
     }
+
+    public function getHasBlockedOtherMemberProperty(): bool
+    {
+        return MemberBlock::query()
+            ->where('blocker_id', auth()->id())
+            ->where('blocked_id', $this->otherUser->id)
+            ->exists();
+    }
+
+    public function getOtherMemberHasBlockedMeProperty(): bool
+    {
+        return MemberBlock::query()
+            ->where('blocker_id', $this->otherUser->id)
+            ->where('blocked_id', auth()->id())
+            ->exists();
+    }
+
+    public function blockMember(): void
+    {
+        $userId = auth()->id();
+
+        if ($userId === null) {
+            abort(403);
+        }
+
+        if ($this->otherUser->id === $userId) {
+            abort(403);
+        }
+
+        MemberBlock::query()->firstOrCreate([
+            'blocker_id' => $userId,
+            'blocked_id' => $this->otherUser->id,
+        ]);
+
+        session()->flash(
+            'status',
+            $this->otherProfile?->profile_name . ' has been blocked.'
+        );
+    }
+
+    public function unblockMember(): void
+    {
+        $userId = auth()->id();
+
+        if ($userId === null) {
+            abort(403);
+        }
+
+        MemberBlock::query()
+            ->where('blocker_id', $userId)
+            ->where('blocked_id', $this->otherUser->id)
+            ->delete();
+
+        session()->flash(
+            'status',
+            $this->otherProfile?->profile_name . ' has been unblocked.'
+        );
+    }
+
+    public function deleteMessage(): void
+    {
+        $userId = auth()->id();
+
+        if (
+            $this->message->sender_id !== $userId
+            && $this->message->recipient_id !== $userId
+        ) {
+            abort(403);
+        }
+
+        if ($this->message->sender_id === $userId) {
+            $this->message->update([
+                'sender_deleted_at' => now(),
+            ]);
+        }
+
+        if ($this->message->recipient_id === $userId) {
+            $this->message->update([
+                'recipient_deleted_at' => now(),
+            ]);
+        }
+
+        session()->flash('status', 'Message deleted.');
+
+        $this->redirectRoute('messages.index');
+    }
 };
 ?>
 
@@ -73,6 +168,12 @@ class extends Component
     <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
 
         <div class="mx-auto max-w-3xl">
+
+            @if (session('status'))
+                <div class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+                    {{ session('status') }}
+                </div>
+            @endif
 
             <div class="text-center">
 
@@ -158,6 +259,8 @@ class extends Component
                         $this->isReceived
                         && $this->otherProfile
                         && $this->otherUser->membership_status === 'active'
+                        && ! $this->hasBlockedOtherMember
+                        && ! $this->otherMemberHasBlockedMe
                     )
 
                         <flux:button
@@ -191,6 +294,40 @@ class extends Component
                         </flux:button>
 
                     @endif
+
+                    @if ($this->hasBlockedOtherMember)
+
+                        <flux:button
+                            type="button"
+                            wire:click="unblockMember"
+                            wire:confirm="Unblock this member? They may be able to message you again depending on your messaging preferences."
+                            variant="outline"
+                        >
+                            Unblock Member
+                        </flux:button>
+
+                    @else
+
+                        <flux:button
+                            type="button"
+                            wire:click="blockMember"
+                            wire:confirm="Block this member? You will no longer be able to exchange private messages with each other."
+                            variant="danger"
+                        >
+                            Block Member
+                        </flux:button>
+
+                    @endif
+
+                    <flux:button
+                        type="button"
+                        wire:click="deleteMessage"
+                        wire:confirm="Delete this message? It will be removed from your messages, but the other member will keep their copy."
+                        variant="danger"
+                        icon="trash"
+                    >
+                        Delete Message
+                    </flux:button>
 
                 </div>
 

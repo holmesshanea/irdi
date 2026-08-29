@@ -13,12 +13,16 @@ class Message extends Model
         'subject',
         'body',
         'read_at',
+        'sender_deleted_at',
+        'recipient_deleted_at',
     ];
 
     protected function casts(): array
     {
         return [
             'read_at' => 'datetime',
+            'sender_deleted_at' => 'datetime',
+            'recipient_deleted_at' => 'datetime',
         ];
     }
 
