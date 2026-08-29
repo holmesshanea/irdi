@@ -158,17 +158,13 @@ class extends Component
                         $this->isReceived
                         && $this->otherProfile
                         && $this->otherUser->membership_status === 'active'
-                        && $this->otherProfile->allow_member_messages
-                        && $this->otherProfile->directory_visible
                     )
 
                         <flux:button
                             :href="route('messages.create', [
-        'profile' => $this->otherProfile,
-        'subject' => str_starts_with($message->subject, 'Re:')
-            ? $message->subject
-            : 'Re: ' . $message->subject,
-    ])"
+                                'profile' => $this->otherProfile,
+                                'reply_to' => $message->id,
+                            ])"
                             variant="primary"
                             icon="arrow-uturn-left"
                         >

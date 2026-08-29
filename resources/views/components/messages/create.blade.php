@@ -2,10 +2,10 @@
 
 use App\Models\MemberProfile;
 use App\Models\Message;
+use App\Notifications\NewMemberMessageNotification;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use App\Notifications\NewMemberMessageNotification;
 
 new
 #[Layout('components.layouts.public')]
@@ -19,17 +19,47 @@ class extends Component
 
     public bool $sent = false;
 
+    public ?int $replyToMessageId = null;
+
     public function mount(MemberProfile $profile): void
     {
         $this->profile = $profile->load('user');
 
+        $replyTo = request()->query('reply_to');
+
+        if (is_numeric($replyTo)) {
+            $this->replyToMessageId = (int) $replyTo;
+        }
+
         $this->ensureCanMessage();
 
-        $replySubject = request()->query('subject');
+        if ($this->replyToMessageId !== null) {
+            $originalMessage = $this->replyToMessage();
 
-        if (is_string($replySubject)) {
-            $this->subject = mb_substr($replySubject, 0, 150);
+            if ($originalMessage !== null) {
+                $this->subject = str_starts_with($originalMessage->subject, 'Re:')
+                    ? $originalMessage->subject
+                    : 'Re: ' . $originalMessage->subject;
+            }
         }
+    }
+
+    private function replyToMessage(): ?Message
+    {
+        if ($this->replyToMessageId === null) {
+            return null;
+        }
+
+        return Message::query()
+            ->whereKey($this->replyToMessageId)
+            ->where('recipient_id', auth()->id())
+            ->where('sender_id', $this->profile->user_id)
+            ->first();
+    }
+
+    private function isValidReply(): bool
+    {
+        return $this->replyToMessage() !== null;
     }
 
     private function ensureCanMessage(): void
@@ -62,16 +92,21 @@ class extends Component
         }
 
         /*
-         * The recipient must have explicitly enabled member messaging.
+         * A valid reply is allowed because this member previously
+         * initiated the conversation with the logged-in user.
+         */
+        if ($this->isValidReply()) {
+            return;
+        }
+
+        /*
+         * Normal first-contact messages still require the recipient
+         * to have messaging enabled and a visible directory profile.
          */
         if (! $this->profile->allow_member_messages) {
             abort(404);
         }
 
-        /*
-         * Messaging is only available through profiles that are visible
-         * in the public IRDI Member Directory.
-         */
         if (! $this->profile->directory_visible) {
             abort(404);
         }
@@ -80,10 +115,8 @@ class extends Component
     public function send(): void
     {
         /*
-         * Re-check everything when the form is submitted.
-         *
-         * For example, the recipient could disable messaging after
-         * this page was originally opened.
+         * Re-check the recipient and permissions immediately before
+         * saving the message.
          */
         $this->profile->refresh();
         $this->profile->load('user');
@@ -123,7 +156,10 @@ class extends Component
                     'body' => $validated['body'],
                 ]);
 
-                $message->load('sender.memberProfile');
+                $message->load([
+                    'sender.memberProfile',
+                    'recipient',
+                ]);
 
                 $message->recipient->notify(
                     new NewMemberMessageNotification($message)
@@ -144,6 +180,8 @@ class extends Component
         }
 
         $this->reset('subject', 'body');
+
+        $this->replyToMessageId = null;
 
         $this->sent = true;
     }
