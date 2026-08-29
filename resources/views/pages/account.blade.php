@@ -318,6 +318,11 @@
                                 ])->reject();
 
                                 $profileComplete = $missingProfileFields->isEmpty();
+
+                                $unreadMessageCount = \App\Models\Message::query()
+                                    ->where('recipient_id', auth()->id())
+                                    ->whereNull('read_at')
+                                    ->count();
                             @endphp
 
                             <div class="relative rounded-xl border border-zinc-200 p-5">
@@ -556,6 +561,19 @@
                                                 icon="identification"
                                             >
                                                 Member Card
+                                            </flux:button>
+
+                                            <flux:button
+                                                href="{{ route('messages.index') }}"
+                                                variant="outline"
+                                                size="sm"
+                                                icon="envelope"
+                                            >
+                                                Messages
+
+                                                @if ($unreadMessageCount > 0)
+                                                    ({{ $unreadMessageCount }})
+                                                @endif
                                             </flux:button>
 
                                             <flux:button

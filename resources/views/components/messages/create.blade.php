@@ -5,6 +5,7 @@ use App\Models\Message;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use App\Notifications\NewMemberMessageNotification;
 
 new
 #[Layout('components.layouts.public')]
@@ -23,6 +24,12 @@ class extends Component
         $this->profile = $profile->load('user');
 
         $this->ensureCanMessage();
+
+        $replySubject = request()->query('subject');
+
+        if (is_string($replySubject)) {
+            $this->subject = mb_substr($replySubject, 0, 150);
+        }
     }
 
     private function ensureCanMessage(): void
@@ -109,12 +116,18 @@ class extends Component
             $rateLimitKey,
             5,
             function () use ($sender, $validated): void {
-                Message::create([
+                $message = Message::create([
                     'sender_id' => $sender->id,
                     'recipient_id' => $this->profile->user_id,
                     'subject' => $validated['subject'],
                     'body' => $validated['body'],
                 ]);
+
+                $message->load('sender.memberProfile');
+
+                $message->recipient->notify(
+                    new NewMemberMessageNotification($message)
+                );
             },
             60
         );

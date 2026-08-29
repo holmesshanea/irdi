@@ -112,9 +112,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     */
 
     Route::livewire(
+        '/messages',
+        'messages.index'
+    )->name('messages.index');
+
+    Route::livewire(
         '/messages/{profile:username}/create',
         'messages.create'
     )->name('messages.create');
+
+    Route::livewire(
+        '/messages/{message}',
+        'messages.show'
+    )->name('messages.show');
 
     /*
     |--------------------------------------------------------------------------
