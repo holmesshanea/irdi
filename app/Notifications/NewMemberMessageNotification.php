@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\Message;
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -24,10 +25,13 @@ class NewMemberMessageNotification extends Notification implements ShouldQueue
         return ['mail'];
     }
 
-    public function toMail(object $notifiable): MailMessage
+    public function toMail(User $notifiable): MailMessage
     {
-        $senderName = $this->message->sender->memberProfile?->profile_name
-            ?? $this->message->sender->name;
+        $sender = $this->message->sender;
+
+        $senderName = $sender->memberProfile
+            ? $sender->memberProfile->profile_name
+            : $sender->name;
 
         return (new MailMessage)
             ->subject('You have a new message on IRDI')

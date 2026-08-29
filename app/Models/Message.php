@@ -27,11 +27,17 @@ class Message extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function recipient(): BelongsTo
     {
         return $this->belongsTo(User::class, 'recipient_id');
@@ -51,6 +57,9 @@ class Message extends Model
         }
     }
 
+    /**
+     * @return HasMany<MessageReport, $this>
+     */
     public function reports(): HasMany
     {
         return $this->hasMany(MessageReport::class);
