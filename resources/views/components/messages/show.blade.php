@@ -2,6 +2,7 @@
 
 use App\Models\MemberBlock;
 use App\Models\Message;
+use App\Models\MessageReport;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -10,6 +11,12 @@ new
 class extends Component
 {
     public Message $message;
+
+    public bool $showReportForm = false;
+
+    public string $reportReason = '';
+
+    public string $reportDetails = '';
 
     public function mount(Message $message): void
     {
@@ -92,6 +99,14 @@ class extends Component
             ->exists();
     }
 
+    public function getHasReportedMessageProperty(): bool
+    {
+        return MessageReport::query()
+            ->where('message_id', $this->message->id)
+            ->where('reporter_id', auth()->id())
+            ->exists();
+    }
+
     public function blockMember(): void
     {
         $userId = auth()->id();
@@ -111,7 +126,8 @@ class extends Component
 
         session()->flash(
             'status',
-            $this->otherProfile?->profile_name . ' has been blocked.'
+            ($this->otherProfile?->profile_name ?? $this->otherUser->name)
+            . ' has been blocked.'
         );
     }
 
@@ -130,7 +146,94 @@ class extends Component
 
         session()->flash(
             'status',
-            $this->otherProfile?->profile_name . ' has been unblocked.'
+            ($this->otherProfile?->profile_name ?? $this->otherUser->name)
+            . ' has been unblocked.'
+        );
+    }
+
+    public function startReporting(): void
+    {
+        if ($this->hasReportedMessage) {
+            return;
+        }
+
+        $this->reportReason = '';
+        $this->reportDetails = '';
+        $this->showReportForm = true;
+
+        $this->resetValidation([
+            'reportReason',
+            'reportDetails',
+        ]);
+    }
+
+    public function cancelReporting(): void
+    {
+        $this->reportReason = '';
+        $this->reportDetails = '';
+        $this->showReportForm = false;
+
+        $this->resetValidation([
+            'reportReason',
+            'reportDetails',
+        ]);
+    }
+
+    public function reportMessage(): void
+    {
+        $userId = auth()->id();
+
+        if ($userId === null) {
+            abort(403);
+        }
+
+        /*
+         * Only someone involved in this message can report it.
+         */
+        if (
+            $this->message->sender_id !== $userId
+            && $this->message->recipient_id !== $userId
+        ) {
+            abort(403);
+        }
+
+        /*
+         * Prevent duplicate reports.
+         */
+        if ($this->hasReportedMessage) {
+            $this->showReportForm = false;
+
+            return;
+        }
+
+        $validated = $this->validate([
+            'reportReason' => [
+                'required',
+                'string',
+                'in:harassment,spam,inappropriate,threatening,impersonation,other',
+            ],
+            'reportDetails' => [
+                'nullable',
+                'string',
+                'max:2000',
+            ],
+        ]);
+
+        MessageReport::create([
+            'message_id' => $this->message->id,
+            'reporter_id' => $userId,
+            'reason' => $validated['reportReason'],
+            'details' => $validated['reportDetails'] ?: null,
+            'status' => 'pending',
+        ]);
+
+        $this->reportReason = '';
+        $this->reportDetails = '';
+        $this->showReportForm = false;
+
+        session()->flash(
+            'status',
+            'Thank you. This message has been reported to IRDI for review.'
         );
     }
 
@@ -253,6 +356,100 @@ class extends Component
 
                 </div>
 
+                @if ($showReportForm)
+
+                    <div class="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-5">
+
+                        <h3 class="font-semibold text-zinc-900">
+                            Report Message
+                        </h3>
+
+                        <p class="mt-1 text-sm text-zinc-600">
+                            Tell IRDI why you are reporting this message. Reports are reviewed privately.
+                        </p>
+
+                        <form wire:submit="reportMessage" class="mt-5 space-y-5">
+
+                            <flux:select
+                                wire:model="reportReason"
+                                label="Reason for report"
+                                placeholder="Select a reason"
+                                required
+                            >
+                                <flux:select.option value="harassment">
+                                    Harassment or abusive behavior
+                                </flux:select.option>
+
+                                <flux:select.option value="spam">
+                                    Spam or unwanted solicitation
+                                </flux:select.option>
+
+                                <flux:select.option value="inappropriate">
+                                    Inappropriate content
+                                </flux:select.option>
+
+                                <flux:select.option value="threatening">
+                                    Threatening behavior
+                                </flux:select.option>
+
+                                <flux:select.option value="impersonation">
+                                    Impersonation or misleading identity
+                                </flux:select.option>
+
+                                <flux:select.option value="other">
+                                    Other
+                                </flux:select.option>
+                            </flux:select>
+
+                            <div>
+
+                                <flux:textarea
+                                    wire:model.live="reportDetails"
+                                    label="Additional details"
+                                    description="Optional. Provide any information that may help IRDI review this report."
+                                    rows="5"
+                                    maxlength="2000"
+                                />
+
+                                <p class="mt-2 text-right text-sm text-zinc-500">
+                                    {{ strlen($reportDetails) }} / 2,000 characters
+                                </p>
+
+                            </div>
+
+                            <div class="flex flex-wrap items-center gap-3">
+
+                                <flux:button
+                                    type="submit"
+                                    variant="primary"
+                                    wire:loading.attr="disabled"
+                                    wire:target="reportMessage"
+                                >
+                                    <span wire:loading.remove wire:target="reportMessage">
+                                        Submit Report
+                                    </span>
+
+                                    <span wire:loading wire:target="reportMessage">
+                                        Submitting...
+                                    </span>
+                                </flux:button>
+
+                                <flux:button
+                                    type="button"
+                                    wire:click="cancelReporting"
+                                    variant="ghost"
+                                >
+                                    Cancel
+                                </flux:button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                @endif
+
                 <div class="mt-8 flex flex-wrap items-center gap-3 border-t border-zinc-200 pt-6">
 
                     @if (
@@ -315,6 +512,29 @@ class extends Component
                             variant="danger"
                         >
                             Block Member
+                        </flux:button>
+
+                    @endif
+
+                    @if ($this->hasReportedMessage)
+
+                        <flux:button
+                            type="button"
+                            variant="outline"
+                            disabled
+                        >
+                            Reported
+                        </flux:button>
+
+                    @elseif (! $showReportForm)
+
+                        <flux:button
+                            type="button"
+                            wire:click="startReporting"
+                            variant="outline"
+                            icon="flag"
+                        >
+                            Report Message
                         </flux:button>
 
                     @endif

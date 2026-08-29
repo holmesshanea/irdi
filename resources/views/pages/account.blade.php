@@ -319,10 +319,11 @@
 
                                 $profileComplete = $missingProfileFields->isEmpty();
 
-                                $unreadMessageCount = \App\Models\Message::query()
-                                    ->where('recipient_id', auth()->id())
-                                    ->whereNull('read_at')
-                                    ->count();
+                               $unreadMessageCount = \App\Models\Message::query()
+    ->where('recipient_id', auth()->id())
+    ->whereNull('recipient_deleted_at')
+    ->whereNull('read_at')
+    ->count();
                             @endphp
 
                             <div class="relative rounded-xl border border-zinc-200 p-5">
