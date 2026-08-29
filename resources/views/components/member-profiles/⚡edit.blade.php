@@ -25,6 +25,7 @@ class extends Component
     public bool $directoryVisible = false;
 
     public bool $allowMemberMessages = false;
+    public bool $emailMemberMessageNotifications = true;
 
     public string $city = '';
 
@@ -54,6 +55,8 @@ class extends Component
         $this->bio = $profile->bio ?? '';
         $this->website = $profile->website ?: 'https://';
         $this->allowMemberMessages = (bool) $profile->allow_member_messages;
+        $this->emailMemberMessageNotifications =
+            (bool) auth()->user()->email_member_message_notifications;
     }
 
     private function profileImageDisk(): string
@@ -100,6 +103,7 @@ class extends Component
             'profileName' => ['required', 'string', 'min:5', 'max:255'],
             'directoryVisible' => ['boolean'],
             'allowMemberMessages' => ['boolean'],
+            'emailMemberMessageNotifications' => ['boolean'],
             'city' => ['required', 'string', 'max:100'],
             'stateProvince' => ['required', 'string', 'max:100'],
             'country' => ['required', 'string', 'max:100'],
@@ -134,6 +138,11 @@ class extends Component
             'website' => $validated['website'] ?: null,
             'directory_visible' => $validated['directoryVisible'],
             'allow_member_messages' => $validated['allowMemberMessages'],
+        ]);
+
+        auth()->user()->update([
+            'email_member_message_notifications' =>
+                $validated['emailMemberMessageNotifications'],
         ]);
 
         session()->flash('status', 'Your profile has been updated.');
@@ -349,10 +358,24 @@ class extends Component
                     />
 
                     <flux:switch
-                        wire:model="allowMemberMessages"
+                        wire:model.live="allowMemberMessages"
                         label="Allow messages from other IRDI members"
                         description="Other active IRDI members can send you private messages through your IRDI profile. Your email address will not be shared."
                     />
+
+                    @if ($allowMemberMessages)
+
+                        <div class="ml-6 border-l-2 border-zinc-200 pl-4">
+
+                            <flux:switch
+                                wire:model="emailMemberMessageNotifications"
+                                label="Email me when I receive a new IRDI message"
+                                description="IRDI will send a notification to your account email address when you receive a new private message. The message itself will not be included in the email."
+                            />
+
+                        </div>
+
+                    @endif
 
                     <div class="flex items-center gap-3">
 

@@ -161,9 +161,11 @@ class extends Component
                     'recipient',
                 ]);
 
-                $message->recipient->notify(
-                    new NewMemberMessageNotification($message)
-                );
+                if ($message->recipient->email_member_message_notifications) {
+                    $message->recipient->notify(
+                        new NewMemberMessageNotification($message)
+                    );
+                }
             },
             60
         );

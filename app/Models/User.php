@@ -38,6 +38,7 @@ use Illuminate\Support\Str;
     'member_since',
     'ethics_agreed_at',
     'best_practices_agreed_at',
+    'email_member_message_notifications',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
@@ -59,6 +60,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'best_practices_agreed_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'email_member_message_notifications' => 'boolean',
         ];
     }
 
