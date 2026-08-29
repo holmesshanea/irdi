@@ -1,10 +1,10 @@
 <?php
 
 use App\Models\PropertyReview;
+use App\Models\PropertyReviewModeration;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Models\PropertyReviewModeration;
 
 new
 #[Layout('components.layouts.public')]
@@ -12,12 +12,24 @@ class extends Component
 {
     use WithPagination;
 
-    public string $status = 'all';
+    public string $status = 'needs-review';
     public string $search = '';
     public ?int $reviewBeingHidden = null;
     public string $moderationNote = '';
     public ?int $reviewBeingRestored = null;
     public string $restoreNote = '';
+
+    public function markReviewed(int $reviewId): void
+    {
+        $review = PropertyReview::findOrFail($reviewId);
+
+        if ($review->admin_reviewed_at === null) {
+            $review->admin_reviewed_at = now();
+            $review->save();
+        }
+
+        session()->flash('status', 'Review marked as reviewed.');
+    }
 
     public function startHidingReview(int $reviewId): void
     {
@@ -45,7 +57,15 @@ class extends Component
         $review = PropertyReview::findOrFail($this->reviewBeingHidden);
 
         $review->hidden_at = now();
-        $review->moderation_note = $this->moderationNote;
+
+        /*
+         * Hiding a review is an administrative decision,
+         * so it also counts as having reviewed it.
+         */
+        if ($review->admin_reviewed_at === null) {
+            $review->admin_reviewed_at = now();
+        }
+
         $review->save();
 
         PropertyReviewModeration::create([
@@ -92,7 +112,7 @@ class extends Component
 
     public function filterByStatus(string $status): void
     {
-        if (! in_array($status, ['all', 'visible', 'hidden'], true)) {
+        if (! in_array($status, ['needs-review', 'all', 'visible', 'hidden'], true)) {
             return;
         }
 
@@ -112,6 +132,10 @@ class extends Component
 
     public function with(): array
     {
+        $needsReviewCount = PropertyReview::query()
+            ->whereNull('admin_reviewed_at')
+            ->count();
+
         $allReviewsCount = PropertyReview::count();
 
         $visibleReviewsCount = PropertyReview::query()
@@ -126,6 +150,10 @@ class extends Component
             ->with('memberProfile')
             ->latest();
 
+        if ($this->status === 'needs-review') {
+            $reviews->whereNull('admin_reviewed_at');
+        }
+
         if ($this->status === 'visible') {
             $reviews->whereNull('hidden_at');
         }
@@ -135,7 +163,7 @@ class extends Component
         }
 
         if ($this->search !== '') {
-            $search = '%' . $this->search . '%';
+            $search = '%'.$this->search.'%';
 
             $reviews->where(function ($query) use ($search) {
                 $query
@@ -150,6 +178,7 @@ class extends Component
 
         return [
             'reviews' => $reviews->paginate(20),
+            'needsReviewCount' => $needsReviewCount,
             'allReviewsCount' => $allReviewsCount,
             'visibleReviewsCount' => $visibleReviewsCount,
             'hiddenReviewsCount' => $hiddenReviewsCount,
@@ -175,7 +204,24 @@ class extends Component
 
         </div>
 
-        <div class="mb-8 grid gap-4 sm:grid-cols-3">
+        {{-- Summary filters --}}
+        <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+
+            <button
+                type="button"
+                wire:click="filterByStatus('needs-review')"
+                class="text-left"
+            >
+                <flux:card class="h-full p-5 transition hover:border-amber-500 {{ $status === 'needs-review' ? 'ring-2 ring-amber-500' : '' }}">
+                    <p class="text-sm font-medium text-zinc-500">
+                        Needs Review
+                    </p>
+
+                    <p class="mt-2 text-3xl font-bold text-amber-700">
+                        {{ number_format($needsReviewCount) }}
+                    </p>
+                </flux:card>
+            </button>
 
             <button
                 type="button"
@@ -227,6 +273,7 @@ class extends Component
 
         </div>
 
+        {{-- Search / filter --}}
         <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center">
 
             <flux:input
@@ -239,6 +286,7 @@ class extends Component
                 wire:model.live="status"
                 class="w-full sm:max-w-xs"
             >
+                <option value="needs-review">Needs Review</option>
                 <option value="all">All Reviews</option>
                 <option value="visible">Visible Reviews</option>
                 <option value="hidden">Hidden Reviews</option>
@@ -257,7 +305,11 @@ class extends Component
             <flux:card class="p-6">
 
                 <p class="text-sm text-zinc-600">
-                    No property owner reviews have been submitted yet.
+                    @if ($status === 'needs-review')
+                        There are no property owner reviews waiting for moderation.
+                    @else
+                        No property owner reviews were found.
+                    @endif
                 </p>
 
             </flux:card>
@@ -281,100 +333,146 @@ class extends Component
 
                     <flux:card class="p-5 {{ $review->hidden_at ? 'opacity-70' : '' }}">
 
-                        <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                        <div class="flex flex-col gap-5">
 
-                            <div class="min-w-0 flex-1">
+                            <div class="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-                                <div class="flex flex-wrap items-center gap-2">
+                                <div class="min-w-0 flex-1">
 
-                                    <h2 class="font-semibold text-irdi-green">
-                                        {{ $review->memberProfile->profile_name }}
-                                    </h2>
+                                    <div class="flex flex-wrap items-center gap-2">
 
-                                    <span class="text-sm text-zinc-500">
-                        {{ '@' . $review->memberProfile->username }}
-                    </span>
+                                        <h2 class="font-semibold text-irdi-green">
+                                            {{ $review->memberProfile->profile_name }}
+                                        </h2>
 
-                                    @if ($review->hidden_at)
-                                        <flux:badge color="red">
-                                            Hidden
-                                        </flux:badge>
-                                    @else
-                                        <flux:badge color="green">
-                                            Visible
-                                        </flux:badge>
+                                        <span class="text-sm text-zinc-500">
+                                            {{ '@'.$review->memberProfile->username }}
+                                        </span>
+
+                                        @if ($review->hidden_at)
+
+                                            <flux:badge color="red">
+                                                Hidden
+                                            </flux:badge>
+
+                                        @else
+
+                                            <flux:badge color="green">
+                                                Visible
+                                            </flux:badge>
+
+                                        @endif
+
+                                        @if ($review->admin_reviewed_at === null)
+
+                                            <flux:badge color="amber">
+                                                Needs Review
+                                            </flux:badge>
+
+                                        @else
+
+                                            <flux:badge color="zinc">
+                                                Reviewed
+                                            </flux:badge>
+
+                                        @endif
+
+                                    </div>
+
+                                    <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-500">
+
+                                        <span>
+                                            Submitted {{ $review->created_at->format('M j, Y') }}
+                                        </span>
+
+                                        <span>
+                                            Rating:
+                                            <strong class="font-semibold text-irdi-green">
+                                                {{ number_format($averageRating, 1) }} / 5
+                                            </strong>
+                                        </span>
+
+                                        <span>
+                                            Would Return:
+
+                                            @if ($review->would_allow_return)
+
+                                                <span class="font-medium text-green-700">
+                                                    Yes
+                                                </span>
+
+                                            @else
+
+                                                <span class="font-medium text-red-700">
+                                                    No
+                                                </span>
+
+                                            @endif
+                                        </span>
+
+                                    </div>
+
+                                    @if ($review->comments)
+
+                                        <p class="mt-3 line-clamp-2 text-sm leading-6 text-zinc-600">
+                                            {{ $review->comments }}
+                                        </p>
+
                                     @endif
 
                                 </div>
 
-                                <div class="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-zinc-500">
+                                <div class="flex shrink-0 flex-wrap items-center gap-2">
 
-                    <span>
-                        Submitted {{ $review->created_at->format('M j, Y') }}
-                    </span>
+                                    <flux:button
+                                        :href="route('admin.reviews.show', $review)"
+                                        variant="outline"
+                                    >
+                                        View Review
+                                    </flux:button>
 
-                                    <span>
-                        Rating:
-                        <strong class="font-semibold text-irdi-green">
-                            {{ number_format($averageRating, 1) }} / 5
-                        </strong>
-                    </span>
+                                    @if ($review->admin_reviewed_at === null)
 
-                                    <span>
-                        Would Return:
-                        @if ($review->would_allow_return)
-                                            <span class="font-medium text-green-700">Yes</span>
-                                        @else
-                                            <span class="font-medium text-red-700">No</span>
-                                        @endif
-                    </span>
+                                        <flux:button
+                                            type="button"
+                                            variant="primary"
+                                            wire:click="markReviewed({{ $review->id }})"
+                                            wire:confirm="Mark this review as reviewed?"
+                                        >
+                                            Mark Reviewed
+                                        </flux:button>
+
+                                    @endif
+
+                                    @if ($review->hidden_at)
+
+                                        <flux:button
+                                            type="button"
+                                            variant="primary"
+                                            wire:click="startRestoringReview({{ $review->id }})"
+                                        >
+                                            Restore
+                                        </flux:button>
+
+                                    @else
+
+                                        <flux:button
+                                            type="button"
+                                            variant="danger"
+                                            wire:click="startHidingReview({{ $review->id }})"
+                                        >
+                                            Hide
+                                        </flux:button>
+
+                                    @endif
 
                                 </div>
-
-                                @if ($review->comments)
-                                    <p class="mt-3 line-clamp-2 text-sm leading-6 text-zinc-600">
-                                        {{ $review->comments }}
-                                    </p>
-                                @endif
-
-                            </div>
-
-                            <div class="flex shrink-0 flex-wrap items-center gap-2">
-
-                                <flux:button
-                                    :href="route('admin.reviews.show', $review)"
-                                    variant="outline"
-                                >
-                                    View Review
-                                </flux:button>
-
-                                @if ($review->hidden_at)
-
-                                    <flux:button
-                                        type="button"
-                                        variant="primary"
-                                        wire:click="startRestoringReview({{ $review->id }})"
-                                    >
-                                        Restore
-                                    </flux:button>
-
-                                @else
-
-                                    <flux:button
-                                        type="button"
-                                        variant="danger"
-                                        wire:click="startHidingReview({{ $review->id }})"
-                                    >
-                                        Hide
-                                    </flux:button>
-
-                                @endif
 
                             </div>
 
                             @if ($reviewBeingHidden === $review->id)
 
-                                <div class="mt-5 border-t border-zinc-200 pt-5">
+                                <div class="border-t border-zinc-200 pt-5">
 
                                     <flux:textarea
                                         wire:model="moderationNote"
@@ -382,7 +480,6 @@ class extends Component
                                         placeholder="Explain why this review is being hidden..."
                                         rows="3"
                                     />
-
 
                                     <div class="mt-4 flex justify-end gap-2">
 
@@ -411,7 +508,7 @@ class extends Component
 
                             @if ($reviewBeingRestored === $review->id)
 
-                                <div class="mt-5 border-t border-zinc-200 pt-5">
+                                <div class="border-t border-zinc-200 pt-5">
 
                                     <flux:textarea
                                         wire:model="restoreNote"

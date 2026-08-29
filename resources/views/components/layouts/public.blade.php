@@ -119,6 +119,16 @@
 
             @if (auth()->user()->is_admin)
 
+                @php
+                    $pendingReviewCount = \App\Models\PropertyReview::query()
+                        ->whereNull('admin_reviewed_at')
+                        ->count();
+
+                    $pendingMessageReportCount = \App\Models\MessageReport::query()
+                        ->where('status', 'pending')
+                        ->count();
+                @endphp
+
                 <div
                     class="relative ml-3 border-l border-zinc-300 pl-3"
                     x-data="{ open: false }"
@@ -153,9 +163,28 @@
                     >
                         <a
                             href="{{ route('admin.reviews.index') }}"
-                            class="block px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
+                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
                         >
-                            Moderate Reviews
+                            <span>Moderate Reviews</span>
+
+                            @if ($pendingReviewCount > 0)
+                                <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
+                                    {{ $pendingReviewCount }}
+                                </span>
+                            @endif
+                        </a>
+
+                        <a
+                            href="{{ route('admin.message-reports.index') }}"
+                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
+                        >
+                            <span>Message Reports</span>
+
+                            @if ($pendingMessageReportCount > 0)
+                                <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-800">
+                                    {{ $pendingMessageReportCount }}
+                                </span>
+                            @endif
                         </a>
                     </div>
 
@@ -312,7 +341,31 @@
                     :current="request()->routeIs('admin.reviews.*')"
                     icon="shield-check"
                 >
-                    Moderate Reviews
+                    <div class="flex w-full items-center justify-between gap-3">
+                        <span>Moderate Reviews</span>
+
+                        @if ($pendingReviewCount > 0)
+                            <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
+                                {{ $pendingReviewCount }}
+                            </span>
+                        @endif
+                    </div>
+                </flux:sidebar.item>
+
+                <flux:sidebar.item
+                    href="{{ route('admin.message-reports.index') }}"
+                    :current="request()->routeIs('admin.message-reports.*')"
+                    icon="flag"
+                >
+                    <div class="flex w-full items-center justify-between gap-3">
+                        <span>Message Reports</span>
+
+                        @if ($pendingMessageReportCount > 0)
+                            <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-800">
+                                {{ $pendingMessageReportCount }}
+                            </span>
+                        @endif
+                    </div>
                 </flux:sidebar.item>
 
             @endif

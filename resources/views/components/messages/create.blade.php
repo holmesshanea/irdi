@@ -22,6 +22,10 @@ class extends Component
 
     public ?int $replyToMessageId = null;
 
+    public bool $messagingRestricted = false;
+
+    public ?string $messagingRestrictionMessage = null;
+
     public function mount(MemberProfile $profile): void
     {
         $this->profile = $profile->load('user');
@@ -32,7 +36,9 @@ class extends Component
             $this->replyToMessageId = (int) $replyTo;
         }
 
-        $this->ensureCanMessage();
+        if (! $this->ensureCanMessage()) {
+            return;
+        }
 
         if ($this->replyToMessageId !== null) {
             $originalMessage = $this->replyToMessage();
@@ -63,7 +69,7 @@ class extends Component
         return $this->replyToMessage() !== null;
     }
 
-    private function ensureCanMessage(): void
+    private function ensureCanMessage(): bool
     {
         $sender = auth()->user();
 
@@ -77,6 +83,25 @@ class extends Component
         if ($sender->membership_status !== 'active') {
             abort(403);
         }
+
+        /*
+         * Administrators may disable a member's ability to send
+         * private messages.
+         */
+        if ($sender->messagingIsDisabled()) {
+            $this->messagingRestricted = true;
+
+            $this->messagingRestrictionMessage =
+                $sender->messagingRestrictionIsTemporary()
+                    ? 'Your ability to send private messages has been restricted by an IRDI administrator until '
+                    .$sender->messaging_disabled_until->format('F j, Y \a\t g:i A').'.'
+                    : 'Your ability to send private messages has been restricted by an IRDI administrator.';
+
+            return false;
+        }
+
+        $this->messagingRestricted = false;
+        $this->messagingRestrictionMessage = null;
 
         /*
          * Members cannot message themselves.
@@ -124,7 +149,7 @@ class extends Component
          * initiated the conversation with the logged-in user.
          */
         if ($this->isValidReply()) {
-            return;
+            return true;
         }
 
         /*
@@ -138,6 +163,8 @@ class extends Component
         if (! $this->profile->directory_visible) {
             abort(404);
         }
+
+        return true;
     }
 
     public function send(): void
@@ -149,7 +176,14 @@ class extends Component
         $this->profile->refresh();
         $this->profile->load('user');
 
-        $this->ensureCanMessage();
+        if (! $this->ensureCanMessage()) {
+            $this->addError(
+                'body',
+                $this->messagingRestrictionMessage ?? 'Your ability to send private messages is currently restricted.'
+            );
+
+            return;
+        }
 
         $validated = $this->validate([
             'subject' => [
@@ -285,63 +319,100 @@ class extends Component
 
                 </div>
 
-                <form wire:submit="send" class="mt-6 space-y-6">
+                @if ($messagingRestricted)
 
-                    <flux:input
-                        wire:model="subject"
-                        label="Subject"
-                        maxlength="150"
-                        required
-                    />
+                    <div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
 
-                    <div>
+                        <div class="flex items-start gap-3">
 
-                        <flux:textarea
-                            wire:model.live="body"
-                            label="Message"
-                            rows="8"
-                            maxlength="5000"
-                            required
-                        />
+                            <flux:icon.exclamation-triangle class="mt-0.5 size-5 text-amber-700" />
 
-                        <p class="mt-2 text-right text-sm text-zinc-500">
-                            {{ strlen($body) }} / 5,000 characters
-                        </p>
+                            <div>
+
+                                <h2 class="font-semibold text-amber-900">
+                                    Messaging unavailable
+                                </h2>
+
+                                <p class="mt-1 text-sm leading-6 text-amber-800">
+                                    {{ $messagingRestrictionMessage }}
+                                </p>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
-                    <div class="rounded-lg bg-zinc-50 p-4 text-sm text-zinc-600">
-                        This message will be delivered through IRDI. Your email address will not be shared with the recipient.
-                    </div>
-
-                    <div class="flex flex-wrap items-center gap-3">
-
-                        <flux:button
-                            type="submit"
-                            variant="primary"
-                            icon="paper-airplane"
-                            wire:loading.attr="disabled"
-                            wire:target="send"
-                        >
-                            <span wire:loading.remove wire:target="send">
-                                Send Message
-                            </span>
-
-                            <span wire:loading wire:target="send">
-                                Sending...
-                            </span>
-                        </flux:button>
-
+                    <div class="mt-6">
                         <flux:button
                             :href="route('member-profiles.show', $profile)"
                             variant="ghost"
                         >
-                            Cancel
+                            Back to Profile
                         </flux:button>
-
                     </div>
 
-                </form>
+                @else
+
+                    <form wire:submit="send" class="mt-6 space-y-6">
+
+                        <flux:input
+                            wire:model="subject"
+                            label="Subject"
+                            maxlength="150"
+                            required
+                        />
+
+                        <div>
+
+                            <flux:textarea
+                                wire:model.live="body"
+                                label="Message"
+                                rows="8"
+                                maxlength="5000"
+                                required
+                            />
+
+                            <p class="mt-2 text-right text-sm text-zinc-500">
+                                {{ strlen($body) }} / 5,000 characters
+                            </p>
+
+                        </div>
+
+                        <div class="rounded-lg bg-zinc-50 p-4 text-sm text-zinc-600">
+                            This message will be delivered through IRDI. Your email address will not be shared with the recipient.
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3">
+
+                            <flux:button
+                                type="submit"
+                                variant="primary"
+                                icon="paper-airplane"
+                                wire:loading.attr="disabled"
+                                wire:target="send"
+                            >
+                                <span wire:loading.remove wire:target="send">
+                                    Send Message
+                                </span>
+
+                                <span wire:loading wire:target="send">
+                                    Sending...
+                                </span>
+                            </flux:button>
+
+                            <flux:button
+                                :href="route('member-profiles.show', $profile)"
+                                variant="ghost"
+                            >
+                                Cancel
+                            </flux:button>
+
+                        </div>
+
+                    </form>
+
+                @endif
 
             </flux:card>
 

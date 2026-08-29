@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+
 class MessageReport extends Model
 {
     protected $fillable = [
@@ -29,5 +30,13 @@ class MessageReport extends Model
     public function moderations(): HasMany
     {
         return $this->hasMany(MessageReportModeration::class);
+    }
+
+    /**
+     * @return HasMany<MessagingEnforcement, $this>
+     */
+    public function messagingEnforcements(): HasMany
+    {
+        return $this->hasMany(MessagingEnforcement::class);
     }
 }

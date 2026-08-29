@@ -61,6 +61,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'is_admin' => 'boolean',
             'email_member_message_notifications' => 'boolean',
+            'messaging_disabled_at' => 'datetime',
+            'messaging_disabled_until' => 'datetime',
         ];
     }
 
@@ -74,6 +76,26 @@ class User extends Authenticatable implements MustVerifyEmail
         return Str::length($initials) > 1
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
             : $initials;
+    }
+
+    public function messagingIsDisabled(): bool
+    {
+        if ($this->messaging_disabled_at === null) {
+            return false;
+        }
+
+        if ($this->messaging_disabled_until === null) {
+            return true;
+        }
+
+        return now()->lessThan($this->messaging_disabled_until);
+    }
+
+    public function messagingRestrictionIsTemporary(): bool
+    {
+        return $this->messaging_disabled_at !== null
+            && $this->messaging_disabled_until !== null
+            && now()->lessThan($this->messaging_disabled_until);
     }
 
     /**
@@ -118,5 +140,25 @@ class User extends Authenticatable implements MustVerifyEmail
     public function blockedByMembers(): HasMany
     {
         return $this->hasMany(MemberBlock::class, 'blocked_id');
+    }
+
+    /**
+     * Messaging enforcement actions applied to this member.
+     *
+     * @return HasMany<MessagingEnforcement, $this>
+     */
+    public function messagingEnforcements(): HasMany
+    {
+        return $this->hasMany(MessagingEnforcement::class);
+    }
+
+    /**
+     * Messaging enforcement actions performed by this administrator.
+     *
+     * @return HasMany<MessagingEnforcement, $this>
+     */
+    public function administeredMessagingEnforcements(): HasMany
+    {
+        return $this->hasMany(MessagingEnforcement::class, 'admin_id');
     }
 }

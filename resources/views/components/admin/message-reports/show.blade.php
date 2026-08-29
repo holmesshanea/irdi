@@ -2,6 +2,8 @@
 
 use App\Models\MessageReport;
 use App\Models\MessageReportModeration;
+use App\Models\MessagingEnforcement;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -11,6 +13,10 @@ new
 class extends Component
 {
     public MessageReport $report;
+
+    public string $restrictionType = '7_days';
+    public string $enforcementReason = '';
+    public string $restoreReason = '';
 
     public function mount(MessageReport $report): void
     {
@@ -68,6 +74,105 @@ class extends Component
         session()->flash('status', 'Message report returned to pending.');
     }
 
+    public function disableMessaging(): void
+    {
+        $this->validate([
+            'restrictionType' => ['required', 'in:7_days,30_days,permanent'],
+            'enforcementReason' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'restrictionType.required' => 'Please choose a restriction duration.',
+            'restrictionType.in' => 'Please choose a valid restriction duration.',
+            'enforcementReason.required' => 'Please enter a reason for disabling messaging.',
+            'enforcementReason.min' => 'The enforcement reason must be at least 10 characters.',
+            'enforcementReason.max' => 'The enforcement reason must be 1,000 characters or fewer.',
+        ]);
+
+        $reportedUser = $this->reportedUser();
+
+        if (! $reportedUser) {
+            $this->addError('enforcementReason', 'The reported member could not be found.');
+
+            return;
+        }
+
+        $expiresAt = match ($this->restrictionType) {
+            '7_days' => now()->addDays(7),
+            '30_days' => now()->addDays(30),
+            'permanent' => null,
+        };
+
+        $reportedUser->messaging_disabled_at = now();
+        $reportedUser->messaging_disabled_until = $expiresAt;
+        $reportedUser->save();
+
+        MessagingEnforcement::create([
+            'user_id' => $reportedUser->id,
+            'admin_id' => Auth::id(),
+            'message_report_id' => $this->report->id,
+            'action' => 'disabled',
+            'reason' => $this->enforcementReason,
+            'expires_at' => $expiresAt,
+        ]);
+
+        $this->enforcementReason = '';
+        $this->restrictionType = '7_days';
+
+        $this->loadReport();
+
+        session()->flash('status', 'Member messaging has been disabled.');
+    }
+
+    public function restoreMessaging(): void
+    {
+        $this->validate([
+            'restoreReason' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'restoreReason.required' => 'Please enter a reason for restoring messaging.',
+            'restoreReason.min' => 'The restore reason must be at least 10 characters.',
+            'restoreReason.max' => 'The restore reason must be 1,000 characters or fewer.',
+        ]);
+
+        $reportedUser = $this->reportedUser();
+
+        if (! $reportedUser) {
+            $this->addError('restoreReason', 'The reported member could not be found.');
+
+            return;
+        }
+
+        $reportedUser->messaging_disabled_at = null;
+        $reportedUser->messaging_disabled_until = null;
+        $reportedUser->save();
+
+        MessagingEnforcement::create([
+            'user_id' => $reportedUser->id,
+            'admin_id' => Auth::id(),
+            'message_report_id' => $this->report->id,
+            'action' => 'restored',
+            'reason' => $this->restoreReason,
+            'expires_at' => null,
+        ]);
+
+        $this->restoreReason = '';
+
+        $this->loadReport();
+
+        session()->flash('status', 'Member messaging has been restored.');
+    }
+
+    private function reportedUser(): ?User
+    {
+        $message = $this->report->message;
+
+        if (! $message) {
+            return null;
+        }
+
+        return $message->sender_id === $this->report->reporter_id
+            ? $message->recipient
+            : $message->sender;
+    }
+
     private function loadReport(): void
     {
         $this->report = $this->report->fresh([
@@ -75,6 +180,7 @@ class extends Component
             'message.recipient.memberProfile',
             'reporter.memberProfile',
             'moderations.user',
+            'messagingEnforcements.admin',
         ]);
     }
 };
@@ -501,6 +607,252 @@ class extends Component
                     </div>
 
                 @endif
+
+            </flux:card>
+
+            {{-- Messaging enforcement --}}
+            <flux:card>
+
+                <div class="border-b border-zinc-200 p-6">
+
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+
+                        <div>
+
+                            <h2 class="text-lg font-semibold text-irdi-green">
+                                Messaging Enforcement
+                            </h2>
+
+                            <p class="mt-1 text-sm text-zinc-500">
+                                Restrict or restore this member's ability to send IRDI messages.
+                            </p>
+
+                        </div>
+
+                        @if ($reportedUser)
+
+                            @if ($reportedUser->messagingIsDisabled())
+
+                                <flux:badge color="red">
+                                    Messaging Disabled
+                                </flux:badge>
+
+                            @else
+
+                                <flux:badge color="green">
+                                    Messaging Active
+                                </flux:badge>
+
+                            @endif
+
+                        @endif
+
+                    </div>
+
+                </div>
+
+                <div class="p-6">
+
+                    @if (! $reportedUser)
+
+                        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                            The reported member could not be found, so messaging enforcement is unavailable.
+                        </div>
+
+                    @elseif ($reportedUser->messagingIsDisabled())
+
+                        <div class="rounded-xl border border-red-200 bg-red-50 p-5">
+
+                            <p class="font-semibold text-red-900">
+                                This member is currently restricted from sending messages.
+                            </p>
+
+                            <div class="mt-3 text-sm leading-6 text-red-800">
+
+                                @if ($reportedUser->messagingRestrictionIsTemporary())
+
+                                    <p>
+                                        Temporary restriction until
+                                        <strong>
+                                            {{ $reportedUser->messaging_disabled_until->format('F j, Y \a\t g:i A') }}
+                                        </strong>.
+                                    </p>
+
+                                @else
+
+                                    <p>
+                                        This restriction is permanent until an administrator restores messaging.
+                                    </p>
+
+                                @endif
+
+                                @if ($reportedUser->messaging_disabled_at)
+
+                                    <p class="mt-1">
+                                        Restriction began
+                                        {{ $reportedUser->messaging_disabled_at->format('F j, Y \a\t g:i A') }}.
+                                    </p>
+
+                                @endif
+
+                            </div>
+
+                        </div>
+
+                        <div class="mt-6">
+
+                            <flux:textarea
+                                wire:model="restoreReason"
+                                label="Reason for restoring messaging"
+                                placeholder="Explain why this member's messaging access should be restored..."
+                                rows="3"
+                            />
+
+                            <div class="mt-4 flex justify-end">
+
+                                <flux:button
+                                    type="button"
+                                    variant="primary"
+                                    wire:click="restoreMessaging"
+                                    wire:confirm="Restore this member's ability to send IRDI messages?"
+                                >
+                                    Restore Messaging
+                                </flux:button>
+
+                            </div>
+
+                        </div>
+
+                    @else
+
+                        <div class="grid gap-5 md:grid-cols-2">
+
+                            <flux:select
+                                wire:model="restrictionType"
+                                label="Restriction duration"
+                            >
+                                <option value="7_days">7 days</option>
+                                <option value="30_days">30 days</option>
+                                <option value="permanent">Permanent</option>
+                            </flux:select>
+
+                            <div class="rounded-xl bg-zinc-50 p-4 text-sm leading-6 text-zinc-600">
+                                A temporary restriction automatically expires. A permanent restriction remains in effect until an administrator restores messaging.
+                            </div>
+
+                        </div>
+
+                        <div class="mt-5">
+
+                            <flux:textarea
+                                wire:model="enforcementReason"
+                                label="Reason for disabling messaging"
+                                placeholder="Explain why this member's messaging access is being restricted..."
+                                rows="4"
+                            />
+
+                        </div>
+
+                        <div class="mt-4 flex justify-end">
+
+                            <flux:button
+                                type="button"
+                                variant="danger"
+                                wire:click="disableMessaging"
+                                wire:confirm="Disable this member's ability to send IRDI messages?"
+                            >
+                                Disable Messaging
+                            </flux:button>
+
+                        </div>
+
+                    @endif
+
+                </div>
+
+                <div class="border-t border-zinc-200">
+
+                    <div class="border-b border-zinc-200 px-6 py-4">
+
+                        <h3 class="font-semibold text-zinc-900">
+                            Enforcement History for This Report
+                        </h3>
+
+                    </div>
+
+                    @forelse ($report->messagingEnforcements->sortByDesc('created_at') as $enforcement)
+
+                        <div class="border-b border-zinc-200 px-6 py-5 last:border-b-0">
+
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+
+                                <div>
+
+                                    <div class="flex flex-wrap items-center gap-2">
+
+                                        @if ($enforcement->action === 'disabled')
+
+                                            <flux:badge color="red">
+                                                Messaging Disabled
+                                            </flux:badge>
+
+                                        @elseif ($enforcement->action === 'restored')
+
+                                            <flux:badge color="green">
+                                                Messaging Restored
+                                            </flux:badge>
+
+                                        @endif
+
+                                        <span class="font-medium text-zinc-900">
+                                            {{ $enforcement->admin?->name ?? 'Unknown administrator' }}
+                                        </span>
+
+                                    </div>
+
+                                    <p class="mt-3 whitespace-pre-wrap text-sm leading-6 text-zinc-700">{{ $enforcement->reason }}</p>
+
+                                    @if ($enforcement->action === 'disabled')
+
+                                        <p class="mt-2 text-sm text-zinc-500">
+                                            @if ($enforcement->expires_at)
+                                                Restriction expires {{ $enforcement->expires_at->format('F j, Y \a\t g:i A') }}.
+                                            @else
+                                                Permanent restriction.
+                                            @endif
+                                        </p>
+
+                                    @endif
+
+                                </div>
+
+                                <div class="shrink-0 text-sm text-zinc-500 sm:text-right">
+
+                                    <p>
+                                        {{ $enforcement->created_at->format('F j, Y') }}
+                                    </p>
+
+                                    <p class="mt-1">
+                                        {{ $enforcement->created_at->format('g:i A') }}
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    @empty
+
+                        <div class="px-6 py-8 text-center">
+                            <p class="text-sm text-zinc-500">
+                                No messaging enforcement actions have been recorded for this report.
+                            </p>
+                        </div>
+
+                    @endforelse
+
+                </div>
 
             </flux:card>
 

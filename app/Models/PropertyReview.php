@@ -28,6 +28,7 @@ class PropertyReview extends Model
             'care_of_property' => 'integer',
             'would_allow_return' => 'boolean',
             'hidden_at' => 'datetime',
+            'admin_reviewed_at' => 'datetime',
         ];
     }
 
