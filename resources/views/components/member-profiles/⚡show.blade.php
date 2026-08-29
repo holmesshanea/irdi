@@ -132,6 +132,27 @@ class extends Component
                         </p>
                     @endif
 
+                    @if (
+                        auth()->check()
+                        && auth()->user()->membership_status === 'active'
+                        && auth()->id() !== $profile->user_id
+                        && $profile->allow_member_messages
+                    )
+
+                        <div class="mt-6 flex justify-center">
+
+                            <flux:button
+                                :href="route('messages.create', $profile)"
+                                variant="primary"
+                                icon="envelope"
+                            >
+                                Message Member
+                            </flux:button>
+
+                        </div>
+
+                    @endif
+
                 </div>
 
             </div>

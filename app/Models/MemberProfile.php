@@ -25,6 +25,7 @@ class MemberProfile extends Model
         'website',
         'profile_image',
         'directory_visible',
+        'allow_member_messages',
     ];
 
     /**
@@ -47,6 +48,7 @@ class MemberProfile extends Model
     {
         return [
             'directory_visible' => 'boolean',
+            'allow_member_messages' => 'boolean',
         ];
     }
 

@@ -24,6 +24,8 @@ class extends Component
 
     public bool $directoryVisible = false;
 
+    public bool $allowMemberMessages = false;
+
     public string $city = '';
 
     public string $stateProvince = '';
@@ -51,6 +53,7 @@ class extends Component
         $this->country = $profile->country ?? '';
         $this->bio = $profile->bio ?? '';
         $this->website = $profile->website ?: 'https://';
+        $this->allowMemberMessages = (bool) $profile->allow_member_messages;
     }
 
     private function profileImageDisk(): string
@@ -96,6 +99,7 @@ class extends Component
         $validated = $this->validate([
             'profileName' => ['required', 'string', 'min:5', 'max:255'],
             'directoryVisible' => ['boolean'],
+            'allowMemberMessages' => ['boolean'],
             'city' => ['required', 'string', 'max:100'],
             'stateProvince' => ['required', 'string', 'max:100'],
             'country' => ['required', 'string', 'max:100'],
@@ -129,6 +133,7 @@ class extends Component
             'bio' => $validated['bio'],
             'website' => $validated['website'] ?: null,
             'directory_visible' => $validated['directoryVisible'],
+            'allow_member_messages' => $validated['allowMemberMessages'],
         ]);
 
         session()->flash('status', 'Your profile has been updated.');
@@ -341,6 +346,12 @@ class extends Component
                         wire:model="directoryVisible"
                         label="Show this profile in the Member Directory"
                         description="When enabled, your profile can appear in the public IRDI Member Directory and anyone can view your public profile page."
+                    />
+
+                    <flux:switch
+                        wire:model="allowMemberMessages"
+                        label="Allow messages from other IRDI members"
+                        description="Other active IRDI members can send you private messages through your IRDI profile. Your email address will not be shared."
                     />
 
                     <div class="flex items-center gap-3">

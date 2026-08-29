@@ -12,28 +12,28 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::view('/', 'pages.home')
-->name('home');
+    ->name('home');
 
 Route::view('/about', 'pages.about')
-->name('about');
+    ->name('about');
 
 Route::view('/membership', 'pages.membership')
-->name('membership');
+    ->name('membership');
 
 Route::livewire('/directory', 'pages::directory')
-->name('directory');
+    ->name('directory');
 
 Route::view('/faq', 'pages.faq')
-->name('faq');
+    ->name('faq');
 
 Route::view('/contact', 'pages.contact')
-->name('contact');
+    ->name('contact');
 
 Route::view('/privacy-policy', 'pages.privacy-policy')
-->name('privacy-policy');
+    ->name('privacy-policy');
 
 Route::view('/terms', 'pages.terms')
-->name('terms');
+    ->name('terms');
 
 /*
 |--------------------------------------------------------------------------
@@ -43,88 +43,99 @@ Route::view('/terms', 'pages.terms')
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-/*
-|--------------------------------------------------------------------------
-| Account
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Account
+    |--------------------------------------------------------------------------
+    */
 
-Route::view('/account', 'pages.account')
-->name('account');
+    Route::view('/account', 'pages.account')
+        ->name('account');
 
-Route::livewire('/account/delete', 'account.delete')
-->name('account.delete');
+    Route::livewire('/account/delete', 'account.delete')
+        ->name('account.delete');
 
-Route::livewire('/account/reviews', 'pages::account.reviews')
-->name('account.reviews');
+    Route::livewire('/account/reviews', 'pages::account.reviews')
+        ->name('account.reviews');
 
-/*
-|--------------------------------------------------------------------------
-| Membership
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Membership
+    |--------------------------------------------------------------------------
+    */
 
-Route::livewire('/membership/join', 'membership.join')
-->name('membership.join');
+    Route::livewire('/membership/join', 'membership.join')
+        ->name('membership.join');
 
-Route::view('/code-of-ethics', 'pages.code-of-ethics')
-->name('code-of-ethics');
+    Route::view('/code-of-ethics', 'pages.code-of-ethics')
+        ->name('code-of-ethics');
 
-Route::view('/best-practices', 'pages.best-practices')
-->name('best-practices');
+    Route::view('/best-practices', 'pages.best-practices')
+        ->name('best-practices');
 
-/*
-|--------------------------------------------------------------------------
-| Member Profiles
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Member Profiles
+    |--------------------------------------------------------------------------
+    */
 
-Route::livewire('/account/profiles/create', 'member-profiles.create')
-->name('member-profiles.create');
+    Route::livewire('/account/profiles/create', 'member-profiles.create')
+        ->name('member-profiles.create');
 
-Route::livewire('/account/profiles/{profile}/edit', 'member-profiles.edit')
-->name('account.profiles.edit');
+    Route::livewire('/account/profiles/{profile}/edit', 'member-profiles.edit')
+        ->name('account.profiles.edit');
 
-Route::delete('/account/profiles/{profile}', function (MemberProfile $profile) {
-if ($profile->user_id !== auth()->id()) {
-abort(403);
-}
+    Route::delete('/account/profiles/{profile}', function (MemberProfile $profile) {
+        if ($profile->user_id !== auth()->id()) {
+            abort(403);
+        }
 
-if ($profile->profile_image) {
-Storage::disk(config('filesystems.profile_images_disk', 'public'))
-->delete($profile->profile_image);
-}
+        if ($profile->profile_image) {
+            Storage::disk(config('filesystems.profile_images_disk', 'public'))
+                ->delete($profile->profile_image);
+        }
 
-$profile->delete();
+        $profile->delete();
 
-return redirect()
-->route('account')
-->with(
-'status',
-'Your profile has been deleted. Your IRDI account and membership were not affected.'
-);
-})->name('account.profiles.destroy');
+        return redirect()
+            ->route('account')
+            ->with(
+                'status',
+                'Your profile has been deleted. Your IRDI account and membership were not affected.'
+            );
+    })->name('account.profiles.destroy');
 
-/*
-|--------------------------------------------------------------------------
-| Property Review Invitations
-|--------------------------------------------------------------------------
-*/
+    /*
+    |--------------------------------------------------------------------------
+    | Messages
+    |--------------------------------------------------------------------------
+    */
 
-Route::post(
-'/account/profiles/{profile}/review-invitations',
-[PropertyReviewInvitationController::class, 'store']
-)->name('account.review-invitations.store');
+    Route::livewire(
+        '/messages/{profile:username}/create',
+        'messages.create'
+    )->name('messages.create');
 
-Route::post(
-'/account/review-invitations/{invitation}/resend',
-[PropertyReviewInvitationController::class, 'resend']
-)->name('account.review-invitations.resend');
+    /*
+    |--------------------------------------------------------------------------
+    | Property Review Invitations
+    |--------------------------------------------------------------------------
+    */
 
-Route::post(
-'/account/review-invitations/{invitation}/cancel',
-[PropertyReviewInvitationController::class, 'cancel']
-)->name('account.review-invitations.cancel');
+    Route::post(
+        '/account/profiles/{profile}/review-invitations',
+        [PropertyReviewInvitationController::class, 'store']
+    )->name('account.review-invitations.store');
+
+    Route::post(
+        '/account/review-invitations/{invitation}/resend',
+        [PropertyReviewInvitationController::class, 'resend']
+    )->name('account.review-invitations.resend');
+
+    Route::post(
+        '/account/review-invitations/{invitation}/cancel',
+        [PropertyReviewInvitationController::class, 'cancel']
+    )->name('account.review-invitations.cancel');
 });
 
 /*
@@ -134,13 +145,13 @@ Route::post(
 */
 
 Route::livewire(
-'/directory/{profile:username}/card',
-'member-profiles.card'
+    '/directory/{profile:username}/card',
+    'member-profiles.card'
 )->name('member-profiles.card');
 
 Route::livewire(
-'/directory/{profile:username}',
-'member-profiles.show'
+    '/directory/{profile:username}',
+    'member-profiles.show'
 )->name('member-profiles.show');
 
 /*
@@ -150,7 +161,7 @@ Route::livewire(
 */
 
 Route::livewire('/review/{token}', 'reviews.show')
-->name('property-reviews.show');
+    ->name('property-reviews.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -159,10 +170,9 @@ Route::livewire('/review/{token}', 'reviews.show')
 */
 
 Route::livewire('/admin/reviews', 'admin.reviews.index')
-->middleware(['auth', 'verified', 'admin'])
-->name('admin.reviews.index');
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.reviews.index');
 
 Route::livewire('/admin/reviews/{review}', 'admin.reviews.show')
-->middleware(['auth', 'verified'])
-->name('admin.reviews.show');
-
+    ->middleware(['auth', 'verified'])
+    ->name('admin.reviews.show');
