@@ -206,3 +206,23 @@ Route::livewire(
 )
     ->middleware(['auth', 'verified', 'admin'])
     ->name('admin.message-reports.show');
+
+/*
+|--------------------------------------------------------------------------
+| Member Management
+|--------------------------------------------------------------------------
+*/
+
+Route::livewire(
+    '/admin/members',
+    'admin.members.index'
+)
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.members.index');
+
+Route::livewire(
+    '/admin/members/{user}',
+    'admin.members.show'
+)
+    ->middleware(['auth', 'verified', 'admin'])
+    ->name('admin.members.show');

@@ -162,6 +162,13 @@
                         class="absolute right-0 z-50 mt-2 w-52 rounded-lg border border-zinc-200 bg-white py-2 shadow-lg"
                     >
                         <a
+                            href="{{ route('admin.members.index') }}"
+                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
+                        >
+                            <span>Member Management</span>
+                        </a>
+
+                        <a
                             href="{{ route('admin.reviews.index') }}"
                             class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
                         >
@@ -335,6 +342,14 @@
                 <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
                     Admin
                 </div>
+
+                <flux:sidebar.item
+                    href="{{ route('admin.members.index') }}"
+                    :current="request()->routeIs('admin.members.*')"
+                    icon="users"
+                >
+                    Member Management
+                </flux:sidebar.item>
 
                 <flux:sidebar.item
                     href="{{ route('admin.reviews.index') }}"

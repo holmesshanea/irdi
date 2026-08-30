@@ -25,11 +25,12 @@ class extends Component
 
     public function mount(MemberProfile $profile): void
     {
+        if ($profile->user->membership_status !== 'active') {
+            abort(404);
+        }
+
         if (
-            (
-                ! $profile->directory_visible
-                || $profile->user->membership_status !== 'active'
-            )
+            ! $profile->directory_visible
             && $profile->user_id !== auth()->id()
         ) {
             abort(404);

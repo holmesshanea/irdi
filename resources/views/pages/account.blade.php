@@ -115,6 +115,10 @@
                                     <flux:badge color="green">
                                         Active
                                     </flux:badge>
+                                @elseif (auth()->user()->membership_status === 'suspended')
+                                    <flux:badge color="red">
+                                        Suspended
+                                    </flux:badge>
                                 @else
                                     <flux:badge color="zinc">
                                         Inactive
@@ -122,10 +126,7 @@
                                 @endif
                             </div>
 
-                            @if (
-                                auth()->user()->membership_status === 'active'
-                                && auth()->user()->member_since
-                            )
+                            @if (auth()->user()->member_since)
                                 <div class="mt-6">
                                     <p class="text-sm font-medium text-zinc-500">
                                         Member Since
@@ -146,6 +147,19 @@
                                 <p class="text-sm text-zinc-600">
                                     Your IRDI membership is active.
                                 </p>
+
+                            @elseif (auth()->user()->membership_status === 'suspended')
+
+                                <div class="rounded-lg border border-red-200 bg-red-50 p-4">
+                                    <p class="font-medium text-red-900">
+                                        Your IRDI membership is currently suspended.
+                                    </p>
+
+                                    <p class="mt-2 text-sm leading-6 text-red-700">
+                                        Member privileges are unavailable while your membership is suspended.
+                                        Your account and existing information remain available.
+                                    </p>
+                                </div>
 
                             @else
 
@@ -328,88 +342,92 @@
 
                             <div class="relative rounded-xl border border-zinc-200 p-5">
 
-                                <div
-                                    class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
-                                    x-data="{ open: false }"
-                                >
-
-                                    <div class="text-right">
-
-                                        <button
-                                            type="button"
-                                            class="text-sm font-medium text-irdi-green hover:underline"
-                                            x-on:click="open = ! open"
-                                        >
-                                            Request Property Owner Review
-                                        </button>
-
-                                    </div>
+                                @if (auth()->user()->membership_status === 'active')
 
                                     <div
-                                        x-show="open"
-                                        x-cloak
-                                        class="relative z-50 mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
+                                        class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
+                                        x-data="{ open: false }"
                                     >
 
-                                        <form
-                                            action="{{ route('account.review-invitations.store', $profile) }}"
-                                            method="POST"
+                                        <div class="text-right">
+
+                                            <button
+                                                type="button"
+                                                class="text-sm font-medium text-irdi-green hover:underline"
+                                                x-on:click="open = ! open"
+                                            >
+                                                Request Property Owner Review
+                                            </button>
+
+                                        </div>
+
+                                        <div
+                                            x-show="open"
+                                            x-cloak
+                                            class="relative z-50 mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
                                         >
-                                            @csrf
 
-                                            <label
-                                                for="reviewer_email_{{ $profile->id }}"
-                                                class="block text-sm font-medium text-zinc-700"
+                                            <form
+                                                action="{{ route('account.review-invitations.store', $profile) }}"
+                                                method="POST"
                                             >
-                                                Property Owner Email
-                                            </label>
+                                                @csrf
 
-                                            <p class="mt-1 text-xs leading-5 text-zinc-500">
-                                                IRDI will email the property owner a private, single-use feedback invitation.
-                                            </p>
-
-                                            <input
-                                                id="reviewer_email_{{ $profile->id }}"
-                                                name="reviewer_email"
-                                                type="email"
-                                                required
-                                                placeholder="owner@example.com"
-                                                class="mt-3 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
-                                            >
-
-                                            @error('reviewer_email_' . $profile->id)
-                                            <p class="mt-2 text-sm text-red-600">
-                                                {{ $message }}
-                                            </p>
-                                            @enderror
-
-                                            <div class="mt-4 flex justify-end gap-2">
-
-                                                <flux:button
-                                                    type="button"
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    x-on:click="open = false"
+                                                <label
+                                                    for="reviewer_email_{{ $profile->id }}"
+                                                    class="block text-sm font-medium text-zinc-700"
                                                 >
-                                                    Cancel
-                                                </flux:button>
+                                                    Property Owner Email
+                                                </label>
 
-                                                <flux:button
-                                                    type="submit"
-                                                    variant="primary"
-                                                    size="sm"
-                                                    icon="envelope"
+                                                <p class="mt-1 text-xs leading-5 text-zinc-500">
+                                                    IRDI will email the property owner a private, single-use feedback invitation.
+                                                </p>
+
+                                                <input
+                                                    id="reviewer_email_{{ $profile->id }}"
+                                                    name="reviewer_email"
+                                                    type="email"
+                                                    required
+                                                    placeholder="owner@example.com"
+                                                    class="mt-3 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
                                                 >
-                                                    Send Invitation
-                                                </flux:button>
 
-                                            </div>
+                                                @error('reviewer_email_' . $profile->id)
+                                                <p class="mt-2 text-sm text-red-600">
+                                                    {{ $message }}
+                                                </p>
+                                                @enderror
 
-                                        </form>
+                                                <div class="mt-4 flex justify-end gap-2">
+
+                                                    <flux:button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        x-on:click="open = false"
+                                                    >
+                                                        Cancel
+                                                    </flux:button>
+
+                                                    <flux:button
+                                                        type="submit"
+                                                        variant="primary"
+                                                        size="sm"
+                                                        icon="envelope"
+                                                    >
+                                                        Send Invitation
+                                                    </flux:button>
+
+                                                </div>
+
+                                            </form>
+
+                                        </div>
 
                                     </div>
 
-                                </div>
+                                @endif
 
                                 <div class="space-y-5">
 
@@ -537,14 +555,27 @@
 
                                         <div class="flex flex-wrap items-center gap-3">
 
-                                            <flux:button
-                                                href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}"
-                                                variant="ghost"
-                                                size="sm"
-                                                icon="eye"
-                                            >
-                                                View Profile
-                                            </flux:button>
+                                            @if (auth()->user()->membership_status === 'active')
+
+                                                <flux:button
+                                                    href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}"
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    icon="eye"
+                                                >
+                                                    View Profile
+                                                </flux:button>
+
+                                            @else
+
+                                                <span
+                                                    class="inline-flex cursor-not-allowed items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 opacity-60"
+                                                    title="Unavailable while membership is suspended."
+                                                >
+        View Profile
+    </span>
+
+                                            @endif
 
                                             <flux:button
                                                 :href="route('account.profiles.edit', $profile)"
@@ -555,14 +586,27 @@
                                                 Edit
                                             </flux:button>
 
-                                            <flux:button
-                                                href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}#member-card"
-                                                variant="outline"
-                                                size="sm"
-                                                icon="identification"
-                                            >
-                                                Member Card
-                                            </flux:button>
+                                                @if (auth()->user()->membership_status === 'active')
+
+                                                    <flux:button
+                                                        href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}#member-card"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        icon="identification"
+                                                    >
+                                                        Member Card
+                                                    </flux:button>
+
+                                                @else
+
+                                                    <span
+                                                        class="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 opacity-60"
+                                                        title="Unavailable while membership is suspended."
+                                                    >
+        Member Card
+    </span>
+
+                                                @endif
 
                                             <flux:button
                                                 href="{{ route('messages.index') }}"

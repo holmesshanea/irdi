@@ -21,6 +21,10 @@ class PropertyReviewInvitationController extends Controller
             abort(403);
         }
 
+        if ($request->user()?->membership_status !== 'active') {
+            abort(403);
+        }
+
         $validated = $request->validate([
             'reviewer_email' => [
                 'required',
@@ -72,11 +76,16 @@ class PropertyReviewInvitationController extends Controller
     }
 
     public function resend(
+        Request $request,
         PropertyReviewInvitation $invitation
     ): RedirectResponse {
         $profile = $invitation->memberProfile;
 
         if ($profile->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        if ($request->user()?->membership_status !== 'active') {
             abort(403);
         }
 

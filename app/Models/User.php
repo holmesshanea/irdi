@@ -161,4 +161,24 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(MessagingEnforcement::class, 'admin_id');
     }
+
+    /**
+     * Membership enforcement actions applied to this member.
+     *
+     * @return HasMany<MembershipEnforcement, $this>
+     */
+    public function membershipEnforcements(): HasMany
+    {
+        return $this->hasMany(MembershipEnforcement::class);
+    }
+
+    /**
+     * Membership enforcement actions performed by this administrator.
+     *
+     * @return HasMany<MembershipEnforcement, $this>
+     */
+    public function administeredMembershipEnforcements(): HasMany
+    {
+        return $this->hasMany(MembershipEnforcement::class, 'admin_id');
+    }
 }
