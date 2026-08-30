@@ -20,7 +20,7 @@ class MembershipSuspendedNotification extends Notification
     }
 
     /**
-     * @param User $notifiable
+     * @param  User  $notifiable
      */
     public function toMail(object $notifiable): MailMessage
     {
