@@ -8,11 +8,14 @@ use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
 use App\Http\Responses\EmailVerificationResponse;
 use App\Http\Responses\PasswordResetResponse;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Contracts\PasswordResetResponse as PasswordResetResponseContract;
 use Laravel\Fortify\Contracts\VerifyEmailResponse;
@@ -54,6 +57,29 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::resetPasswordView(
             fn (Request $request) => view('auth.reset-password', ['request' => $request])
         );
+
+        Fortify::authenticateUsing(function (Request $request): ?User {
+            $username = (string) $request->input(Fortify::username());
+
+            $user = User::query()
+                ->where(Fortify::username(), $username)
+                ->first();
+
+            if (
+                $user === null
+                || ! Hash::check((string) $request->input('password'), $user->password)
+            ) {
+                return null;
+            }
+
+            if ($user->membership_status === 'banned') {
+                throw ValidationException::withMessages([
+                    Fortify::username() => 'This IRDI account has been banned. If you believe this is an error, please contact IRDI.',
+                ]);
+            }
+
+            return $user;
+        });
 
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);

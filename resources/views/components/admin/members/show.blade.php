@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\BanIdentifier;
 use App\Models\MembershipEnforcement;
 use App\Models\MessageReport;
 use App\Models\MessagingEnforcement;
@@ -9,6 +10,7 @@ use App\Notifications\MembershipSuspendedNotification;
 use App\Notifications\MessagingRestoredNotification;
 use App\Notifications\MessagingRestrictedNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -24,6 +26,8 @@ class extends Component
     public string $restoreReason = '';
     public string $suspensionReason = '';
     public string $membershipRestoreReason = '';
+    public string $banReason = '';
+    public string $unbanReason = '';
 
     public function mount(User $user): void
     {
@@ -199,6 +203,156 @@ class extends Component
         session()->flash('status', 'Membership has been restored.');
     }
 
+
+    public function banMember(): void
+    {
+        if ($this->user->id === Auth::id()) {
+            $this->addError('banReason', 'You cannot ban your own administrator account.');
+
+            return;
+        }
+
+        if (! in_array($this->user->membership_status, ['active', 'suspended'], true)) {
+            $this->addError('banReason', 'Only an active or suspended membership can be banned.');
+
+            return;
+        }
+
+        $this->validate([
+            'banReason' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'banReason.required' => 'Please enter a reason for banning this member.',
+            'banReason.min' => 'The ban reason must be at least 10 characters.',
+            'banReason.max' => 'The ban reason must be 1,000 characters or fewer.',
+        ]);
+
+        DB::transaction(function (): void {
+            $this->user->membership_status = 'banned';
+            $this->user->save();
+
+            $enforcement = MembershipEnforcement::create([
+                'user_id' => $this->user->id,
+                'admin_id' => Auth::id(),
+                'action' => 'banned',
+                'reason' => $this->banReason,
+            ]);
+
+            BanIdentifier::updateOrCreate(
+                [
+                    'type' => 'email',
+                    'value' => strtolower(trim($this->user->email)),
+                ],
+                [
+                    'user_id' => $this->user->id,
+                    'membership_enforcement_id' => $enforcement->id,
+                    'created_by' => Auth::id(),
+                    'reason' => $this->banReason,
+                ]
+            );
+
+            collect([
+                $this->user->registration_ip,
+                $this->user->last_login_ip,
+            ])
+                ->filter()
+                ->map(fn ($ip) => trim((string) $ip))
+                ->unique()
+                ->filter(fn (string $ip) => $this->shouldStoreBanIp($ip))
+                ->each(function (string $ip) use ($enforcement): void {
+                    BanIdentifier::updateOrCreate(
+                        [
+                            'type' => 'ip',
+                            'value' => $ip,
+                        ],
+                        [
+                            'user_id' => $this->user->id,
+                            'membership_enforcement_id' => $enforcement->id,
+                            'created_by' => Auth::id(),
+                            'reason' => $this->banReason,
+                        ]
+                    );
+                });
+        });
+
+        $this->banReason = '';
+        $this->loadUser();
+
+        session()->flash(
+            'status',
+            'Member has been banned. Their email address and any known non-loopback IP addresses have been added to the ban list.'
+        );
+    }
+
+    private function shouldStoreBanIp(string $ip): bool
+    {
+        if (filter_var($ip, FILTER_VALIDATE_IP) === false) {
+            return false;
+        }
+
+        if ($ip === '::1' || $ip === '0.0.0.0') {
+            return false;
+        }
+
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+            $firstOctet = (int) explode('.', $ip)[0];
+
+            if ($firstOctet === 127) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function unbanMember(): void
+    {
+        if ($this->user->membership_status !== 'banned') {
+            $this->addError('unbanReason', 'Only a banned membership can be unbanned.');
+
+            return;
+        }
+
+        $this->validate([
+            'unbanReason' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'unbanReason.required' => 'Please enter a reason for unbanning this member.',
+            'unbanReason.min' => 'The unban reason must be at least 10 characters.',
+            'unbanReason.max' => 'The unban reason must be 1,000 characters or fewer.',
+        ]);
+
+        DB::transaction(function (): void {
+            $this->user->membership_status = 'active';
+            $this->user->save();
+
+            MembershipEnforcement::create([
+                'user_id' => $this->user->id,
+                'admin_id' => Auth::id(),
+                'action' => 'unbanned',
+                'reason' => $this->unbanReason,
+            ]);
+
+            BanIdentifier::query()
+                ->where(function ($query) {
+                    $query
+                        ->where('user_id', $this->user->id)
+                        ->orWhere(function ($query) {
+                            $query
+                                ->where('type', 'email')
+                                ->where('value', strtolower(trim($this->user->email)));
+                        });
+                })
+                ->delete();
+        });
+
+        $this->unbanReason = '';
+        $this->loadUser();
+
+        session()->flash(
+            'status',
+            'Member has been unbanned and their ban identifiers have been removed from the ban list.'
+        );
+    }
+
     private function loadUser(): void
     {
         $this->user = $this->user->fresh([
@@ -293,6 +447,14 @@ class extends Component
                     <flux:badge color="amber" size="lg">
                         Pending
                     </flux:badge>
+                @elseif ($user->membership_status === 'suspended')
+                    <flux:badge color="red" size="lg">
+                        Suspended
+                    </flux:badge>
+                @elseif ($user->membership_status === 'banned')
+                    <flux:badge color="red" size="lg">
+                        Banned
+                    </flux:badge>
                 @else
                     <flux:badge color="zinc" size="lg">
                         {{ ucfirst($user->membership_status) }}
@@ -367,6 +529,10 @@ class extends Component
                             @elseif ($user->membership_status === 'pending')
                                 <flux:badge color="amber">
                                     Pending
+                                </flux:badge>
+                            @elseif (in_array($user->membership_status, ['suspended', 'banned'], true))
+                                <flux:badge color="red">
+                                    {{ ucfirst($user->membership_status) }}
                                 </flux:badge>
                             @else
                                 <flux:badge color="zinc">
@@ -504,13 +670,19 @@ class extends Component
                     </dl>
 
                     <div class="mt-6 border-t border-zinc-100 pt-6">
-                        <flux:button
-                            :href="route('member-profiles.show', $user->memberProfile)"
-                            variant="outline"
-                            target="_blank"
-                        >
-                            View Public Profile
-                        </flux:button>
+                        @if ($user->membership_status === 'active')
+                            <flux:button
+                                :href="route('member-profiles.show', $user->memberProfile)"
+                                variant="outline"
+                                target="_blank"
+                            >
+                                View Public Profile
+                            </flux:button>
+                        @else
+                            <p class="text-sm text-zinc-500">
+                                Public profile unavailable while membership is {{ $user->membership_status }}.
+                            </p>
+                        @endif
                     </div>
 
                 @else
@@ -649,136 +821,240 @@ class extends Component
 
         </div>
 
-            {{-- Membership Enforcement --}}
-            <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        {{-- Membership Enforcement --}}
+        <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
 
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-                    <div>
-                        <h2 class="text-lg font-semibold text-zinc-900">
-                            Membership Enforcement
-                        </h2>
+                <div>
+                    <h2 class="text-lg font-semibold text-zinc-900">
+                        Membership Enforcement
+                    </h2>
 
-                        <p class="mt-1 text-sm text-zinc-500">
-                            Suspend or restore this member's IRDI membership.
-                        </p>
+                    <p class="mt-1 text-sm text-zinc-500">
+                        Suspend, restore, ban, or unban this member's IRDI membership.
+                    </p>
+                </div>
+
+                <div>
+                    @if ($user->membership_status === 'active')
+                        <flux:badge color="green" size="lg">
+                            Active
+                        </flux:badge>
+                    @elseif ($user->membership_status === 'suspended')
+                        <flux:badge color="red" size="lg">
+                            Suspended
+                        </flux:badge>
+                    @elseif ($user->membership_status === 'banned')
+                        <flux:badge color="red" size="lg">
+                            Banned
+                        </flux:badge>
+                    @else
+                        <flux:badge color="zinc" size="lg">
+                            {{ ucfirst($user->membership_status) }}
+                        </flux:badge>
+                    @endif
+                </div>
+
+            </div>
+
+            @if ($user->membership_status === 'suspended')
+
+                <div class="mt-6 rounded-lg border border-red-200 bg-red-50 p-5">
+                    <div class="font-medium text-red-900">
+                        This IRDI membership is currently suspended.
                     </div>
 
-                    <div>
-                        @if ($user->membership_status === 'active')
-                            <flux:badge color="green" size="lg">
-                                Active
-                            </flux:badge>
-                        @elseif ($user->membership_status === 'suspended')
-                            <flux:badge color="red" size="lg">
-                                Suspended
-                            </flux:badge>
-                        @else
-                            <flux:badge color="zinc" size="lg">
-                                {{ ucfirst($user->membership_status) }}
-                            </flux:badge>
-                        @endif
+                    <p class="mt-1 text-sm text-red-700">
+                        The member is no longer treated as an active IRDI member until
+                        an administrator restores the membership.
+                    </p>
+                </div>
+
+                <div class="mt-6 border-t border-zinc-200 pt-6">
+
+                    <flux:textarea
+                        wire:model="membershipRestoreReason"
+                        label="Reason for restoring membership"
+                        placeholder="Explain why this member's IRDI membership should be restored..."
+                        rows="4"
+                    />
+
+                    <div class="mt-4 flex justify-end">
+                        <flux:button
+                            type="button"
+                            variant="primary"
+                            wire:click="restoreMembership"
+                            wire:confirm="Restore this member's IRDI membership?"
+                        >
+                            Restore Membership
+                        </flux:button>
                     </div>
 
                 </div>
 
-                @if ($user->membership_status === 'suspended')
-
-                    <div class="mt-6 rounded-lg border border-red-200 bg-red-50 p-5">
-                        <div class="font-medium text-red-900">
-                            This IRDI membership is currently suspended.
+                @if ($user->id !== auth()->id())
+                    <div class="mt-6 border-t border-red-200 pt-6">
+                        <div class="rounded-lg border border-red-300 bg-red-50 p-5">
+                            <div class="font-medium text-red-900">
+                                Escalate this suspension to a permanent account ban.
+                            </div>
+                            <p class="mt-1 text-sm leading-6 text-red-700">
+                                Banning prevents this account from participating in IRDI and adds the member's
+                                current email address and any known non-loopback IP addresses to the ban list for registration enforcement.
+                            </p>
                         </div>
 
-                        <p class="mt-1 text-sm text-red-700">
-                            The member is no longer treated as an active IRDI member until
-                            an administrator restores the membership.
+                        <div class="mt-5">
+                            <flux:textarea
+                                wire:model="banReason"
+                                label="Reason for banning member"
+                                placeholder="Explain why this member should be banned from IRDI..."
+                                rows="4"
+                            />
+                        </div>
+
+                        <div class="mt-4 flex justify-end">
+                            <flux:button
+                                type="button"
+                                variant="danger"
+                                wire:click="banMember"
+                                wire:confirm="Ban this member from IRDI? Their email address and any known non-loopback IP addresses will be added to the ban list."
+                            >
+                                Ban Member
+                            </flux:button>
+                        </div>
+                    </div>
+                @endif
+
+            @elseif ($user->membership_status === 'active')
+
+                @if ($user->id === auth()->id())
+
+                    <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-5">
+                        <div class="font-medium text-amber-900">
+                            You cannot suspend your own administrator account.
+                        </div>
+
+                        <p class="mt-1 text-sm text-amber-700">
+                            Another administrator must perform an enforcement action
+                            against this account.
+                        </p>
+                    </div>
+
+                @else
+
+                    <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-5">
+                        <div class="font-medium text-amber-900">
+                            Suspending membership is an account-level enforcement action.
+                        </div>
+
+                        <p class="mt-1 text-sm text-amber-700">
+                            The member's account and historical records will be preserved,
+                            but the member will no longer be treated as an active IRDI member.
                         </p>
                     </div>
 
                     <div class="mt-6 border-t border-zinc-200 pt-6">
 
                         <flux:textarea
-                            wire:model="membershipRestoreReason"
-                            label="Reason for restoring membership"
-                            placeholder="Explain why this member's IRDI membership should be restored..."
+                            wire:model="suspensionReason"
+                            label="Reason for suspending membership"
+                            placeholder="Explain why this member's IRDI membership is being suspended..."
                             rows="4"
                         />
 
                         <div class="mt-4 flex justify-end">
                             <flux:button
                                 type="button"
-                                variant="primary"
-                                wire:click="restoreMembership"
-                                wire:confirm="Restore this member's IRDI membership?"
+                                variant="danger"
+                                wire:click="suspendMembership"
+                                wire:confirm="Suspend this member's IRDI membership? This is an account-level enforcement action."
                             >
-                                Restore Membership
+                                Suspend Membership
                             </flux:button>
                         </div>
 
                     </div>
 
-                @elseif ($user->membership_status === 'active')
-
-                    @if ($user->id === auth()->id())
-
-                        <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-5">
-                            <div class="font-medium text-amber-900">
-                                You cannot suspend your own administrator account.
+                    <div class="mt-6 border-t border-red-200 pt-6">
+                        <div class="rounded-lg border border-red-300 bg-red-50 p-5">
+                            <div class="font-medium text-red-900">
+                                Ban this member from IRDI.
                             </div>
-
-                            <p class="mt-1 text-sm text-amber-700">
-                                Another administrator must perform an enforcement action
-                                against this account.
+                            <p class="mt-1 text-sm leading-6 text-red-700">
+                                This is the strongest account-level enforcement action. The account and historical
+                                records are preserved, and the member's current email address and any known non-loopback IP addresses are added to the ban list.
                             </p>
                         </div>
 
-                    @else
-
-                        <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-5">
-                            <div class="font-medium text-amber-900">
-                                Suspending membership is an account-level enforcement action.
-                            </div>
-
-                            <p class="mt-1 text-sm text-amber-700">
-                                The member's account and historical records will be preserved,
-                                but the member will no longer be treated as an active IRDI member.
-                            </p>
-                        </div>
-
-                        <div class="mt-6 border-t border-zinc-200 pt-6">
-
+                        <div class="mt-5">
                             <flux:textarea
-                                wire:model="suspensionReason"
-                                label="Reason for suspending membership"
-                                placeholder="Explain why this member's IRDI membership is being suspended..."
+                                wire:model="banReason"
+                                label="Reason for banning member"
+                                placeholder="Explain why this member should be banned from IRDI..."
                                 rows="4"
                             />
-
-                            <div class="mt-4 flex justify-end">
-                                <flux:button
-                                    type="button"
-                                    variant="danger"
-                                    wire:click="suspendMembership"
-                                    wire:confirm="Suspend this member's IRDI membership? This is an account-level enforcement action."
-                                >
-                                    Suspend Membership
-                                </flux:button>
-                            </div>
-
                         </div>
 
-                    @endif
-
-                @else
-
-                    <div class="mt-6 rounded-lg bg-zinc-50 p-5 text-sm text-zinc-600">
-                        Membership enforcement is not available while this account has a
-                        {{ $user->membership_status }} membership status.
+                        <div class="mt-4 flex justify-end">
+                            <flux:button
+                                type="button"
+                                variant="danger"
+                                wire:click="banMember"
+                                wire:confirm="Ban this member from IRDI? Their email address and any known non-loopback IP addresses will be added to the ban list."
+                            >
+                                Ban Member
+                            </flux:button>
+                        </div>
                     </div>
 
                 @endif
 
-            </div>
+            @elseif ($user->membership_status === 'banned')
+
+                <div class="mt-6 rounded-lg border border-red-300 bg-red-50 p-5">
+                    <div class="font-medium text-red-900">
+                        This member is banned from IRDI.
+                    </div>
+
+                    <p class="mt-1 text-sm leading-6 text-red-700">
+                        The account is preserved for enforcement history, and the member's email address
+                        and any known IP ban identifiers are on the ban list. Unbanning restores the membership to
+                        active and removes this account's ban identifiers.
+                    </p>
+                </div>
+
+                <div class="mt-6 border-t border-zinc-200 pt-6">
+                    <flux:textarea
+                        wire:model="unbanReason"
+                        label="Reason for unbanning member"
+                        placeholder="Explain why this member should be allowed to return to IRDI..."
+                        rows="4"
+                    />
+
+                    <div class="mt-4 flex justify-end">
+                        <flux:button
+                            type="button"
+                            variant="primary"
+                            wire:click="unbanMember"
+                            wire:confirm="Unban this member and restore their IRDI membership to active?"
+                        >
+                            Unban Member
+                        </flux:button>
+                    </div>
+                </div>
+
+            @else
+
+                <div class="mt-6 rounded-lg bg-zinc-50 p-5 text-sm text-zinc-600">
+                    Membership enforcement is not available while this account has a
+                    {{ $user->membership_status }} membership status.
+                </div>
+
+            @endif
+
+        </div>
 
         {{-- Reports --}}
         <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
@@ -1018,76 +1294,84 @@ class extends Component
 
         </div>
 
-            {{-- Membership Enforcement History --}}
-            <div class="mt-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+        {{-- Membership Enforcement History --}}
+        <div class="mt-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
 
-                <div>
-                    <h2 class="text-lg font-semibold text-zinc-900">
-                        Membership Enforcement History
-                    </h2>
+            <div>
+                <h2 class="text-lg font-semibold text-zinc-900">
+                    Membership Enforcement History
+                </h2>
 
-                    <p class="mt-1 text-sm text-zinc-500">
-                        Account-level membership actions previously applied to this member.
-                    </p>
-                </div>
+                <p class="mt-1 text-sm text-zinc-500">
+                    Account-level membership actions previously applied to this member.
+                </p>
+            </div>
 
-                @if ($user->membershipEnforcements->isNotEmpty())
+            @if ($user->membershipEnforcements->isNotEmpty())
 
-                    <div class="mt-6 space-y-4">
+                <div class="mt-6 space-y-4">
 
-                        @foreach ($user->membershipEnforcements->sortByDesc('created_at') as $enforcement)
+                    @foreach ($user->membershipEnforcements->sortByDesc('created_at') as $enforcement)
 
-                            <div
-                                wire:key="membership-enforcement-{{ $enforcement->id }}"
-                                class="rounded-lg border border-zinc-200 p-5"
-                            >
-                                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div
+                            wire:key="membership-enforcement-{{ $enforcement->id }}"
+                            class="rounded-lg border border-zinc-200 p-5"
+                        >
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
 
-                                    <div>
-                                        <div class="font-semibold text-zinc-900">
-                                            Membership {{ ucfirst($enforcement->action) }}
-                                        </div>
-
-                                        <div class="mt-1 text-sm text-zinc-500">
-                                            {{ $enforcement->created_at->format('F j, Y \a\t g:i A') }}
-
-                                            @if ($enforcement->admin)
-                                                · {{ $enforcement->admin->name }}
-                                            @endif
-                                        </div>
+                                <div>
+                                    <div class="font-semibold text-zinc-900">
+                                        Membership {{ ucfirst($enforcement->action) }}
                                     </div>
 
-                                    @if ($enforcement->action === 'suspended')
-                                        <flux:badge color="red">
-                                            Suspended
-                                        </flux:badge>
-                                    @elseif ($enforcement->action === 'restored')
-                                        <flux:badge color="green">
-                                            Restored
-                                        </flux:badge>
-                                    @endif
+                                    <div class="mt-1 text-sm text-zinc-500">
+                                        {{ $enforcement->created_at->format('F j, Y \a\t g:i A') }}
 
+                                        @if ($enforcement->admin)
+                                            · {{ $enforcement->admin->name }}
+                                        @endif
+                                    </div>
                                 </div>
 
-                                <div class="mt-4 text-sm text-zinc-700">
-                                    {{ $enforcement->reason }}
-                                </div>
+                                @if ($enforcement->action === 'suspended')
+                                    <flux:badge color="red">
+                                        Suspended
+                                    </flux:badge>
+                                @elseif ($enforcement->action === 'restored')
+                                    <flux:badge color="green">
+                                        Restored
+                                    </flux:badge>
+                                @elseif ($enforcement->action === 'banned')
+                                    <flux:badge color="red">
+                                        Banned
+                                    </flux:badge>
+                                @elseif ($enforcement->action === 'unbanned')
+                                    <flux:badge color="green">
+                                        Unbanned
+                                    </flux:badge>
+                                @endif
 
                             </div>
 
-                        @endforeach
+                            <div class="mt-4 text-sm text-zinc-700">
+                                {{ $enforcement->reason }}
+                            </div>
 
-                    </div>
+                        </div>
 
-                @else
+                    @endforeach
 
-                    <div class="mt-6 rounded-lg bg-zinc-50 p-6 text-center text-sm text-zinc-500">
-                        No membership enforcement actions have been recorded for this member.
-                    </div>
+                </div>
 
-                @endif
+            @else
 
-            </div>
+                <div class="mt-6 rounded-lg bg-zinc-50 p-6 text-center text-sm text-zinc-500">
+                    No membership enforcement actions have been recorded for this member.
+                </div>
+
+            @endif
+
+        </div>
 
     </div>
 </section>

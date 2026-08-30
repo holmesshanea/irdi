@@ -33,6 +33,8 @@ use Illuminate\Support\Str;
 #[Fillable([
     'name',
     'email',
+    'registration_ip',
+    'last_login_ip',
     'password',
     'membership_status',
     'member_since',
