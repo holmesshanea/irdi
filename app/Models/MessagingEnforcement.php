@@ -23,16 +23,25 @@ class MessagingEnforcement extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function admin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'admin_id');
     }
 
+    /**
+     * @return BelongsTo<MessageReport, $this>
+     */
     public function messageReport(): BelongsTo
     {
         return $this->belongsTo(MessageReport::class);

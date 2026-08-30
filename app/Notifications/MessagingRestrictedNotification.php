@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -23,6 +24,9 @@ class MessagingRestrictedNotification extends Notification
         return ['mail'];
     }
 
+    /**
+     * @param User $notifiable
+     */
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)

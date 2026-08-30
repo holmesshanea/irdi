@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -18,6 +19,9 @@ class MembershipSuspendedNotification extends Notification
         return ['mail'];
     }
 
+    /**
+     * @param User $notifiable
+     */
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)

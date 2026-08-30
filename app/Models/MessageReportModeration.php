@@ -13,11 +13,17 @@ class MessageReportModeration extends Model
         'action',
     ];
 
+    /**
+     * @return BelongsTo<MessageReport, $this>
+     */
     public function report(): BelongsTo
     {
         return $this->belongsTo(MessageReport::class, 'message_report_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
