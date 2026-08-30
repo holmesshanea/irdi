@@ -67,22 +67,22 @@ class extends Component
     <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
 
         {{-- Header --}}
-        <div class="mx-auto max-w-4xl text-center">
+        <div class="mb-8">
+            <p class="text-sm font-medium uppercase tracking-wide text-irdi-green">
+                Administration
+            </p>
 
-            <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+            <h1 class="mt-3 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
                 Message Reports
             </h1>
 
-            <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
-
-            <p class="mt-6 text-lg text-zinc-600">
+            <p class="mt-3 text-sm text-zinc-600">
                 Review messages reported by IRDI members and manage moderation status.
             </p>
-
         </div>
 
         {{-- Status summary --}}
-        <div class="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="mx-auto grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
             <button
                 type="button"

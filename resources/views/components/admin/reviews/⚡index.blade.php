@@ -191,17 +191,17 @@ class extends Component
     <div class="mx-auto max-w-5xl px-6 py-16 lg:px-8 lg:py-20">
 
         <div class="mb-8">
+            <p class="text-sm font-medium uppercase tracking-wide text-irdi-green">
+                Administration
+            </p>
 
-            <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+            <h1 class="mt-3 text-3xl font-bold tracking-tight text-zinc-950 sm:text-4xl">
                 Review Moderation
             </h1>
 
-            <div class="mt-3 h-1 w-20 bg-irdi-gold"></div>
-
-            <p class="mt-4 text-sm text-zinc-600">
+            <p class="mt-3 text-sm text-zinc-600">
                 Review IRDI Property Owner Feedback submissions.
             </p>
-
         </div>
 
         {{-- Summary filters --}}
