@@ -48,6 +48,54 @@ class extends Component
             </p>
         </div>
 
+        @if (auth()->user()->membership_status === 'suspended')
+
+            <div class="mb-8 rounded-xl border border-red-300 bg-red-50 p-5">
+
+                <div class="flex gap-4">
+
+                    <div class="shrink-0">
+                        <div class="flex size-10 items-center justify-center rounded-full bg-red-100">
+                            <flux:icon.exclamation-triangle class="size-5 text-red-700" />
+                        </div>
+                    </div>
+
+                    <div class="min-w-0">
+
+                        <h2 class="font-semibold text-red-900">
+                            Your IRDI membership is suspended
+                        </h2>
+
+                        <p class="mt-2 text-sm leading-6 text-red-800">
+                            You can continue to view your existing property owner reviews and invitation history,
+                            and you may cancel an outstanding invitation. Creating or resending review invitations
+                            is unavailable while your membership is suspended.
+                        </p>
+
+                        <p class="mt-4 text-sm leading-6 text-red-800">
+                            If you have questions about your membership suspension or believe it should be reviewed,
+                            please contact IRDI.
+                        </p>
+
+                        <div class="mt-4">
+                            <flux:button
+                                href="{{ url('/contact') }}"
+                                variant="outline"
+                                size="sm"
+                                wire:navigate
+                            >
+                                Contact IRDI
+                            </flux:button>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        @endif
+
         @if (! $this->memberProfile)
 
             <div class="rounded-xl border border-zinc-200 bg-white p-8">
@@ -203,21 +251,25 @@ class extends Component
                                                 && ! $invitation->isCancelled()
                                             )
 
-                                                <form
-                                                    action="{{ route('account.review-invitations.resend', $invitation) }}"
-                                                    method="POST"
-                                                >
-                                                    @csrf
+                                                @if (auth()->user()->membership_status === 'active')
 
-                                                    <flux:button
-                                                        type="submit"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        icon="arrow-path"
+                                                    <form
+                                                        action="{{ route('account.review-invitations.resend', $invitation) }}"
+                                                        method="POST"
                                                     >
-                                                        Resend
-                                                    </flux:button>
-                                                </form>
+                                                        @csrf
+
+                                                        <flux:button
+                                                            type="submit"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            icon="arrow-path"
+                                                        >
+                                                            Resend
+                                                        </flux:button>
+                                                    </form>
+
+                                                @endif
 
                                                 <form
                                                     action="{{ route('account.review-invitations.cancel', $invitation) }}"

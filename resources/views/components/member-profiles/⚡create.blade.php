@@ -60,6 +60,17 @@ class extends Component
     {
         $this->username = strtolower($this->username);
 
+        if (auth()->user()->membership_status !== 'active') {
+            session()->flash(
+                'status',
+                'You must have an active IRDI membership before creating a profile.'
+            );
+
+            $this->redirectRoute('account');
+
+            return;
+        }
+
         if (auth()->user()->memberProfile()->exists()) {
             session()->flash(
                 'status',

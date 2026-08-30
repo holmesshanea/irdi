@@ -1,5 +1,17 @@
 <x-layouts.public>
 
+    @php
+        $currentUser = auth()->user();
+
+        $membershipSuspension = $currentUser->membership_status === 'suspended'
+            ? \App\Models\MembershipEnforcement::query()
+                ->where('user_id', $currentUser->id)
+                ->where('action', 'suspended')
+                ->latest('created_at')
+                ->first()
+            : null;
+    @endphp
+
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
 
@@ -150,15 +162,71 @@
 
                             @elseif (auth()->user()->membership_status === 'suspended')
 
-                                <div class="rounded-lg border border-red-200 bg-red-50 p-4">
-                                    <p class="font-medium text-red-900">
-                                        Your IRDI membership is currently suspended.
-                                    </p>
+                                <div class="rounded-xl border border-red-200 bg-red-50 p-5">
+                                    <div class="flex items-start gap-3">
+                                        <flux:icon.exclamation-triangle class="mt-0.5 size-5 shrink-0 text-red-700" />
 
-                                    <p class="mt-2 text-sm leading-6 text-red-700">
-                                        Member privileges are unavailable while your membership is suspended.
-                                        Your account and existing information remain available.
-                                    </p>
+                                        <div class="min-w-0">
+                                            <h4 class="font-semibold text-red-900">
+                                                Your IRDI membership is suspended
+                                            </h4>
+
+                                            <p class="mt-2 text-sm leading-6 text-red-800">
+                                                Your account and historical information are preserved, but active-member privileges are unavailable while your membership is suspended.
+                                            </p>
+
+                                            @if ($membershipSuspension)
+                                                <dl class="mt-4 space-y-2 text-sm">
+                                                    <div class="flex flex-wrap gap-x-2">
+                                                        <dt class="font-medium text-red-900">
+                                                            Suspended since:
+                                                        </dt>
+
+                                                        <dd class="text-red-800">
+                                                            {{ $membershipSuspension->created_at->format('F j, Y \a\t g:i A') }}
+                                                        </dd>
+                                                    </div>
+
+                                                    @if (filled($membershipSuspension->reason))
+                                                        <div>
+                                                            <dt class="font-medium text-red-900">
+                                                                Reason:
+                                                            </dt>
+
+                                                            <dd class="mt-1 leading-6 text-red-800">
+                                                                {{ $membershipSuspension->reason }}
+                                                            </dd>
+                                                        </div>
+                                                    @endif
+                                                </dl>
+                                            @endif
+
+                                            <div class="mt-4 rounded-lg border border-red-200 bg-white/60 p-4">
+                                                <p class="text-sm font-medium text-red-900">
+                                                    While suspended:
+                                                </p>
+
+                                                <p class="mt-2 text-sm leading-6 text-red-800">
+                                                    Your public member profile and Member Directory listing are unavailable. You cannot use your IRDI Member Card, request new property-owner reviews, access active-member resources, or send new member-to-member messages. ou may still access your account settings and existing account information.
+                                                </p>
+                                            </div>
+
+                                            <p class="mt-4 text-sm leading-6 text-red-800">
+                                                If you have questions about this suspension or believe it should be reviewed, please contact IRDI.
+                                            </p>
+
+                                            <div class="mt-4">
+                                                <flux:button
+                                                    href="{{ url('/contact') }}"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    wire:navigate
+                                                >
+                                                    Contact IRDI
+                                                </flux:button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                             @else
@@ -473,12 +541,28 @@
 
                                         <div class="min-w-0">
 
-                                            <flux:badge
-                                                size="sm"
-                                                color="green"
-                                            >
-                                                IRDI Member
-                                            </flux:badge>
+                                            @if (auth()->user()->membership_status === 'active')
+                                                <flux:badge
+                                                    size="sm"
+                                                    color="green"
+                                                >
+                                                    IRDI Member
+                                                </flux:badge>
+                                            @elseif (auth()->user()->membership_status === 'suspended')
+                                                <flux:badge
+                                                    size="sm"
+                                                    color="red"
+                                                >
+                                                    Membership Suspended
+                                                </flux:badge>
+                                            @else
+                                                <flux:badge
+                                                    size="sm"
+                                                    color="zinc"
+                                                >
+                                                    Inactive
+                                                </flux:badge>
+                                            @endif
 
                                             <p class="mt-2 text-lg font-semibold text-irdi-green">
                                                 {{ $profile->profile_name }}
@@ -515,7 +599,13 @@
 
                                             <div class="flex flex-wrap gap-2 lg:justify-end">
 
-                                                @if ($profile->directory_visible)
+                                                @if (auth()->user()->membership_status === 'suspended')
+
+                                                    <flux:badge color="red">
+                                                        Directory Unavailable While Suspended
+                                                    </flux:badge>
+
+                                                @elseif ($profile->directory_visible)
 
                                                     <flux:badge color="green">
                                                         Directory Visible
@@ -586,27 +676,27 @@
                                                 Edit
                                             </flux:button>
 
-                                                @if (auth()->user()->membership_status === 'active')
+                                            @if (auth()->user()->membership_status === 'active')
 
-                                                    <flux:button
-                                                        href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}#member-card"
-                                                        variant="outline"
-                                                        size="sm"
-                                                        icon="identification"
-                                                    >
-                                                        Member Card
-                                                    </flux:button>
+                                                <flux:button
+                                                    href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}#member-card"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    icon="identification"
+                                                >
+                                                    Member Card
+                                                </flux:button>
 
-                                                @else
+                                            @else
 
-                                                    <span
-                                                        class="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 opacity-60"
-                                                        title="Unavailable while membership is suspended."
-                                                    >
+                                                <span
+                                                    class="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 opacity-60"
+                                                    title="Unavailable while membership is suspended."
+                                                >
         Member Card
     </span>
 
-                                                @endif
+                                            @endif
 
                                             <flux:button
                                                 href="{{ route('messages.index') }}"

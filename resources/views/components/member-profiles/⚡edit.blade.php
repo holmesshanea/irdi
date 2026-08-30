@@ -39,6 +39,11 @@ class extends Component
 
     public ?TemporaryUploadedFile $profileImage = null;
 
+    public function getMembershipSuspendedProperty(): bool
+    {
+        return auth()->user()->membership_status === 'suspended';
+    }
+
     public function mount(MemberProfile $profile): void
     {
         if ($profile->user_id !== auth()->id()) {
@@ -136,8 +141,12 @@ class extends Component
             'country' => $validated['country'],
             'bio' => $validated['bio'],
             'website' => $validated['website'] ?: null,
-            'directory_visible' => $validated['directoryVisible'],
-            'allow_member_messages' => $validated['allowMemberMessages'],
+            'directory_visible' => $this->membershipSuspended
+                ? (bool) $this->profile->directory_visible
+                : $validated['directoryVisible'],
+            'allow_member_messages' => $this->membershipSuspended
+                ? (bool) $this->profile->allow_member_messages
+                : $validated['allowMemberMessages'],
         ]);
 
         auth()->user()->update([
@@ -176,6 +185,54 @@ class extends Component
                 </p>
 
             </div>
+
+            @if ($this->membershipSuspended)
+
+                <div class="mt-10 rounded-xl border border-red-300 bg-red-50 p-5">
+
+                    <div class="flex gap-4">
+
+                        <div class="shrink-0">
+                            <div class="flex size-10 items-center justify-center rounded-full bg-red-100">
+                                <flux:icon.exclamation-triangle class="size-5 text-red-700" />
+                            </div>
+                        </div>
+
+                        <div class="min-w-0">
+
+                            <h2 class="font-semibold text-red-900">
+                                Your IRDI membership is suspended
+                            </h2>
+
+                            <p class="mt-2 text-sm leading-6 text-red-800">
+                                You may continue to update your stored profile information while your membership is suspended.
+                                Your public Member Directory listing and member-to-member messaging preferences are temporarily
+                                unavailable and will remain unchanged until your membership is restored.
+                            </p>
+
+                            <p class="mt-4 text-sm leading-6 text-red-800">
+                                If you have questions about your membership suspension or believe it should be reviewed,
+                                please contact IRDI.
+                            </p>
+
+                            <div class="mt-4">
+                                <flux:button
+                                    href="{{ url('/contact') }}"
+                                    variant="outline"
+                                    size="sm"
+                                    wire:navigate
+                                >
+                                    Contact IRDI
+                                </flux:button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            @endif
 
             <flux:card class="mt-10 p-6">
 
@@ -351,17 +408,41 @@ class extends Component
                         description="Optional. This website will be displayed publicly on your profile."
                     />
 
-                    <flux:switch
-                        wire:model="directoryVisible"
-                        label="Show this profile in the Member Directory"
-                        description="When enabled, your profile can appear in the public IRDI Member Directory and anyone can view your public profile page."
-                    />
+                    @if ($this->membershipSuspended)
 
-                    <flux:switch
-                        wire:model.live="allowMemberMessages"
-                        label="Allow messages from other IRDI members"
-                        description="Other active IRDI members can send you private messages through your IRDI profile. Your email address will not be shared."
-                    />
+                        <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                            <flux:switch
+                                wire:model="directoryVisible"
+                                label="Show this profile in the Member Directory"
+                                description="Unavailable while your IRDI membership is suspended. Your saved preference will be preserved."
+                                disabled
+                            />
+                        </div>
+
+                        <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                            <flux:switch
+                                wire:model.live="allowMemberMessages"
+                                label="Allow messages from other IRDI members"
+                                description="Unavailable while your IRDI membership is suspended. Your saved preference will be preserved."
+                                disabled
+                            />
+                        </div>
+
+                    @else
+
+                        <flux:switch
+                            wire:model="directoryVisible"
+                            label="Show this profile in the Member Directory"
+                            description="When enabled, your profile can appear in the public IRDI Member Directory and anyone can view your public profile page."
+                        />
+
+                        <flux:switch
+                            wire:model.live="allowMemberMessages"
+                            label="Allow messages from other IRDI members"
+                            description="Other active IRDI members can send you private messages through your IRDI profile. Your email address will not be shared."
+                        />
+
+                    @endif
 
                     @if ($allowMemberMessages)
 

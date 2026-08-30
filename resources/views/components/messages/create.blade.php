@@ -79,8 +79,20 @@ class extends Component
 
         /*
          * Only active IRDI members may send messages.
+         *
+         * Show suspended members a helpful explanation instead of
+         * sending them to a generic 403 page.
          */
         if ($sender->membership_status !== 'active') {
+            if ($sender->membership_status === 'suspended') {
+                $this->messagingRestricted = true;
+
+                $this->messagingRestrictionMessage =
+                    'Your IRDI membership is currently suspended. Member-to-member messaging is unavailable while your membership is suspended.';
+
+                return false;
+            }
+
             abort(403);
         }
 
@@ -92,10 +104,7 @@ class extends Component
             $this->messagingRestricted = true;
 
             $this->messagingRestrictionMessage =
-                $sender->messagingRestrictionIsTemporary()
-                    ? 'Your ability to send private messages has been restricted by an IRDI administrator until '
-                    .$sender->messaging_disabled_until->format('F j, Y \a\t g:i A').'.'
-                    : 'Your ability to send private messages has been restricted by an IRDI administrator.';
+                'You can continue to read and manage your existing messages, but you cannot send new messages while this restriction is active.';
 
             return false;
         }
@@ -321,36 +330,141 @@ class extends Component
 
                 @if ($messagingRestricted)
 
-                    <div class="mt-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
+                    @if (auth()->user()->membership_status === 'suspended')
 
-                        <div class="flex items-start gap-3">
+                        <div class="mt-6 rounded-xl border border-red-300 bg-red-50 p-5">
 
-                            <flux:icon.exclamation-triangle class="mt-0.5 size-5 text-amber-700" />
+                            <div class="flex gap-4">
 
-                            <div>
+                                <div class="shrink-0">
+                                    <div class="flex size-10 items-center justify-center rounded-full bg-red-100">
+                                        <flux:icon.exclamation-triangle class="size-5 text-red-700" />
+                                    </div>
+                                </div>
 
-                                <h2 class="font-semibold text-amber-900">
-                                    Messaging unavailable
-                                </h2>
+                                <div class="min-w-0">
 
-                                <p class="mt-1 text-sm leading-6 text-amber-800">
-                                    {{ $messagingRestrictionMessage }}
-                                </p>
+                                    <h2 class="font-semibold text-red-900">
+                                        Your IRDI membership is suspended
+                                    </h2>
+
+                                    <p class="mt-2 text-sm leading-6 text-red-800">
+                                        {{ $messagingRestrictionMessage }}
+                                    </p>
+
+                                    <p class="mt-4 text-sm leading-6 text-red-800">
+                                        If you have questions about your membership suspension or believe it should be reviewed,
+                                        please contact IRDI.
+                                    </p>
+
+                                    <div class="mt-4">
+                                        <flux:button
+                                            href="{{ url('/contact') }}"
+                                            variant="outline"
+                                            size="sm"
+                                            wire:navigate
+                                        >
+                                            Contact IRDI
+                                        </flux:button>
+                                    </div>
+
+                                </div>
 
                             </div>
 
                         </div>
 
-                    </div>
+                    @else
 
-                    <div class="mt-6">
-                        <flux:button
-                            :href="route('member-profiles.show', $profile)"
-                            variant="ghost"
-                        >
-                            Back to Profile
-                        </flux:button>
-                    </div>
+                        <div class="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-5">
+
+                            <div class="flex gap-4">
+
+                                <div class="shrink-0">
+                                    <div class="flex size-10 items-center justify-center rounded-full bg-amber-100">
+                                        <flux:icon.exclamation-triangle class="size-5 text-amber-700" />
+                                    </div>
+                                </div>
+
+                                <div class="min-w-0">
+
+                                    <h2 class="font-semibold text-amber-900">
+                                        Your messaging privileges are suspended
+                                    </h2>
+
+                                    <p class="mt-2 text-sm leading-6 text-amber-800">
+                                        {{ $messagingRestrictionMessage }}
+                                    </p>
+
+                                    <dl class="mt-4 space-y-2 text-sm">
+
+                                        <div class="flex flex-wrap gap-x-2">
+                                            <dt class="font-medium text-amber-900">
+                                                Suspended since:
+                                            </dt>
+
+                                            <dd class="text-amber-800">
+                                                {{ auth()->user()->messaging_disabled_at->format('F j, Y \a\t g:i A') }}
+                                            </dd>
+                                        </div>
+
+                                        @if (auth()->user()->messaging_disabled_until)
+                                            <div class="flex flex-wrap gap-x-2">
+                                                <dt class="font-medium text-amber-900">
+                                                    Scheduled restoration:
+                                                </dt>
+
+                                                <dd class="text-amber-800">
+                                                    {{ auth()->user()->messaging_disabled_until->format('F j, Y \a\t g:i A') }}
+                                                </dd>
+                                            </div>
+                                        @else
+                                            <div class="flex flex-wrap gap-x-2">
+                                                <dt class="font-medium text-amber-900">
+                                                    Duration:
+                                                </dt>
+
+                                                <dd class="text-amber-800">
+                                                    Indefinite
+                                                </dd>
+                                            </div>
+                                        @endif
+
+                                    </dl>
+
+                                    <p class="mt-4 text-sm leading-6 text-amber-800">
+                                        If you have questions about this restriction or believe it should be reviewed,
+                                        please contact IRDI.
+                                    </p>
+
+                                    <div class="mt-4 flex flex-wrap items-center gap-3">
+
+                                        <flux:button
+                                            href="{{ url('/contact') }}"
+                                            variant="outline"
+                                            size="sm"
+                                            wire:navigate
+                                        >
+                                            Contact IRDI
+                                        </flux:button>
+
+                                        <flux:button
+                                            :href="route('member-profiles.show', $profile)"
+                                            variant="ghost"
+                                            size="sm"
+                                        >
+                                            Back to Profile
+                                        </flux:button>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    @endif
 
                 @else
 

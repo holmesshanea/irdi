@@ -218,6 +218,79 @@ class extends Component
 
             </div>
 
+            @if (auth()->user()->messaging_disabled_at)
+                <div class="mt-10 rounded-xl border border-amber-300 bg-amber-50 p-5">
+                    <div class="flex gap-4">
+                        <div class="shrink-0">
+                            <div class="flex size-10 items-center justify-center rounded-full bg-amber-100">
+                                <flux:icon.exclamation-triangle class="size-5 text-amber-700" />
+                            </div>
+                        </div>
+
+                        <div class="min-w-0">
+                            <h2 class="font-semibold text-amber-900">
+                                Your messaging privileges are suspended
+                            </h2>
+
+                            <p class="mt-2 text-sm leading-6 text-amber-800">
+                                You can continue to read and manage your existing messages,
+                                but you cannot send new messages while this restriction is active.
+                            </p>
+
+                            <dl class="mt-4 space-y-2 text-sm">
+                                <div class="flex flex-wrap gap-x-2">
+                                    <dt class="font-medium text-amber-900">
+                                        Suspended since:
+                                    </dt>
+
+                                    <dd class="text-amber-800">
+                                        {{ auth()->user()->messaging_disabled_at->format('F j, Y \a\t g:i A') }}
+                                    </dd>
+                                </div>
+
+                                @if (auth()->user()->messaging_disabled_until)
+                                    <div class="flex flex-wrap gap-x-2">
+                                        <dt class="font-medium text-amber-900">
+                                            Scheduled restoration:
+                                        </dt>
+
+                                        <dd class="text-amber-800">
+                                            {{ auth()->user()->messaging_disabled_until->format('F j, Y \a\t g:i A') }}
+                                        </dd>
+                                    </div>
+                                @else
+                                    <div class="flex flex-wrap gap-x-2">
+                                        <dt class="font-medium text-amber-900">
+                                            Duration:
+                                        </dt>
+
+                                        <dd class="text-amber-800">
+                                            Indefinite
+                                        </dd>
+                                    </div>
+                                @endif
+                            </dl>
+
+                            <p class="mt-4 text-sm leading-6 text-amber-800">
+                                If you have questions about this restriction or believe it should be reviewed,
+                                please contact IRDI.
+                            </p>
+
+                            <div class="mt-4">
+                                <flux:button
+                                    href="{{ url('/contact') }}"
+                                    variant="outline"
+                                    size="sm"
+                                    wire:navigate
+                                >
+                                    Contact IRDI
+                                </flux:button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <flux:card class="mt-10 p-6">
 
                 <div class="flex flex-wrap items-center justify-between gap-4 border-b border-zinc-200 pb-5">
