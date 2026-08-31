@@ -4,7 +4,9 @@ use App\Models\MessageReport;
 use App\Models\MessageReportModeration;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Support\StaffActivity;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -25,15 +27,28 @@ class extends Component
 
     public function markReviewed(): void
     {
-        $this->report->update([
-            'status' => 'reviewed',
-        ]);
+        DB::transaction(function (): void {
+            $this->report->update([
+                'status' => 'reviewed',
+            ]);
 
-        MessageReportModeration::create([
-            'message_report_id' => $this->report->id,
-            'user_id' => Auth::id(),
-            'action' => 'reviewed',
-        ]);
+            $moderation = MessageReportModeration::create([
+                'message_report_id' => $this->report->id,
+                'user_id' => Auth::id(),
+                'action' => 'reviewed',
+            ]);
+
+            StaffActivity::record(
+                action: 'message_report_reviewed',
+                description: 'Marked message report #'.$this->report->id.' as reviewed.',
+                targetUserId: $this->reportedUser()?->id,
+                subject: $moderation,
+                metadata: [
+                    'message_report_id' => $this->report->id,
+                    'reporter_id' => $this->report->reporter_id,
+                ],
+            );
+        });
 
         $this->loadReport();
 
@@ -42,15 +57,28 @@ class extends Component
 
     public function dismissReport(): void
     {
-        $this->report->update([
-            'status' => 'dismissed',
-        ]);
+        DB::transaction(function (): void {
+            $this->report->update([
+                'status' => 'dismissed',
+            ]);
 
-        MessageReportModeration::create([
-            'message_report_id' => $this->report->id,
-            'user_id' => Auth::id(),
-            'action' => 'dismissed',
-        ]);
+            $moderation = MessageReportModeration::create([
+                'message_report_id' => $this->report->id,
+                'user_id' => Auth::id(),
+                'action' => 'dismissed',
+            ]);
+
+            StaffActivity::record(
+                action: 'message_report_dismissed',
+                description: 'Dismissed message report #'.$this->report->id.'.',
+                targetUserId: $this->reportedUser()?->id,
+                subject: $moderation,
+                metadata: [
+                    'message_report_id' => $this->report->id,
+                    'reporter_id' => $this->report->reporter_id,
+                ],
+            );
+        });
 
         $this->loadReport();
 
@@ -59,15 +87,28 @@ class extends Component
 
     public function reopenReport(): void
     {
-        $this->report->update([
-            'status' => 'pending',
-        ]);
+        DB::transaction(function (): void {
+            $this->report->update([
+                'status' => 'pending',
+            ]);
 
-        MessageReportModeration::create([
-            'message_report_id' => $this->report->id,
-            'user_id' => Auth::id(),
-            'action' => 'reopened',
-        ]);
+            $moderation = MessageReportModeration::create([
+                'message_report_id' => $this->report->id,
+                'user_id' => Auth::id(),
+                'action' => 'reopened',
+            ]);
+
+            StaffActivity::record(
+                action: 'message_report_reopened',
+                description: 'Returned message report #'.$this->report->id.' to pending.',
+                targetUserId: $this->reportedUser()?->id,
+                subject: $moderation,
+                metadata: [
+                    'message_report_id' => $this->report->id,
+                    'reporter_id' => $this->report->reporter_id,
+                ],
+            );
+        });
 
         $this->loadReport();
 
@@ -101,18 +142,33 @@ class extends Component
             'permanent' => null,
         };
 
-        $reportedUser->messaging_disabled_at = now();
-        $reportedUser->messaging_disabled_until = $expiresAt;
-        $reportedUser->save();
+        DB::transaction(function () use ($reportedUser, $expiresAt): void {
+            $reportedUser->messaging_disabled_at = now();
+            $reportedUser->messaging_disabled_until = $expiresAt;
+            $reportedUser->save();
 
-        MessagingEnforcement::create([
-            'user_id' => $reportedUser->id,
-            'admin_id' => Auth::id(),
-            'message_report_id' => $this->report->id,
-            'action' => 'disabled',
-            'reason' => $this->enforcementReason,
-            'expires_at' => $expiresAt,
-        ]);
+            $enforcement = MessagingEnforcement::create([
+                'user_id' => $reportedUser->id,
+                'admin_id' => Auth::id(),
+                'message_report_id' => $this->report->id,
+                'action' => 'disabled',
+                'reason' => $this->enforcementReason,
+                'expires_at' => $expiresAt,
+            ]);
+
+            StaffActivity::record(
+                action: 'messaging_disabled_from_report',
+                description: 'Disabled messaging for '.$reportedUser->name.' from message report #'.$this->report->id.'.',
+                targetUserId: $reportedUser->id,
+                subject: $enforcement,
+                metadata: [
+                    'message_report_id' => $this->report->id,
+                    'reason' => $this->enforcementReason,
+                    'restriction_type' => $this->restrictionType,
+                    'expires_at' => $expiresAt?->toIso8601String(),
+                ],
+            );
+        });
 
         $this->enforcementReason = '';
         $this->restrictionType = '7_days';
@@ -140,18 +196,31 @@ class extends Component
             return;
         }
 
-        $reportedUser->messaging_disabled_at = null;
-        $reportedUser->messaging_disabled_until = null;
-        $reportedUser->save();
+        DB::transaction(function () use ($reportedUser): void {
+            $reportedUser->messaging_disabled_at = null;
+            $reportedUser->messaging_disabled_until = null;
+            $reportedUser->save();
 
-        MessagingEnforcement::create([
-            'user_id' => $reportedUser->id,
-            'admin_id' => Auth::id(),
-            'message_report_id' => $this->report->id,
-            'action' => 'restored',
-            'reason' => $this->restoreReason,
-            'expires_at' => null,
-        ]);
+            $enforcement = MessagingEnforcement::create([
+                'user_id' => $reportedUser->id,
+                'admin_id' => Auth::id(),
+                'message_report_id' => $this->report->id,
+                'action' => 'restored',
+                'reason' => $this->restoreReason,
+                'expires_at' => null,
+            ]);
+
+            StaffActivity::record(
+                action: 'messaging_restored_from_report',
+                description: 'Restored messaging for '.$reportedUser->name.' from message report #'.$this->report->id.'.',
+                targetUserId: $reportedUser->id,
+                subject: $enforcement,
+                metadata: [
+                    'message_report_id' => $this->report->id,
+                    'reason' => $this->restoreReason,
+                ],
+            );
+        });
 
         $this->restoreReason = '';
 

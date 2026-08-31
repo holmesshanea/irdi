@@ -9,6 +9,7 @@ use App\Notifications\MembershipRestoredNotification;
 use App\Notifications\MembershipSuspendedNotification;
 use App\Notifications\MessagingRestoredNotification;
 use App\Notifications\MessagingRestrictedNotification;
+use App\Support\StaffActivity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
@@ -55,18 +56,32 @@ class extends Component
             'permanent' => null,
         };
 
-        $this->user->messaging_disabled_at = now();
-        $this->user->messaging_disabled_until = $expiresAt;
-        $this->user->save();
+        DB::transaction(function () use ($expiresAt): void {
+            $this->user->messaging_disabled_at = now();
+            $this->user->messaging_disabled_until = $expiresAt;
+            $this->user->save();
 
-        MessagingEnforcement::create([
-            'user_id' => $this->user->id,
-            'admin_id' => Auth::id(),
-            'message_report_id' => null,
-            'action' => 'disabled',
-            'reason' => $this->enforcementReason,
-            'expires_at' => $expiresAt,
-        ]);
+            $enforcement = MessagingEnforcement::create([
+                'user_id' => $this->user->id,
+                'admin_id' => Auth::id(),
+                'message_report_id' => null,
+                'action' => 'disabled',
+                'reason' => $this->enforcementReason,
+                'expires_at' => $expiresAt,
+            ]);
+
+            StaffActivity::record(
+                action: 'messaging_disabled',
+                description: 'Disabled messaging for '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $enforcement,
+                metadata: [
+                    'reason' => $this->enforcementReason,
+                    'restriction_type' => $this->restrictionType,
+                    'expires_at' => $expiresAt?->toIso8601String(),
+                ],
+            );
+        });
 
         $this->user->notify(
             new MessagingRestrictedNotification($expiresAt)
@@ -90,18 +105,30 @@ class extends Component
             'restoreReason.max' => 'The restore reason must be 1,000 characters or fewer.',
         ]);
 
-        $this->user->messaging_disabled_at = null;
-        $this->user->messaging_disabled_until = null;
-        $this->user->save();
+        DB::transaction(function (): void {
+            $this->user->messaging_disabled_at = null;
+            $this->user->messaging_disabled_until = null;
+            $this->user->save();
 
-        MessagingEnforcement::create([
-            'user_id' => $this->user->id,
-            'admin_id' => Auth::id(),
-            'message_report_id' => null,
-            'action' => 'restored',
-            'reason' => $this->restoreReason,
-            'expires_at' => null,
-        ]);
+            $enforcement = MessagingEnforcement::create([
+                'user_id' => $this->user->id,
+                'admin_id' => Auth::id(),
+                'message_report_id' => null,
+                'action' => 'restored',
+                'reason' => $this->restoreReason,
+                'expires_at' => null,
+            ]);
+
+            StaffActivity::record(
+                action: 'messaging_restored',
+                description: 'Restored messaging for '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $enforcement,
+                metadata: [
+                    'reason' => $this->restoreReason,
+                ],
+            );
+        });
 
         $this->user->notify(
             new MessagingRestoredNotification
@@ -142,15 +169,27 @@ class extends Component
             'suspensionReason.max' => 'The suspension reason must be 1,000 characters or fewer.',
         ]);
 
-        $this->user->membership_status = 'suspended';
-        $this->user->save();
+        DB::transaction(function (): void {
+            $this->user->membership_status = 'suspended';
+            $this->user->save();
 
-        MembershipEnforcement::create([
-            'user_id' => $this->user->id,
-            'admin_id' => Auth::id(),
-            'action' => 'suspended',
-            'reason' => $this->suspensionReason,
-        ]);
+            $enforcement = MembershipEnforcement::create([
+                'user_id' => $this->user->id,
+                'admin_id' => Auth::id(),
+                'action' => 'suspended',
+                'reason' => $this->suspensionReason,
+            ]);
+
+            StaffActivity::record(
+                action: 'membership_suspended',
+                description: 'Suspended IRDI membership for '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $enforcement,
+                metadata: [
+                    'reason' => $this->suspensionReason,
+                ],
+            );
+        });
 
         $this->user->notify(
             new MembershipSuspendedNotification
@@ -182,15 +221,27 @@ class extends Component
             'membershipRestoreReason.max' => 'The restoration reason must be 1,000 characters or fewer.',
         ]);
 
-        $this->user->membership_status = 'active';
-        $this->user->save();
+        DB::transaction(function (): void {
+            $this->user->membership_status = 'active';
+            $this->user->save();
 
-        MembershipEnforcement::create([
-            'user_id' => $this->user->id,
-            'admin_id' => Auth::id(),
-            'action' => 'restored',
-            'reason' => $this->membershipRestoreReason,
-        ]);
+            $enforcement = MembershipEnforcement::create([
+                'user_id' => $this->user->id,
+                'admin_id' => Auth::id(),
+                'action' => 'restored',
+                'reason' => $this->membershipRestoreReason,
+            ]);
+
+            StaffActivity::record(
+                action: 'membership_restored',
+                description: 'Restored IRDI membership for '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $enforcement,
+                metadata: [
+                    'reason' => $this->membershipRestoreReason,
+                ],
+            );
+        });
 
         $this->user->notify(
             new MembershipRestoredNotification
@@ -272,6 +323,19 @@ class extends Component
                         ]
                     );
                 });
+
+            StaffActivity::record(
+                action: 'member_banned',
+                description: 'Banned '.$this->user->name.' from IRDI.',
+                targetUserId: $this->user->id,
+                subject: $enforcement,
+                metadata: [
+                    'reason' => $this->banReason,
+                    'email_banned' => strtolower(trim($this->user->email)),
+                    'registration_ip' => $this->user->registration_ip,
+                    'last_login_ip' => $this->user->last_login_ip,
+                ],
+            );
         });
 
         $this->banReason = '';
@@ -324,7 +388,7 @@ class extends Component
             $this->user->membership_status = 'active';
             $this->user->save();
 
-            MembershipEnforcement::create([
+            $enforcement = MembershipEnforcement::create([
                 'user_id' => $this->user->id,
                 'admin_id' => Auth::id(),
                 'action' => 'unbanned',
@@ -342,6 +406,16 @@ class extends Component
                         });
                 })
                 ->delete();
+
+            StaffActivity::record(
+                action: 'member_unbanned',
+                description: 'Unbanned '.$this->user->name.' and restored IRDI membership.',
+                targetUserId: $this->user->id,
+                subject: $enforcement,
+                metadata: [
+                    'reason' => $this->unbanReason,
+                ],
+            );
         });
 
         $this->unbanReason = '';
@@ -377,8 +451,20 @@ class extends Component
             return;
         }
 
-        $this->user->is_moderator = true;
-        $this->user->save();
+        DB::transaction(function (): void {
+            $this->user->is_moderator = true;
+            $this->user->save();
+
+            StaffActivity::record(
+                action: 'moderator_assigned',
+                description: 'Assigned Moderator access to '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $this->user,
+                metadata: [
+                    'is_moderator' => true,
+                ],
+            );
+        });
 
         $this->loadUser();
 
@@ -393,8 +479,20 @@ class extends Component
             return;
         }
 
-        $this->user->is_moderator = false;
-        $this->user->save();
+        DB::transaction(function (): void {
+            $this->user->is_moderator = false;
+            $this->user->save();
+
+            StaffActivity::record(
+                action: 'moderator_removed',
+                description: 'Removed Moderator access from '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $this->user,
+                metadata: [
+                    'is_moderator' => false,
+                ],
+            );
+        });
 
         $this->loadUser();
 
@@ -409,9 +507,25 @@ class extends Component
             return;
         }
 
-        $this->user->is_admin = true;
-        $this->user->is_moderator = false;
-        $this->user->save();
+        DB::transaction(function (): void {
+            $wasModerator = (bool) $this->user->is_moderator;
+
+            $this->user->is_admin = true;
+            $this->user->is_moderator = false;
+            $this->user->save();
+
+            StaffActivity::record(
+                action: 'administrator_assigned',
+                description: 'Assigned Administrator access to '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $this->user,
+                metadata: [
+                    'is_admin' => true,
+                    'previously_moderator' => $wasModerator,
+                    'is_moderator' => false,
+                ],
+            );
+        });
 
         $this->loadUser();
 
@@ -435,8 +549,20 @@ class extends Component
             return;
         }
 
-        $this->user->is_admin = false;
-        $this->user->save();
+        DB::transaction(function (): void {
+            $this->user->is_admin = false;
+            $this->user->save();
+
+            StaffActivity::record(
+                action: 'administrator_removed',
+                description: 'Removed Administrator access from '.$this->user->name.'.',
+                targetUserId: $this->user->id,
+                subject: $this->user,
+                metadata: [
+                    'is_admin' => false,
+                ],
+            );
+        });
 
         $this->loadUser();
 

@@ -2,6 +2,8 @@
 
 use App\Models\PropertyReview;
 use App\Models\PropertyReviewModeration;
+use App\Support\StaffActivity;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -24,8 +26,20 @@ class extends Component
         $review = PropertyReview::findOrFail($reviewId);
 
         if ($review->admin_reviewed_at === null) {
-            $review->admin_reviewed_at = now();
-            $review->save();
+            DB::transaction(function () use ($review): void {
+                $review->admin_reviewed_at = now();
+                $review->save();
+
+                StaffActivity::record(
+                    action: 'review_marked_reviewed',
+                    description: 'Marked property owner review #'.$review->id.' as reviewed.',
+                    targetUserId: $review->memberProfile?->user_id,
+                    subject: $review,
+                    metadata: [
+                        'property_review_id' => $review->id,
+                    ],
+                );
+            });
         }
 
         session()->flash('status', 'Review marked as reviewed.');
@@ -56,24 +70,37 @@ class extends Component
 
         $review = PropertyReview::findOrFail($this->reviewBeingHidden);
 
-        $review->hidden_at = now();
+        DB::transaction(function () use ($review): void {
+            $review->hidden_at = now();
 
-        /*
-         * Hiding a review is an administrative decision,
-         * so it also counts as having reviewed it.
-         */
-        if ($review->admin_reviewed_at === null) {
-            $review->admin_reviewed_at = now();
-        }
+            /*
+             * Hiding a review is an administrative decision,
+             * so it also counts as having reviewed it.
+             */
+            if ($review->admin_reviewed_at === null) {
+                $review->admin_reviewed_at = now();
+            }
 
-        $review->save();
+            $review->save();
 
-        PropertyReviewModeration::create([
-            'property_review_id' => $review->id,
-            'user_id' => auth()->id(),
-            'action' => 'hidden',
-            'note' => $this->moderationNote,
-        ]);
+            $moderation = PropertyReviewModeration::create([
+                'property_review_id' => $review->id,
+                'user_id' => auth()->id(),
+                'action' => 'hidden',
+                'note' => $this->moderationNote,
+            ]);
+
+            StaffActivity::record(
+                action: 'review_hidden',
+                description: 'Hid property owner review #'.$review->id.'.',
+                targetUserId: $review->memberProfile?->user_id,
+                subject: $moderation,
+                metadata: [
+                    'property_review_id' => $review->id,
+                    'reason' => $this->moderationNote,
+                ],
+            );
+        });
 
         $this->reviewBeingHidden = null;
         $this->moderationNote = '';
@@ -94,15 +121,28 @@ class extends Component
 
         $review = PropertyReview::findOrFail($this->reviewBeingRestored);
 
-        $review->hidden_at = null;
-        $review->save();
+        DB::transaction(function () use ($review): void {
+            $review->hidden_at = null;
+            $review->save();
 
-        PropertyReviewModeration::create([
-            'property_review_id' => $review->id,
-            'user_id' => auth()->id(),
-            'action' => 'restored',
-            'note' => $this->restoreNote,
-        ]);
+            $moderation = PropertyReviewModeration::create([
+                'property_review_id' => $review->id,
+                'user_id' => auth()->id(),
+                'action' => 'restored',
+                'note' => $this->restoreNote,
+            ]);
+
+            StaffActivity::record(
+                action: 'review_restored',
+                description: 'Restored property owner review #'.$review->id.'.',
+                targetUserId: $review->memberProfile?->user_id,
+                subject: $moderation,
+                metadata: [
+                    'property_review_id' => $review->id,
+                    'reason' => $this->restoreNote,
+                ],
+            );
+        });
 
         $this->reviewBeingRestored = null;
         $this->restoreNote = '';

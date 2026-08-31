@@ -2,6 +2,8 @@
 
 use App\Models\PropertyReview;
 use App\Models\PropertyReviewModeration;
+use App\Support\StaffActivity;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -69,16 +71,29 @@ class extends Component
             'moderationNote.max' => 'The moderation note must be 1,000 characters or fewer.',
         ]);
 
-        $this->review->hidden_at = now();
-        $this->review->moderation_note = $this->moderationNote;
-        $this->review->save();
+        DB::transaction(function (): void {
+            $this->review->hidden_at = now();
+            $this->review->moderation_note = $this->moderationNote;
+            $this->review->save();
 
-        PropertyReviewModeration::create([
-            'property_review_id' => $this->review->id,
-            'user_id' => auth()->id(),
-            'action' => 'hidden',
-            'note' => $this->moderationNote,
-        ]);
+            $moderation = PropertyReviewModeration::create([
+                'property_review_id' => $this->review->id,
+                'user_id' => auth()->id(),
+                'action' => 'hidden',
+                'note' => $this->moderationNote,
+            ]);
+
+            StaffActivity::record(
+                action: 'review_hidden',
+                description: 'Hid property owner review #'.$this->review->id.'.',
+                targetUserId: $this->review->memberProfile?->user_id,
+                subject: $moderation,
+                metadata: [
+                    'property_review_id' => $this->review->id,
+                    'reason' => $this->moderationNote,
+                ],
+            );
+        });
 
         $this->review->load('moderations.user');
 
@@ -98,15 +113,28 @@ class extends Component
             'restoreNote.max' => 'The restore reason must be 1,000 characters or fewer.',
         ]);
 
-        $this->review->hidden_at = null;
-        $this->review->save();
+        DB::transaction(function (): void {
+            $this->review->hidden_at = null;
+            $this->review->save();
 
-        PropertyReviewModeration::create([
-            'property_review_id' => $this->review->id,
-            'user_id' => auth()->id(),
-            'action' => 'restored',
-            'note' => $this->restoreNote,
-        ]);
+            $moderation = PropertyReviewModeration::create([
+                'property_review_id' => $this->review->id,
+                'user_id' => auth()->id(),
+                'action' => 'restored',
+                'note' => $this->restoreNote,
+            ]);
+
+            StaffActivity::record(
+                action: 'review_restored',
+                description: 'Restored property owner review #'.$this->review->id.'.',
+                targetUserId: $this->review->memberProfile?->user_id,
+                subject: $moderation,
+                metadata: [
+                    'property_review_id' => $this->review->id,
+                    'reason' => $this->restoreNote,
+                ],
+            );
+        });
 
         $this->review->load('moderations.user');
 

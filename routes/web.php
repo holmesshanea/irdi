@@ -189,6 +189,19 @@ Route::livewire('/admin/reviews/{review}', 'admin.reviews.show')
 
 /*
 |--------------------------------------------------------------------------
+| Staff Activity Log
+|--------------------------------------------------------------------------
+*/
+
+Route::livewire(
+    '/admin/activity',
+    'admin.activity.index'
+)
+    ->middleware(['auth', 'verified', 'moderator-or-admin'])
+    ->name('admin.activity.index');
+
+/*
+|--------------------------------------------------------------------------
 | Message Reports
 |--------------------------------------------------------------------------
 */

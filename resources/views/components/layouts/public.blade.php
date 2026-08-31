@@ -197,6 +197,13 @@
                                 </span>
                             @endif
                         </a>
+
+                        <a
+                            href="{{ route('admin.activity.index') }}"
+                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
+                        >
+                            <span>Activity Log</span>
+                        </a>
                     </div>
 
                 </div>
@@ -385,6 +392,14 @@
                             </span>
                         @endif
                     </div>
+                </flux:sidebar.item>
+
+                <flux:sidebar.item
+                    href="{{ route('admin.activity.index') }}"
+                    :current="request()->routeIs('admin.activity.*')"
+                    icon="clock"
+                >
+                    Activity Log
                 </flux:sidebar.item>
 
             @endif
