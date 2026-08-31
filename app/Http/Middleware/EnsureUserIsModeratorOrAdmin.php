@@ -22,4 +22,3 @@ class EnsureUserIsModeratorOrAdmin
         return $next($request);
     }
 }
-
