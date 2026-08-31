@@ -17,13 +17,15 @@ class extends Component
     public string $stateProvince = '';
     public string $city = '';
     public string $sort = 'name_asc';
+    public string $designation = 'all';
 
     public function getHasActiveFiltersProperty(): bool
     {
         return $this->search !== ''
             || $this->country !== ''
             || $this->stateProvince !== ''
-            || $this->city !== '';
+            || $this->city !== ''
+            || $this->designation !== 'all';
     }
 
     public function getProfilesProperty()
@@ -46,6 +48,21 @@ class extends Component
             })
             ->when($this->city, function ($query) {
                 $query->where('city', $this->city);
+            })
+            ->when($this->designation === 'charter', function ($query) {
+                $query->whereHas('user', function ($query) {
+                    $query->where('is_charter_member', true);
+                });
+            })
+            ->when($this->designation === 'admin', function ($query) {
+                $query->whereHas('user', function ($query) {
+                    $query->where('is_admin', true);
+                });
+            })
+            ->when($this->designation === 'moderator', function ($query) {
+                $query->whereHas('user', function ($query) {
+                    $query->where('is_moderator', true);
+                });
             })
             ->when($this->sort === 'name_asc', function ($query) {
                 $query
@@ -148,6 +165,11 @@ class extends Component
         $this->resetPage();
     }
 
+    public function updatedDesignation(): void
+    {
+        $this->resetPage();
+    }
+
     public function clearFilters(): void
     {
         $this->reset([
@@ -156,6 +178,8 @@ class extends Component
             'stateProvince',
             'city',
         ]);
+
+        $this->designation = 'all';
 
         $this->resetPage();
     }
@@ -187,7 +211,7 @@ class extends Component
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
 
-            <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-6">
+            <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
 
                 <div class="md:col-span-2 lg:col-span-2">
                     <flux:input
@@ -252,6 +276,24 @@ class extends Component
                     </flux:select.option>
                 </flux:select>
 
+                <flux:select wire:model.live="designation">
+                    <flux:select.option value="all">
+                        All Members
+                    </flux:select.option>
+
+                    <flux:select.option value="charter">
+                        Charter Members
+                    </flux:select.option>
+
+                    <flux:select.option value="admin">
+                        Administrators
+                    </flux:select.option>
+
+                    <flux:select.option value="moderator">
+                        Moderators
+                    </flux:select.option>
+                </flux:select>
+
             </div>
 
             @if ($this->hasActiveFilters)
@@ -284,7 +326,7 @@ class extends Component
 
                 <div
                     wire:loading
-                    wire:target="search,country,stateProvince,city,sort,clearFilters"
+                    wire:target="search,country,stateProvince,city,sort,designation,clearFilters"
                     class="text-sm text-zinc-500"
                 >
                     Updating results...

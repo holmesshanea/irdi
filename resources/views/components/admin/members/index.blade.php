@@ -14,6 +14,7 @@ class extends Component
     public string $search = '';
     public string $membershipStatus = 'all';
     public string $messagingStatus = 'all';
+    public string $designation = 'all';
 
     public function updatedSearch(): void
     {
@@ -26,6 +27,11 @@ class extends Component
     }
 
     public function updatedMessagingStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDesignation(): void
     {
         $this->resetPage();
     }
@@ -72,6 +78,18 @@ class extends Component
 
         if ($this->membershipStatus !== 'all') {
             $query->where('membership_status', $this->membershipStatus);
+        }
+
+        if ($this->designation === 'charter') {
+            $query->where('is_charter_member', true);
+        }
+
+        if ($this->designation === 'admin') {
+            $query->where('is_admin', true);
+        }
+
+        if ($this->designation === 'moderator') {
+            $query->where('is_moderator', true);
         }
 
         if ($this->messagingStatus === 'active') {
@@ -123,7 +141,7 @@ class extends Component
         </div>
 
         <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-            <div class="grid gap-4 md:grid-cols-3">
+            <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
 
                 <flux:input
                     wire:model.live.debounce.300ms="search"
@@ -151,10 +169,6 @@ class extends Component
                         Suspended
                     </flux:select.option>
 
-                    <flux:select.option value="banned">
-                        Banned
-                    </flux:select.option>
-
                     <flux:select.option value="inactive">
                         Inactive
                     </flux:select.option>
@@ -174,6 +188,27 @@ class extends Component
 
                     <flux:select.option value="restricted">
                         Restricted
+                    </flux:select.option>
+                </flux:select>
+
+                <flux:select
+                    wire:model.live="designation"
+                    label="Staff / Recognition"
+                >
+                    <flux:select.option value="all">
+                        All members
+                    </flux:select.option>
+
+                    <flux:select.option value="charter">
+                        Charter Members
+                    </flux:select.option>
+
+                    <flux:select.option value="admin">
+                        Administrators
+                    </flux:select.option>
+
+                    <flux:select.option value="moderator">
+                        Moderators
                     </flux:select.option>
                 </flux:select>
 
@@ -219,41 +254,6 @@ class extends Component
                                     {{ $member->name }}
                                 </div>
 
-                                @if (
-                                    $member->is_admin
-                                    || $member->is_moderator
-                                    || $member->is_charter_member
-                                )
-                                    <div class="mt-2 flex flex-wrap gap-2">
-
-                                        @if ($member->is_admin)
-                                            <flux:badge
-                                                size="sm"
-                                                color="red"
-                                            >
-                                                Administrator
-                                            </flux:badge>
-                                        @elseif ($member->is_moderator)
-                                            <flux:badge
-                                                size="sm"
-                                                color="blue"
-                                            >
-                                                Moderator
-                                            </flux:badge>
-                                        @endif
-
-                                        @if ($member->is_charter_member)
-                                            <flux:badge
-                                                size="sm"
-                                                color="amber"
-                                            >
-                                                Charter Member
-                                            </flux:badge>
-                                        @endif
-
-                                    </div>
-                                @endif
-
                                 <div class="mt-1 text-sm text-zinc-500">
                                     {{ $member->email }}
                                 </div>
@@ -285,10 +285,6 @@ class extends Component
                                 @elseif ($member->membership_status === 'suspended')
                                     <flux:badge color="red">
                                         Suspended
-                                    </flux:badge>
-                                @elseif ($member->membership_status === 'banned')
-                                    <flux:badge color="red">
-                                        Banned
                                     </flux:badge>
                                 @elseif ($member->membership_status === 'pending')
                                     <flux:badge color="amber">
