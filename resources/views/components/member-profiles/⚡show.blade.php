@@ -99,11 +99,29 @@ class extends Component
 
                     @endif
 
-                    @if ($profile->user->membership_status === 'active')
-                        <div class="flex justify-center">
-                            <flux:badge color="green" icon="check-circle">
-                                Active IRDI Member
-                            </flux:badge>
+                    @if (
+                        $profile->user->is_admin
+                        || $profile->user->is_moderator
+                        || $profile->user->is_charter_member
+                    )
+                        <div class="flex flex-wrap justify-center gap-2">
+
+                            @if ($profile->user->is_admin)
+                                <flux:badge color="red">
+                                    Administrator
+                                </flux:badge>
+                            @elseif ($profile->user->is_moderator)
+                                <flux:badge color="blue">
+                                    Moderator
+                                </flux:badge>
+                            @endif
+
+                            @if ($profile->user->is_charter_member)
+                                <flux:badge color="amber">
+                                    Charter Member
+                                </flux:badge>
+                            @endif
+
                         </div>
                     @endif
 
@@ -346,26 +364,40 @@ class extends Component
 
                                         <div class="min-w-0">
 
-                                            <div class="flex flex-wrap items-center gap-2">
+                                            @if (
+                                                $profile->user->is_admin
+                                                || $profile->user->is_moderator
+                                                || $profile->user->is_charter_member
+                                            )
+                                                <div class="flex flex-wrap items-center gap-2">
 
-                                                <flux:badge
-                                                    size="sm"
-                                                    color="green"
-                                                >
-                                                    IRDI Member
-                                                </flux:badge>
+                                                    @if ($profile->user->is_admin)
+                                                        <flux:badge
+                                                            size="sm"
+                                                            color="red"
+                                                        >
+                                                            Administrator
+                                                        </flux:badge>
+                                                    @elseif ($profile->user->is_moderator)
+                                                        <flux:badge
+                                                            size="sm"
+                                                            color="blue"
+                                                        >
+                                                            Moderator
+                                                        </flux:badge>
+                                                    @endif
 
-                                                @if ($profile->user->membership_status === 'active')
-                                                    <flux:badge
-                                                        size="sm"
-                                                        color="green"
-                                                        icon="check-circle"
-                                                    >
-                                                        Active Member
-                                                    </flux:badge>
-                                                @endif
+                                                    @if ($profile->user->is_charter_member)
+                                                        <flux:badge
+                                                            size="sm"
+                                                            color="amber"
+                                                        >
+                                                            Charter Member
+                                                        </flux:badge>
+                                                    @endif
 
-                                            </div>
+                                                </div>
+                                            @endif
 
                                             <h2 class="mt-2 text-xl font-bold text-irdi-green">
                                                 {{ $profile->profile_name }}

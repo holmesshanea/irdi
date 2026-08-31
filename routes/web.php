@@ -180,11 +180,11 @@ Route::livewire('/review/{token}', 'reviews.show')
 */
 
 Route::livewire('/admin/reviews', 'admin.reviews.index')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'moderator-or-admin'])
     ->name('admin.reviews.index');
 
 Route::livewire('/admin/reviews/{review}', 'admin.reviews.show')
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'moderator-or-admin'])
     ->name('admin.reviews.show');
 
 /*
@@ -197,14 +197,14 @@ Route::livewire(
     '/admin/message-reports',
     'admin.message-reports.index'
 )
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'moderator-or-admin'])
     ->name('admin.message-reports.index');
 
 Route::livewire(
     '/admin/message-reports/{report}',
     'admin.message-reports.show'
 )
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'moderator-or-admin'])
     ->name('admin.message-reports.show');
 
 /*
@@ -217,12 +217,12 @@ Route::livewire(
     '/admin/members',
     'admin.members.index'
 )
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'moderator-or-admin'])
     ->name('admin.members.index');
 
 Route::livewire(
     '/admin/members/{user}',
     'admin.members.show'
 )
-    ->middleware(['auth', 'verified', 'admin'])
+    ->middleware(['auth', 'verified', 'moderator-or-admin'])
     ->name('admin.members.show');

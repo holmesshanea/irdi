@@ -117,7 +117,7 @@
         {{-- Authenticated navigation --}}
         @auth
 
-            @if (auth()->user()->is_admin)
+            @if (auth()->user()->is_admin || auth()->user()->is_moderator)
 
                 @php
                     $pendingReviewCount = \App\Models\PropertyReview::query()
@@ -127,6 +127,10 @@
                     $pendingMessageReportCount = \App\Models\MessageReport::query()
                         ->where('status', 'pending')
                         ->count();
+
+                    $staffMenuLabel = auth()->user()->is_admin
+                        ? 'Admin'
+                        : 'Moderator';
                 @endphp
 
                 <div
@@ -140,7 +144,7 @@
                         x-on:click="open = ! open"
                         x-on:click.outside="open = false"
                     >
-                        Admin
+                        {{ $staffMenuLabel }}
 
                         <svg
                             viewBox="0 0 20 20"
@@ -199,7 +203,7 @@
 
             @endif
 
-            <div class="{{ auth()->user()->is_admin ? '' : 'ml-3 border-l border-zinc-300 pl-3' }}">
+            <div class="{{ (auth()->user()->is_admin || auth()->user()->is_moderator) ? '' : 'ml-3 border-l border-zinc-300 pl-3' }}">
 
                 <flux:navbar.item
                     href="{{ route('account') }}"
@@ -335,12 +339,12 @@
         {{-- Authenticated navigation --}}
         @auth
 
-            @if (auth()->user()->is_admin)
+            @if (auth()->user()->is_admin || auth()->user()->is_moderator)
 
                 <div class="my-4 border-t border-zinc-200"></div>
 
                 <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    Admin
+                    {{ auth()->user()->is_admin ? 'Admin' : 'Moderator' }}
                 </div>
 
                 <flux:sidebar.item

@@ -353,6 +353,96 @@ class extends Component
         );
     }
 
+    private function ensureAdministrator(): void
+    {
+        if (! auth()->user()?->is_admin) {
+            abort(403);
+        }
+    }
+
+    public function makeModerator(): void
+    {
+        $this->ensureAdministrator();
+
+        if ($this->user->is_admin) {
+            $this->addError(
+                'staffRole',
+                'Remove Administrator access before assigning Moderator access.'
+            );
+
+            return;
+        }
+
+        if ($this->user->is_moderator) {
+            return;
+        }
+
+        $this->user->is_moderator = true;
+        $this->user->save();
+
+        $this->loadUser();
+
+        session()->flash('status', 'Member has been made a Moderator.');
+    }
+
+    public function removeModerator(): void
+    {
+        $this->ensureAdministrator();
+
+        if (! $this->user->is_moderator) {
+            return;
+        }
+
+        $this->user->is_moderator = false;
+        $this->user->save();
+
+        $this->loadUser();
+
+        session()->flash('status', 'Moderator access has been removed.');
+    }
+
+    public function makeAdministrator(): void
+    {
+        $this->ensureAdministrator();
+
+        if ($this->user->is_admin) {
+            return;
+        }
+
+        $this->user->is_admin = true;
+        $this->user->is_moderator = false;
+        $this->user->save();
+
+        $this->loadUser();
+
+        session()->flash('status', 'Member has been made an Administrator.');
+    }
+
+    public function removeAdministrator(): void
+    {
+        $this->ensureAdministrator();
+
+        if ($this->user->id === Auth::id()) {
+            $this->addError(
+                'staffRole',
+                'You cannot remove your own Administrator access.'
+            );
+
+            return;
+        }
+
+        if (! $this->user->is_admin) {
+            return;
+        }
+
+        $this->user->is_admin = false;
+        $this->user->save();
+
+        $this->loadUser();
+
+        session()->flash('status', 'Administrator access has been removed.');
+    }
+
     private function loadUser(): void
     {
         $this->user = $this->user->fresh([
@@ -542,6 +632,34 @@ class extends Component
                         </dd>
                     </div>
 
+                    <div>
+                        <dt class="text-sm font-medium text-zinc-500">
+                            Staff Access
+                        </dt>
+
+                        <dd class="mt-1 flex flex-wrap gap-2">
+                            @if ($user->is_admin)
+                                <flux:badge color="red">
+                                    Administrator
+                                </flux:badge>
+                            @elseif ($user->is_moderator)
+                                <flux:badge color="blue">
+                                    Moderator
+                                </flux:badge>
+                            @else
+                                <flux:badge color="zinc">
+                                    None
+                                </flux:badge>
+                            @endif
+
+                            @if ($user->is_charter_member)
+                                <flux:badge color="amber">
+                                    Charter Member
+                                </flux:badge>
+                            @endif
+                        </dd>
+                    </div>
+
                     @if ($user->member_since)
                         <div>
                             <dt class="text-sm font-medium text-zinc-500">
@@ -695,6 +813,111 @@ class extends Component
             </div>
 
         </div>
+
+        @if (auth()->user()->is_admin)
+
+            {{-- Staff Management --}}
+            <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+
+                <div>
+                    <h2 class="text-lg font-semibold text-zinc-900">
+                        Staff Management
+                    </h2>
+
+                    <p class="mt-1 text-sm text-zinc-500">
+                        Administrator-only controls for Moderator and Administrator access.
+                    </p>
+                </div>
+
+                @error('staffRole')
+                <div class="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                    {{ $message }}
+                </div>
+                @enderror
+
+                <div class="mt-6 grid gap-6 md:grid-cols-2">
+
+                    <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                        <h3 class="font-semibold text-zinc-900">
+                            Moderator
+                        </h3>
+
+                        <p class="mt-2 text-sm leading-6 text-zinc-600">
+                            Moderators can manage members, moderate reviews, handle message reports,
+                            and perform member enforcement actions including suspension and bans.
+                        </p>
+
+                        <div class="mt-5">
+                            @if ($user->is_admin)
+                                <p class="text-sm text-zinc-500">
+                                    Administrators already have all Moderator permissions.
+                                </p>
+                            @elseif ($user->is_moderator)
+                                <flux:button
+                                    type="button"
+                                    variant="danger"
+                                    wire:click="removeModerator"
+                                    wire:confirm="Remove Moderator access from this member?"
+                                >
+                                    Remove Moderator
+                                </flux:button>
+                            @else
+                                <flux:button
+                                    type="button"
+                                    variant="primary"
+                                    wire:click="makeModerator"
+                                    wire:confirm="Make this member an IRDI Moderator?"
+                                >
+                                    Make Moderator
+                                </flux:button>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                        <h3 class="font-semibold text-zinc-900">
+                            Administrator
+                        </h3>
+
+                        <p class="mt-2 text-sm leading-6 text-zinc-600">
+                            Administrators have full moderation access and can assign or remove
+                            Moderator and Administrator privileges.
+                        </p>
+
+                        <div class="mt-5">
+                            @if ($user->is_admin)
+                                @if ($user->id === auth()->id())
+                                    <p class="text-sm text-zinc-500">
+                                        You cannot remove your own Administrator access.
+                                    </p>
+                                @else
+                                    <flux:button
+                                        type="button"
+                                        variant="danger"
+                                        wire:click="removeAdministrator"
+                                        wire:confirm="Remove Administrator access from this member?"
+                                    >
+                                        Remove Administrator
+                                    </flux:button>
+                                @endif
+                            @else
+                                <flux:button
+                                    type="button"
+                                    variant="primary"
+                                    wire:click="makeAdministrator"
+                                    wire:confirm="Make this member an IRDI Administrator? Moderator access will be removed because Administrator includes all Moderator permissions."
+                                >
+                                    Make Administrator
+                                </flux:button>
+                            @endif
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        @endif
 
         {{-- Messaging --}}
         <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureActiveMember;
 use App\Http\Middleware\EnsureUserIsAdmin;
+use App\Http\Middleware\EnsureUserIsModeratorOrAdmin;
 use App\Http\Middleware\EnsureUserIsNotBanned;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -22,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'active-member' => EnsureActiveMember::class,
             'admin' => EnsureUserIsAdmin::class,
+            'moderator-or-admin' => EnsureUserIsModeratorOrAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
@@ -29,4 +31,3 @@ return Application::configure(basePath: dirname(__DIR__))
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
     })->create();
-

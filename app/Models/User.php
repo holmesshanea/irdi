@@ -62,6 +62,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'best_practices_agreed_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'is_moderator' => 'boolean',
+            'is_charter_member' => 'boolean',
             'email_member_message_notifications' => 'boolean',
             'messaging_disabled_at' => 'datetime',
             'messaging_disabled_until' => 'datetime',

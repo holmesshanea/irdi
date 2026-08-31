@@ -332,15 +332,40 @@ class extends Component
                                         {{ '@' . $profile->username }}
                                     </div>
 
-                                    <div class="mt-3">
-                                        <flux:badge
-                                            size="sm"
-                                            color="green"
-                                            icon="check-circle"
-                                        >
-                                            Active Member
-                                        </flux:badge>
-                                    </div>
+                                    @if (
+                                        $profile->user->is_admin
+                                        || $profile->user->is_moderator
+                                        || $profile->user->is_charter_member
+                                    )
+                                        <div class="mt-3 flex flex-wrap gap-2">
+
+                                            @if ($profile->user->is_admin)
+                                                <flux:badge
+                                                    size="sm"
+                                                    color="red"
+                                                >
+                                                    Administrator
+                                                </flux:badge>
+                                            @elseif ($profile->user->is_moderator)
+                                                <flux:badge
+                                                    size="sm"
+                                                    color="blue"
+                                                >
+                                                    Moderator
+                                                </flux:badge>
+                                            @endif
+
+                                            @if ($profile->user->is_charter_member)
+                                                <flux:badge
+                                                    size="sm"
+                                                    color="amber"
+                                                >
+                                                    Charter Member
+                                                </flux:badge>
+                                            @endif
+
+                                        </div>
+                                    @endif
 
                                     @if ($profile->city || $profile->state_province || $profile->country)
                                         <flux:text class="mt-2">

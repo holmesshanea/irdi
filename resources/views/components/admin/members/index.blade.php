@@ -151,6 +151,10 @@ class extends Component
                         Suspended
                     </flux:select.option>
 
+                    <flux:select.option value="banned">
+                        Banned
+                    </flux:select.option>
+
                     <flux:select.option value="inactive">
                         Inactive
                     </flux:select.option>
@@ -215,6 +219,41 @@ class extends Component
                                     {{ $member->name }}
                                 </div>
 
+                                @if (
+                                    $member->is_admin
+                                    || $member->is_moderator
+                                    || $member->is_charter_member
+                                )
+                                    <div class="mt-2 flex flex-wrap gap-2">
+
+                                        @if ($member->is_admin)
+                                            <flux:badge
+                                                size="sm"
+                                                color="red"
+                                            >
+                                                Administrator
+                                            </flux:badge>
+                                        @elseif ($member->is_moderator)
+                                            <flux:badge
+                                                size="sm"
+                                                color="blue"
+                                            >
+                                                Moderator
+                                            </flux:badge>
+                                        @endif
+
+                                        @if ($member->is_charter_member)
+                                            <flux:badge
+                                                size="sm"
+                                                color="amber"
+                                            >
+                                                Charter Member
+                                            </flux:badge>
+                                        @endif
+
+                                    </div>
+                                @endif
+
                                 <div class="mt-1 text-sm text-zinc-500">
                                     {{ $member->email }}
                                 </div>
@@ -246,6 +285,10 @@ class extends Component
                                 @elseif ($member->membership_status === 'suspended')
                                     <flux:badge color="red">
                                         Suspended
+                                    </flux:badge>
+                                @elseif ($member->membership_status === 'banned')
+                                    <flux:badge color="red">
+                                        Banned
                                     </flux:badge>
                                 @elseif ($member->membership_status === 'pending')
                                     <flux:badge color="amber">
