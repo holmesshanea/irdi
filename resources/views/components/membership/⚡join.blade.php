@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -34,6 +35,17 @@ class extends Component
             return;
         }
 
+        if (in_array($user->membership_status, ['suspended', 'banned'], true)) {
+            session()->flash(
+                'status',
+                'This membership cannot be activated from the membership page.'
+            );
+
+            $this->redirectRoute('account');
+
+            return;
+        }
+
         $user->refresh();
 
         if (
@@ -46,14 +58,58 @@ class extends Component
             return;
         }
 
-        $user->update([
-            'membership_status' => 'active',
-            'member_since' => today(),
-        ]);
+        Cache::lock('irdi-charter-member-assignment', 10)->block(
+            5,
+            function () use ($user): void {
+                $user->refresh();
+
+                if ($user->membership_status === 'active') {
+                    return;
+                }
+
+                if (in_array($user->membership_status, ['suspended', 'banned'], true)) {
+                    return;
+                }
+
+                $charterMembersAwarded = \App\Models\User::query()
+                    ->where('is_charter_member', true)
+                    ->count();
+
+                if (
+                    ! $user->is_charter_member
+                    && $charterMembersAwarded < 1000
+                ) {
+                    $user->is_charter_member = true;
+                }
+
+                $user->membership_status = 'active';
+
+                if ($user->member_since === null) {
+                    $user->member_since = today();
+                }
+
+                $user->save();
+            }
+        );
+
+        $user->refresh();
+
+        if ($user->membership_status !== 'active') {
+            session()->flash(
+                'status',
+                'Your membership could not be activated.'
+            );
+
+            $this->redirectRoute('account');
+
+            return;
+        }
 
         session()->flash(
             'status',
-            'Your IRDI membership is now active.'
+            $user->is_charter_member
+                ? 'Your IRDI membership is now active. Welcome, Charter Member!'
+                : 'Your IRDI membership is now active.'
         );
 
         $this->redirectRoute('account');
