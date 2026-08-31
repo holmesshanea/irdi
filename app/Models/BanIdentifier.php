@@ -16,16 +16,31 @@ class BanIdentifier extends Model
         'reason',
     ];
 
+    /**
+     * The user associated with this ban identifier.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * The membership enforcement action that created this ban identifier.
+     *
+     * @return BelongsTo<MembershipEnforcement, $this>
+     */
     public function membershipEnforcement(): BelongsTo
     {
         return $this->belongsTo(MembershipEnforcement::class);
     }
 
+    /**
+     * The administrator or moderator who created this ban identifier.
+     *
+     * @return BelongsTo<User, $this>
+     */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
