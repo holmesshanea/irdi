@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="Responsible Metal Detecting FAQ | IRDI"
+    description="Find answers about IRDI membership, responsible metal detecting, the Code of Ethics, member profiles, the Member Directory, property owner reviews, and IRDI accounts."
+>
 
     <div class="mx-auto max-w-4xl">
 

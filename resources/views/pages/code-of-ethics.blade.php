@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="Metal Detecting Code of Ethics | IRDI"
+    description="Read the IRDI Metal Detecting Code of Ethics covering landowner permission, property respect, responsible recovery, historical preservation, safety, integrity, and ethical detecting."
+>
 
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">

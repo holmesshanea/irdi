@@ -3,11 +3,14 @@
 use App\Models\MemberProfile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 new
 #[Layout('components.layouts.public')]
+#[Title('IRDI Member Directory | Responsible Detectorists')]
+
 class extends Component
 {
     use WithPagination;
@@ -187,6 +190,7 @@ class extends Component
 ?>
 
 <div>
+
 
     <section class="bg-white">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">

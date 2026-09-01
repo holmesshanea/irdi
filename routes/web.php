@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PropertyReviewInvitationController;
 use App\Models\MemberProfile;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 use App\Models\User;
@@ -40,6 +41,57 @@ Route::view('/privacy-policy', 'pages.privacy-policy')
 
 Route::view('/terms', 'pages.terms')
     ->name('terms');
+
+Route::get('/sitemap.xml', function () {
+    $pages = [
+        [
+            'url' => route('home'),
+            'priority' => '1.0',
+        ],
+        [
+            'url' => route('about'),
+            'priority' => '0.8',
+        ],
+        [
+            'url' => route('membership'),
+            'priority' => '0.9',
+        ],
+        [
+            'url' => route('directory'),
+            'priority' => '0.9',
+        ],
+        [
+            'url' => route('faq'),
+            'priority' => '0.8',
+        ],
+        [
+            'url' => route('contact'),
+            'priority' => '0.6',
+        ],
+        [
+            'url' => route('privacy-policy'),
+            'priority' => '0.3',
+        ],
+        [
+            'url' => route('terms'),
+            'priority' => '0.3',
+        ],
+    ];
+
+    $profiles = MemberProfile::query()
+        ->with('user')
+        ->publicDirectory()
+        ->get();
+
+    $xml = view('sitemap', [
+        'pages' => $pages,
+        'profiles' => $profiles,
+    ])->render();
+
+    return Response::make($xml, 200, [
+        'Content-Type' => 'application/xml',
+    ]);
+})->name('sitemap');
 
 /*
 |--------------------------------------------------------------------------

@@ -3,12 +3,11 @@
 use App\Models\MemberProfile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 use tbQuar\Facades\Quar;
 
 new
-#[Layout('components.layouts.public')]
+
 class extends Component
 {
     public MemberProfile $profile;
@@ -70,6 +69,32 @@ class extends Component
                 1
             );
         }
+    }
+
+    public function render()
+    {
+        $location = collect([
+            $this->profile->city,
+            $this->profile->state_province,
+            $this->profile->country,
+        ])->filter()->implode(', ');
+
+        $description = 'View ' . $this->profile->profile_name . '\'s IRDI member profile';
+
+        if ($location !== '') {
+            $description .= ' in ' . $location;
+        }
+
+        $description .= ', including membership information, profile details, and property owner feedback.';
+
+        return $this->view()
+            ->layout('components.layouts.public', [
+                'description' => $description,
+                'canonical' => route('member-profiles.show', [
+                    'profile' => $this->profile->username,
+                ]),
+            ])
+            ->title($this->profile->profile_name . ' | IRDI Member');
     }
 };
 ?>

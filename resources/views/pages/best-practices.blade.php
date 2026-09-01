@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="Responsible Metal Detecting Best Practices | IRDI"
+    description="Learn responsible metal detecting best practices for landowner permission, careful target recovery, property respect, historical preservation, safety, privacy, and ethical detecting."
+>
 
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">

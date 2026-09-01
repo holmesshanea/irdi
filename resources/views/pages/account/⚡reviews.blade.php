@@ -2,10 +2,12 @@
 
 use App\Models\MemberProfile;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 
 new
 #[Layout('components.layouts.public')]
+#[Title('My Reviews | IRDI')]
 class extends Component
 {
     public function getMemberProfileProperty(): ?MemberProfile

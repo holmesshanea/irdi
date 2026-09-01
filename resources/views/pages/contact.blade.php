@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="Contact IRDI | Responsible Metal Detecting"
+    description="Contact IRDI with questions about membership, responsible metal detecting, partnerships, member accounts, or the International Responsible Detectorist Institute."
+>
 
     <section class="bg-white">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">

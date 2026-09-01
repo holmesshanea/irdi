@@ -1,4 +1,4 @@
-<x-layouts.public>
+<x-layouts.public :noindex="true">
 
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">

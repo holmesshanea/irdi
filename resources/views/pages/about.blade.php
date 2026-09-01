@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="About IRDI | Ethical & Responsible Metal Detecting"
+    description="Learn about IRDI, an international membership organization promoting ethical metal detecting, responsible stewardship, respect for landowners, and protection of our shared history."
+>
 
     {{-- About intro --}}
     <section class="bg-white">

@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="Terms of Use | IRDI"
+    description="Read the IRDI Terms of Use governing membership, member profiles, the Member Directory, responsible conduct, member services, and use of the IRDI website."
+>
 
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">

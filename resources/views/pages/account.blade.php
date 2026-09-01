@@ -1,4 +1,6 @@
-<x-layouts.public>
+<x-layouts.public :noindex="true">
+
+    <x-layouts.public :noindex="true">
 
     @php
         $currentUser = auth()->user();

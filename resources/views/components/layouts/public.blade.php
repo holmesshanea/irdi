@@ -6,7 +6,94 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{ $title ?? 'IRDI' }}</title>
+    {{-- SEO --}}
+    <title>{{ $title ?? 'IRDI | International Responsible Detectorist Institute' }}</title>
+
+    <meta
+        name="description"
+        content="{{ $description ?? 'IRDI promotes responsible metal detecting, ethical stewardship, respect for landowners, and preservation of our shared history.' }}"
+    >
+
+    @if ($noindex ?? false)
+        <meta name="robots" content="noindex, nofollow">
+    @endif
+
+
+    <link
+        rel="canonical"
+        href="{{ $canonical ?? url()->current() }}"
+    >
+
+    {{-- Open Graph --}}
+    <meta
+        property="og:type"
+        content="website"
+    >
+
+    <meta
+        property="og:site_name"
+        content="IRDI"
+    >
+
+    <meta
+        property="og:title"
+        content="{{ $title ?? 'IRDI | International Responsible Detectorist Institute' }}"
+    >
+
+    <meta
+        property="og:description"
+        content="{{ $description ?? 'IRDI promotes responsible metal detecting, ethical stewardship, respect for landowners, and preservation of our shared history.' }}"
+    >
+
+
+    <meta
+        property="og:url"
+        content="{{ $canonical ?? url()->current() }}"
+    >
+
+    {{-- Twitter / X --}}
+    <meta
+        name="twitter:card"
+        content="summary"
+    >
+
+    <meta
+        name="twitter:title"
+        content="{{ $title ?? 'IRDI | International Responsible Detectorist Institute' }}"
+    >
+
+    <meta
+        name="twitter:description"
+        content="{{ $description ?? 'IRDI promotes responsible metal detecting, ethical stewardship, respect for landowners, and preservation of our shared history.' }}"
+    >
+
+    {{-- Structured Data --}}
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@graph' => [
+                [
+                    '@type' => 'Organization',
+                    '@id' => url('/').'#organization',
+                    'name' => 'International Responsible Detectorist Institute',
+                    'alternateName' => 'IRDI',
+                    'url' => url('/'),
+                    'logo' => asset('irdi-logo.png'),
+                    'description' => 'IRDI promotes responsible metal detecting, ethical stewardship, respect for landowners, and preservation of our shared history.',
+                ],
+                [
+                    '@type' => 'WebSite',
+                    '@id' => url('/').'#website',
+                    'url' => url('/'),
+                    'name' => 'International Responsible Detectorist Institute',
+                    'alternateName' => 'IRDI',
+                    'publisher' => [
+                        '@id' => url('/').'#organization',
+                    ],
+                ],
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
+    </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 

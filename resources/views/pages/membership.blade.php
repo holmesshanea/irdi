@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="Join IRDI | Free Responsible Metal Detecting Membership"
+    description="Join IRDI for free and become part of an international community committed to responsible metal detecting, ethical stewardship, landowner respect, and protecting our shared history."
+>
 
     {{-- Hero --}}
     <section class="bg-white">

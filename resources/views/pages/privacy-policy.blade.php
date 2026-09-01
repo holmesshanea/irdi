@@ -1,4 +1,7 @@
-<x-layouts.public>
+<x-layouts.public
+    title="Privacy Policy | IRDI"
+    description="Read the IRDI Privacy Policy to learn how we collect, use, store, and protect information related to accounts, membership, member profiles, and the IRDI Member Directory."
+>
 
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
