@@ -4,6 +4,7 @@ use App\Http\Controllers\PropertyReviewInvitationController;
 use App\Models\MemberProfile;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -11,8 +12,13 @@ use Illuminate\Support\Facades\Storage;
 |--------------------------------------------------------------------------
 */
 
-Route::view('/', 'pages.home')
-    ->name('home');
+Route::get('/', function () {
+    return view('pages.home', [
+        'memberCount' => User::query()
+            ->where('membership_status', 'active')
+            ->count(),
+    ]);
+})->name('home');
 
 Route::view('/about', 'pages.about')
     ->name('about');

@@ -38,6 +38,19 @@
                     </flux:button>
 
                 </div>
+                <div class="mt-8 flex items-center justify-center gap-3 text-white">
+                    <flux:icon.users class="size-7 text-irdi-gold" />
+
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-3xl font-bold tracking-tight">
+                            {{ number_format($memberCount) }}
+                        </span>
+
+                        <span class="text-sm  text-zinc-200 sm:text-base">
+                            Active IRDI {{ Str::plural('Member', $memberCount) }} Worldwide
+                        </span>
+                    </div>
+                </div>
 
             </div>
 
@@ -80,6 +93,14 @@
                         discoveries can continue to educate and inspire future
                         generations.
                     </p>
+
+                    <div class="mt-auto pt-6">
+                        <img
+                            src="{{ asset('images/historic-preservation.png') }}"
+                            alt="Historic artifact being carefully recovered during metal detecting"
+                            class="h-48 w-full rounded-lg object-cover"
+                        >
+                    </div>
                 </flux:card>
 
 
@@ -100,6 +121,14 @@
                         every hunt begins with permission and ends with leaving
                         the land exactly as it should be—or better.
                     </p>
+
+                    <div class="mt-auto pt-6">
+                        <img
+                            src="{{ asset('images/landowner-trust.png') }}"
+                            alt="Handshake representing trust and respect between a detectorist and landowner"
+                            class="h-48 w-full rounded-lg object-cover"
+                        >
+                    </div>
                 </flux:card>
 
                 <flux:card class="flex h-full flex-col p-8 transition hover:-translate-y-1 hover:shadow-lg">
@@ -119,6 +148,14 @@
                         integrity, education, and helping build a positive future
                         for the hobby through ethical practices.
                     </p>
+
+                    <div class="mt-auto pt-6">
+                        <img
+                            src="{{ asset('images/global-standards.png') }}"
+                            alt="Globe and books representing education and responsible detecting standards worldwide"
+                            class="h-48 w-full rounded-lg object-cover"
+                        >
+                    </div>
                 </flux:card>
 
             </div>
