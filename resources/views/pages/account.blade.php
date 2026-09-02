@@ -1,5 +1,3 @@
-<x-layouts.public :noindex="true">
-
     <x-layouts.public :noindex="true">
 
     @php
