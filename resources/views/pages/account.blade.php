@@ -207,7 +207,7 @@
                                                 </p>
 
                                                 <p class="mt-2 text-sm leading-6 text-red-800">
-                                                    Your public member profile and Member Directory listing are unavailable. You cannot use your IRDI Member Card, request new property-owner reviews, access active-member resources, or send new member-to-member messages. ou may still access your account settings and existing account information.
+                                                    Your public member profile and Member Directory listing are unavailable. You cannot use your IRDI Member Card, request new property-owner reviews, access active-member resources, or send new member-to-member messages. You may still access your account settings and existing account information.
                                                 </p>
                                             </div>
 
