@@ -208,6 +208,18 @@
         {{-- Authenticated navigation --}}
         @auth
 
+            @if (auth()->user()->membership_status === 'active')
+
+                <flux:navbar.item
+                    href="{{ route('resources') }}"
+                    :current="request()->routeIs('resources')"
+                    icon="book-open"
+                >
+                    Resources
+                </flux:navbar.item>
+
+            @endif
+
             @if (auth()->user()->is_admin || auth()->user()->is_moderator)
 
                 @php
@@ -498,8 +510,20 @@
             <div class="my-4 border-t border-zinc-200"></div>
 
             <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Your Account
+                Member
             </div>
+
+            @if (auth()->user()->membership_status === 'active')
+
+                <flux:sidebar.item
+                    href="{{ route('resources') }}"
+                    :current="request()->routeIs('resources')"
+                    icon="book-open"
+                >
+                    Resources
+                </flux:sidebar.item>
+
+            @endif
 
             <flux:sidebar.item
                 href="{{ route('account') }}"
