@@ -1,6 +1,10 @@
 <!DOCTYPE html>
 
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html
+    lang="{{ str_replace('_', '-', app()->getLocale()) }}"
+    class="light"
+    style="color-scheme: light;"
+>
 
 <head>
     <meta charset="utf-8">
@@ -100,7 +104,6 @@
 
     @livewireStyles
 
-    @fluxAppearance
 </head>
 
 <body class="min-h-screen bg-white text-zinc-900 antialiased">
