@@ -1,5 +1,3 @@
-<?php
-```blade
 <x-layouts.public
     title="Resources | IRDI"
     description="Member resources from the International Responsible Detectorist Institute, including ethical standards, best practices, educational materials, and responsible detecting guidance."
@@ -115,4 +113,3 @@
     </section>
 
 </x-layouts.public>
-```
