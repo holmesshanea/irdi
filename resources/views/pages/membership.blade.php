@@ -155,7 +155,7 @@
 
             <div class="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
 
-                <flux:card class="p-8">
+                <flux:card class="p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <h3 class="text-xl font-semibold text-irdi-green">
                         IRDI Member Profile
@@ -171,7 +171,7 @@
 
                 </flux:card>
 
-                <flux:card class="p-8">
+                <flux:card class="p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <h3 class="text-xl font-semibold text-irdi-green">
                         Member Directory
@@ -187,7 +187,7 @@
 
                 </flux:card>
 
-                <flux:card class="p-8">
+                <flux:card class="p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <h3 class="text-xl font-semibold text-irdi-green">
                         Share Your Commitment
@@ -203,7 +203,7 @@
 
                 </flux:card>
 
-                <flux:card class="p-8">
+                <flux:card class="p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <h3 class="text-xl font-semibold text-irdi-green">
                         Profile Link & QR Code
@@ -219,7 +219,7 @@
 
                 </flux:card>
 
-                <flux:card class="p-8">
+                <flux:card class="p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <h3 class="text-xl font-semibold text-irdi-green">
                         IRDI Brand Use
@@ -235,7 +235,7 @@
 
                 </flux:card>
 
-                <flux:card class="p-8">
+                <flux:card class="p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <h3 class="text-xl font-semibold text-irdi-green">
                         Member Resources
