@@ -346,7 +346,7 @@ class extends Component
                         href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}"
                         class="block rounded-xl focus:outline-none focus:ring-2 focus:ring-irdi-gold focus:ring-offset-2"
                     >
-                        <flux:card class="h-full transition hover:-translate-y-0.5 hover:shadow-md">
+                        <flux:card class="h-full transition hover:-translate-y-1 hover:shadow-lg">
 
                             <div class="flex items-start gap-4">
 
