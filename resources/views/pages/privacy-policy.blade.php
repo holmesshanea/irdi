@@ -3,18 +3,30 @@
     description="Read the IRDI Privacy Policy to learn how we collect, use, store, and protect information related to accounts, membership, member profiles, and the IRDI Member Directory."
 >
 
-    <section class="bg-zinc-50">
-        <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+    {{-- Privacy Policy Hero --}}
+    <section class="relative overflow-hidden bg-irdi-green">
+
+        <img
+            src="{{ asset('images/carousel/carousel10.png') }}"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+        >
+
+        <div class="absolute inset-0 bg-irdi-green/75"></div>
+
+        <div class="relative mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
 
             <div class="mx-auto max-w-3xl text-center">
 
-                <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                    International Responsible Detectorist Institute
+                </p>
+
+                <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
                     Privacy Policy
                 </h1>
 
-                <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
-
-                <p class="mt-6 text-lg text-zinc-600">
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
                     How IRDI collects, uses, and protects your information.
                 </p>
 

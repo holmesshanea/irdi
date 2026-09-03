@@ -3,18 +3,30 @@
     description="Member resources from the International Responsible Detectorist Institute, including ethical standards, best practices, educational materials, and responsible detecting guidance."
 >
 
-    <section class="bg-zinc-50">
-        <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+    {{-- Resources Hero --}}
+    <section class="relative overflow-hidden bg-irdi-green">
+
+        <img
+            src="{{ asset('images/carousel/carousel8.png') }}"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+        >
+
+        <div class="absolute inset-0 bg-irdi-green/75"></div>
+
+        <div class="relative mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
 
             <div class="mx-auto max-w-3xl text-center">
 
-                <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                    International Responsible Detectorist Institute
+                </p>
+
+                <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
                     Resources
                 </h1>
 
-                <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
-
-                <p class="mt-6 text-lg leading-8 text-zinc-600">
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
                     Explore IRDI standards, educational materials, and trusted resources
                     that support ethical, responsible, and informed metal detecting.
                 </p>

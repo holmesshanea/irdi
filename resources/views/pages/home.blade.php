@@ -3,8 +3,17 @@
     description="IRDI promotes responsible metal detecting, ethical stewardship, respect for landowners, and preservation of our shared history through education, best practices, and an international community of responsible detectorists."
 >
     {{-- Hero --}}
-    <section class="bg-irdi-green">
-        <div class="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
+    <section class="relative overflow-hidden bg-irdi-green">
+
+        <img
+            src="{{ asset('images/carousel/carousel1.png') }}"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+        >
+
+        <div class="absolute inset-0 bg-irdi-green/75"></div>
+
+        <div class="relative mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
 
             <div class="mx-auto max-w-3xl text-center">
 
@@ -34,23 +43,24 @@
                     <flux:button
                         href="{{ route('directory') }}"
                         variant="outline"
-                        class="bg-transparent! border-white/40! text-white! hover:bg-white/10! hover:text-white!"
+                        class="border-white/40! bg-transparent! text-white! hover:bg-white/10! hover:text-white!"
                     >
                         Member Directory
                     </flux:button>
 
                 </div>
+
                 <div class="mt-8 flex items-center justify-center gap-3 text-white">
                     <flux:icon.users class="size-7 text-irdi-gold" />
 
                     <div class="flex items-baseline gap-2">
-                        <span class="text-3xl font-bold tracking-tight">
-                            {{ number_format($memberCount) }}
-                        </span>
+                    <span class="text-3xl font-bold tracking-tight">
+                        {{ number_format($memberCount) }}
+                    </span>
 
-                        <span class="text-sm  text-zinc-200 sm:text-base">
-                            Active IRDI {{ Str::plural('Member', $memberCount) }} Worldwide
-                        </span>
+                        <span class="text-sm text-zinc-200 sm:text-base">
+                        Active IRDI {{ Str::plural('Member', $memberCount) }} Worldwide
+                    </span>
                     </div>
                 </div>
 
@@ -78,7 +88,7 @@
             {{-- Three cards --}}
             <div class="mt-12 grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-                <flux:card class="flex h-full flex-col p-8 transition hover:-translate-y-1 hover:shadow-lg">
+                <flux:card class="group flex h-full flex-col p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <div class="mb-5 flex size-12 items-center justify-center rounded-full bg-irdi-green/10">
                         <flux:icon.book-open class="size-6 text-irdi-gold" />
@@ -97,16 +107,20 @@
                     </p>
 
                     <div class="mt-auto pt-6">
-                        <img
-                            src="{{ asset('images/historic-preservation.png') }}"
-                            alt="Historic artifact being carefully recovered during metal detecting"
-                            class="h-48 w-full rounded-lg object-cover"
-                        >
+                        <div class="relative overflow-hidden rounded-lg">
+                            <img
+                                src="{{ asset('images/historic-preservation.png') }}"
+                                alt="Historic artifact being carefully recovered during metal detecting"
+                                class="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.05]"
+                            >
+
+                            <div class="pointer-events-none absolute inset-0 bg-irdi-green/25"></div>
+                        </div>
                     </div>
                 </flux:card>
 
 
-                <flux:card class="flex h-full flex-col p-8 transition hover:-translate-y-1 hover:shadow-lg">
+                <flux:card class="group flex h-full flex-col p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <div class="mb-5 flex size-12 items-center justify-center rounded-full bg-irdi-green/10">
                         <flux:icon.hand-raised class="size-6 text-irdi-gold" />
@@ -125,15 +139,19 @@
                     </p>
 
                     <div class="mt-auto pt-6">
-                        <img
-                            src="{{ asset('images/landowner-trust.png') }}"
-                            alt="Handshake representing trust and respect between a detectorist and landowner"
-                            class="h-48 w-full rounded-lg object-cover"
-                        >
+                        <div class="relative overflow-hidden rounded-lg">
+                            <img
+                                src="{{ asset('images/landowner-trust.png') }}"
+                                alt="Handshake representing trust and respect between a detectorist and landowner"
+                                class="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.05]"
+                            >
+
+                            <div class="pointer-events-none absolute inset-0 bg-irdi-green/25"></div>
+                        </div>
                     </div>
                 </flux:card>
 
-                <flux:card class="flex h-full flex-col p-8 transition hover:-translate-y-1 hover:shadow-lg">
+                <flux:card class="group flex h-full flex-col p-8 transition hover:-translate-y-1 hover:shadow-lg">
 
                     <div class="mb-5 flex size-12 items-center justify-center rounded-full bg-irdi-green/10">
                         <flux:icon.star class="size-6 text-irdi-gold" />
@@ -152,11 +170,15 @@
                     </p>
 
                     <div class="mt-auto pt-6">
-                        <img
-                            src="{{ asset('images/global-standards.png') }}"
-                            alt="Globe and books representing education and responsible detecting standards worldwide"
-                            class="h-48 w-full rounded-lg object-cover"
-                        >
+                        <div class="relative overflow-hidden rounded-lg">
+                            <img
+                                src="{{ asset('images/global-standards.png') }}"
+                                alt="Globe and books representing education and responsible detecting standards worldwide"
+                                class="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.05]"
+                            >
+
+                            <div class="pointer-events-none absolute inset-0 bg-irdi-green/25"></div>
+                        </div>
                     </div>
                 </flux:card>
 

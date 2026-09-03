@@ -3,25 +3,36 @@
     description="Join IRDI for free and become part of an international community committed to responsible metal detecting, ethical stewardship, landowner respect, and protecting our shared history."
 >
 
-    {{-- Hero --}}
-    <section class="bg-white">
-        <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+    {{-- Membership Hero --}}
+    <section class="relative overflow-hidden bg-irdi-green">
+
+        <img
+            src="{{ asset('images/carousel/carousel3.png') }}"
+            alt=""
+            class="absolute inset-0 h-full w-full object-cover"
+        >
+
+        <div class="absolute inset-0 bg-irdi-green/75"></div>
+
+        <div class="relative mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
 
             <div class="mx-auto max-w-3xl text-center">
 
-                <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                    International Responsible Detectorist Institute
+                </p>
+
+                <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
                     Become an IRDI Member
                 </h1>
 
-                <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
-
-                <p class="mt-6 text-lg leading-8 text-zinc-600">
+                <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
                     Join a growing international community committed to responsible
                     metal detecting, ethical stewardship, respect for landowners,
                     and protecting our shared history.
                 </p>
 
-                <p class="mt-4 font-semibold text-irdi-green">
+                <p class="mt-4 font-semibold text-white">
                     IRDI Membership is completely free.
                 </p>
 
