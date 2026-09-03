@@ -195,11 +195,18 @@ class extends Component
     {{-- Directory Hero --}}
     <section class="relative overflow-hidden bg-irdi-green">
 
-        <img
-            src="{{ asset('images/carousel/carousel4.png') }}"
-            alt=""
-            class="absolute inset-0 h-full w-full object-cover"
-        >
+        <picture class="absolute inset-0">
+            <source
+                media="(max-width: 640px)"
+                srcset="{{ asset('images/mobile/mobile4.png') }}"
+            >
+
+            <img
+                src="{{ asset('images/carousel/carousel4.png') }}"
+                alt=""
+                class="h-full w-full object-cover"
+            >
+        </picture>
 
         <div class="absolute inset-0 bg-irdi-green/75"></div>
 

@@ -6,11 +6,18 @@
     {{-- Resources Hero --}}
     <section class="relative overflow-hidden bg-irdi-green">
 
-        <img
-            src="{{ asset('images/carousel/carousel8.png') }}"
-            alt=""
-            class="absolute inset-0 h-full w-full object-cover"
-        >
+        <picture class="absolute inset-0">
+            <source
+                media="(max-width: 640px)"
+                srcset="{{ asset('images/mobile/mobile8.png') }}"
+            >
+
+            <img
+                src="{{ asset('images/carousel/carousel8.png') }}"
+                alt=""
+                class="h-full w-full object-cover"
+            >
+        </picture>
 
         <div class="absolute inset-0 bg-irdi-green/75"></div>
 
