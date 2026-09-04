@@ -108,6 +108,27 @@
 
 <body class="min-h-screen bg-white text-zinc-900 antialiased">
 
+@auth
+    @php
+        $navUser = auth()->user();
+        $navProfile = $navUser->memberProfile;
+        $navAvatar = $navProfile?->profile_image
+            ? \Illuminate\Support\Facades\Storage::url($navProfile->profile_image)
+            : null;
+
+        $isStaff = $navUser->is_admin || $navUser->is_moderator;
+        $staffMenuLabel = $navUser->is_admin ? 'Admin' : 'Moderator';
+
+        $pendingReviewCount = $isStaff
+            ? \App\Models\PropertyReview::query()->whereNull('admin_reviewed_at')->count()
+            : 0;
+
+        $pendingMessageReportCount = $isStaff
+            ? \App\Models\MessageReport::query()->where('status', 'pending')->count()
+            : 0;
+    @endphp
+@endauth
+
 <flux:header
     container
     class="border-b border-zinc-200 bg-white"
@@ -208,7 +229,7 @@
         {{-- Authenticated navigation --}}
         @auth
 
-            @if (auth()->user()->membership_status === 'active')
+            @if ($navUser->membership_status === 'active')
 
                 <flux:navbar.item
                     href="{{ route('resources') }}"
@@ -220,122 +241,123 @@
 
             @endif
 
-            @if (auth()->user()->is_admin || auth()->user()->is_moderator)
+            <div class="ml-3 border-l border-zinc-300 pl-3">
+                <flux:dropdown position="bottom" align="end">
+                    <flux:profile
+                        circle
+                        name="{{ $navUser->name }}"
+                        :avatar="$navAvatar"
+                    />
 
-                @php
-                    $pendingReviewCount = \App\Models\PropertyReview::query()
-                        ->whereNull('admin_reviewed_at')
-                        ->count();
+                    <flux:navmenu class="min-w-64">
+                        <div class="px-3 py-2">
+                            <flux:text size="sm" class="text-zinc-500">
+                                Signed in as
+                            </flux:text>
 
-                    $pendingMessageReportCount = \App\Models\MessageReport::query()
-                        ->where('status', 'pending')
-                        ->count();
+                            <flux:heading class="mt-1! truncate">
+                                {{ $navUser->email }}
+                            </flux:heading>
+                        </div>
 
-                    $staffMenuLabel = auth()->user()->is_admin
-                        ? 'Admin'
-                        : 'Moderator';
-                @endphp
+                        <flux:navmenu.separator />
 
-                <div
-                    class="relative ml-3 border-l border-zinc-300 pl-3"
-                    x-data="{ open: false }"
-                >
-
-                    <button
-                        type="button"
-                        class="inline-flex items-center gap-1 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:text-irdi-green"
-                        x-on:click="open = ! open"
-                        x-on:click.outside="open = false"
-                    >
-                        {{ $staffMenuLabel }}
-
-                        <svg
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                            aria-hidden="true"
-                            class="h-4 w-4"
+                        <flux:navmenu.item
+                            href="{{ route('account') }}"
+                            icon="user-circle"
                         >
-                            <path
-                                fill-rule="evenodd"
-                                d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-                                clip-rule="evenodd"
-                            />
-                        </svg>
-                    </button>
+                            Account
+                        </flux:navmenu.item>
 
-                    <div
-                        x-show="open"
-                        x-cloak
-                        class="absolute right-0 z-50 mt-2 w-52 rounded-lg border border-zinc-200 bg-white py-2 shadow-lg"
-                    >
-                        <a
-                            href="{{ route('admin.members.index') }}"
-                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
-                        >
-                            <span>Member Management</span>
-                        </a>
+                        @if ($navProfile)
+                            <flux:navmenu.item
+                                href="{{ route('directory.show', $navProfile->username) }}"
+                                icon="identification"
+                            >
+                                My Profile
+                            </flux:navmenu.item>
+                        @endif
 
-                        <a
-                            href="{{ route('admin.reviews.index') }}"
-                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
-                        >
-                            <span>Moderate Reviews</span>
+                        @if ($navUser->membership_status === 'active')
+                            <flux:navmenu.item
+                                href="{{ route('messages.index') }}"
+                                icon="envelope"
+                            >
+                                Messages
+                            </flux:navmenu.item>
+                        @endif
 
-                            @if ($pendingReviewCount > 0)
-                                <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
-                                    {{ $pendingReviewCount }}
-                                </span>
-                            @endif
-                        </a>
+                        @if ($isStaff)
+                            <flux:navmenu.separator />
 
-                        <a
-                            href="{{ route('admin.message-reports.index') }}"
-                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
-                        >
-                            <span>Message Reports</span>
+                            <div class="px-3 py-1.5">
+                                <flux:text size="sm" class="font-medium text-zinc-500">
+                                    {{ $staffMenuLabel }}
+                                </flux:text>
+                            </div>
 
-                            @if ($pendingMessageReportCount > 0)
-                                <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-800">
-                                    {{ $pendingMessageReportCount }}
-                                </span>
-                            @endif
-                        </a>
+                            <flux:navmenu.item
+                                href="{{ route('admin.members.index') }}"
+                                icon="users"
+                            >
+                                Member Management
+                            </flux:navmenu.item>
 
-                        <a
-                            href="{{ route('admin.activity.index') }}"
-                            class="flex items-center justify-between gap-4 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 hover:text-irdi-green"
-                        >
-                            <span>Activity Log</span>
-                        </a>
-                    </div>
+                            <flux:navmenu.item
+                                href="{{ route('admin.reviews.index') }}"
+                                icon="shield-check"
+                            >
+                                <div class="flex w-full items-center justify-between gap-3">
+                                    <span>Moderate Reviews</span>
 
-                </div>
+                                    @if ($pendingReviewCount > 0)
+                                        <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
+                                            {{ $pendingReviewCount }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </flux:navmenu.item>
 
-            @endif
+                            <flux:navmenu.item
+                                href="{{ route('admin.message-reports.index') }}"
+                                icon="flag"
+                            >
+                                <div class="flex w-full items-center justify-between gap-3">
+                                    <span>Message Reports</span>
 
-            <div class="{{ (auth()->user()->is_admin || auth()->user()->is_moderator) ? '' : 'ml-3 border-l border-zinc-300 pl-3' }}">
+                                    @if ($pendingMessageReportCount > 0)
+                                        <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-800">
+                                            {{ $pendingMessageReportCount }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </flux:navmenu.item>
 
-                <flux:navbar.item
-                    href="{{ route('account') }}"
-                    :current="request()->routeIs('account') || request()->routeIs('account.*')"
-                    icon="user-circle"
-                >
-                    Account
-                </flux:navbar.item>
+                            <flux:navmenu.item
+                                href="{{ route('admin.activity.index') }}"
+                                icon="clock"
+                            >
+                                Activity Log
+                            </flux:navmenu.item>
+                        @endif
 
+                        <flux:navmenu.separator />
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+
+                            <flux:navmenu.item
+                                as="button"
+                                type="submit"
+                                icon="arrow-right-start-on-rectangle"
+                                class="w-full"
+                            >
+                                Log Out
+                            </flux:navmenu.item>
+                        </form>
+                    </flux:navmenu>
+                </flux:dropdown>
             </div>
-
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-
-                <flux:navbar.item
-                    as="button"
-                    type="submit"
-                    icon="arrow-right-start-on-rectangle"
-                >
-                    Log Out
-                </flux:navbar.item>
-            </form>
 
         @endauth
 
@@ -376,6 +398,25 @@
         <flux:sidebar.collapse class="lg:hidden" />
 
     </flux:sidebar.header>
+
+    @auth
+        <div class="border-b border-zinc-200 px-3 py-4">
+            <flux:profile
+                circle
+                :chevron="false"
+                name="{{ $navUser->name }}"
+                :avatar="$navAvatar"
+            />
+
+            <div class="mt-1 pl-11 text-xs text-zinc-500">
+                @if ($navProfile)
+                    {{ '@'.$navProfile->username }}
+                @else
+                    {{ $navUser->email }}
+                @endif
+            </div>
+        </div>
+    @endauth
 
     <flux:sidebar.nav>
 
@@ -449,12 +490,12 @@
         {{-- Authenticated navigation --}}
         @auth
 
-            @if (auth()->user()->is_admin || auth()->user()->is_moderator)
+            @if ($isStaff)
 
                 <div class="my-4 border-t border-zinc-200"></div>
 
                 <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                    {{ auth()->user()->is_admin ? 'Admin' : 'Moderator' }}
+                    {{ $staffMenuLabel }}
                 </div>
 
                 <flux:sidebar.item
@@ -513,7 +554,7 @@
                 Member
             </div>
 
-            @if (auth()->user()->membership_status === 'active')
+            @if ($navUser->membership_status === 'active')
 
                 <flux:sidebar.item
                     href="{{ route('resources') }}"
@@ -532,6 +573,26 @@
             >
                 Account
             </flux:sidebar.item>
+
+            @if ($navProfile)
+                <flux:sidebar.item
+                    href="{{ route('directory.show', $navProfile->username) }}"
+                    :current="request()->routeIs('directory.show')"
+                    icon="identification"
+                >
+                    My Profile
+                </flux:sidebar.item>
+            @endif
+
+            @if ($navUser->membership_status === 'active')
+                <flux:sidebar.item
+                    href="{{ route('messages.index') }}"
+                    :current="request()->routeIs('messages.*')"
+                    icon="envelope"
+                >
+                    Messages
+                </flux:sidebar.item>
+            @endif
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
