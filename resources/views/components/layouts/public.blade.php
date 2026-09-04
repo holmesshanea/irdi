@@ -271,7 +271,7 @@
 
                         @if ($navProfile)
                             <flux:navmenu.item
-                                href="{{ route('directory.show', $navProfile->username) }}"
+                                href="{{ route('member-profiles.show', $navProfile->username) }}"
                                 icon="identification"
                             >
                                 My Profile
@@ -576,8 +576,8 @@
 
             @if ($navProfile)
                 <flux:sidebar.item
-                    href="{{ route('directory.show', $navProfile->username) }}"
-                    :current="request()->routeIs('directory.show')"
+                    href="{{ route('member-profiles.show', $navProfile->username) }}"
+                    :current="request()->routeIs('member-profiles.show')"
                     icon="identification"
                 >
                     My Profile
