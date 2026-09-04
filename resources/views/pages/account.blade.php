@@ -597,13 +597,25 @@
                                                 || $profile->country
                                             )
 
-                                                <p class="mt-2 text-sm text-zinc-600">
-                                                    {{ collect([
-                                                        $profile->city,
-                                                        $profile->state_province,
-                                                        $profile->country,
-                                                    ])->filter()->implode(', ') }}
-                                                </p>
+                                                <div class="mt-2 flex items-center gap-2 text-sm text-zinc-600">
+
+                                                    @if ($profile->country_code)
+                                                        <flux:flag
+                                                            country="{{ $profile->country_code }}"
+                                                            size="xs"
+                                                            class="shrink-0"
+                                                        />
+                                                    @endif
+
+                                                    <span>
+                                                        {{ collect([
+                                                            $profile->city,
+                                                            $profile->state_province,
+                                                            $profile->country,
+                                                        ])->filter()->implode(', ') }}
+                                                    </span>
+
+                                                </div>
 
                                             @endif
 

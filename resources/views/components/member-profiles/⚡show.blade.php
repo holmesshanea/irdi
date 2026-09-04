@@ -161,13 +161,25 @@ class extends Component
                     </p>
 
                     @if ($profile->city || $profile->state_province || $profile->country)
-                        <p class="mt-3 text-zinc-600">
-                            {{ collect([
-                                $profile->city,
-                                $profile->state_province,
-                                $profile->country,
-                            ])->filter()->implode(', ') }}
-                        </p>
+                        <div class="mt-3 flex items-center justify-center gap-2 text-zinc-600">
+
+                            @if ($profile->country_code)
+                                <flux:flag
+                                    country="{{ $profile->country_code }}"
+                                    size="xs"
+                                    class="shrink-0"
+                                />
+                            @endif
+
+                            <span>
+                                {{ collect([
+                                    $profile->city,
+                                    $profile->state_province,
+                                    $profile->country,
+                                ])->filter()->implode(', ') }}
+                            </span>
+
+                        </div>
                     @endif
 
                     @if ($profile->user->member_since)
@@ -518,5 +530,3 @@ class extends Component
 
         </div>
     </section>
-
-</div>

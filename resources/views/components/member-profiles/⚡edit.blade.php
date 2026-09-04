@@ -6,6 +6,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Symfony\Component\Intl\Countries;
 
 new
 #[Layout('components.layouts.public')]
@@ -33,6 +34,8 @@ class extends Component
 
     public string $country = '';
 
+    public string $countryCode = '';
+
     public string $bio = '';
 
     public string $website = '';
@@ -57,11 +60,33 @@ class extends Component
         $this->city = $profile->city ?? '';
         $this->stateProvince = $profile->state_province ?? '';
         $this->country = $profile->country ?? '';
+        $this->countryCode = $profile->country_code ?? '';
+
+        if ($this->countryCode === '' && $this->country !== '') {
+            $countryCode = array_search(
+                $this->country,
+                Countries::getNames(),
+                true
+            );
+
+            if (is_string($countryCode)) {
+                $this->countryCode = $countryCode;
+            }
+        }
+
         $this->bio = $profile->bio ?? '';
         $this->website = $profile->website ?: 'https://';
         $this->allowMemberMessages = (bool) $profile->allow_member_messages;
         $this->emailMemberMessageNotifications =
             (bool) auth()->user()->email_member_message_notifications;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function getCountriesProperty(): array
+    {
+        return Countries::getNames();
     }
 
     private function profileImageDisk(): string
@@ -89,7 +114,7 @@ class extends Component
             'profile image' => filled($this->profileImage) || filled($this->profile->profile_image),
             'city' => filled($this->city),
             'state/province' => filled($this->stateProvince),
-            'country' => filled($this->country),
+            'country' => filled($this->countryCode),
             'bio' => filled($this->bio),
         ])
             ->reject()
@@ -111,7 +136,16 @@ class extends Component
             'emailMemberMessageNotifications' => ['boolean'],
             'city' => ['required', 'string', 'max:100'],
             'stateProvince' => ['required', 'string', 'max:100'],
-            'country' => ['required', 'string', 'max:100'],
+            'countryCode' => [
+                'required',
+                'string',
+                'size:2',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (! Countries::exists((string) $value)) {
+                        $fail('Please select a valid country.');
+                    }
+                },
+            ],
             'bio' => ['nullable', 'string', 'max:1000'],
             'website' => ['nullable', 'url', 'max:255'],
             'profileImage' => ['nullable', 'image', 'max:5120'],
@@ -134,11 +168,15 @@ class extends Component
             $this->profile->save();
         }
 
+        $countryCode = strtoupper($validated['countryCode']);
+        $countryName = Countries::getName($countryCode);
+
         $this->profile->update([
             'profile_name' => $validated['profileName'],
             'city' => $validated['city'],
             'state_province' => $validated['stateProvince'],
-            'country' => $validated['country'],
+            'country' => $countryName,
+            'country_code' => $countryCode,
             'bio' => $validated['bio'],
             'website' => $validated['website'] ?: null,
             'directory_visible' => $this->membershipSuspended
@@ -380,10 +418,25 @@ class extends Component
                             />
 
                             <div class="sm:col-span-2">
-                                <flux:input
-                                    wire:model.live="country"
+                                <flux:select
+                                    wire:model.live="countryCode"
+                                    variant="listbox"
+                                    searchable
                                     label="Country"
-                                />
+                                    placeholder="Select a country"
+                                >
+                                    @foreach ($this->countries as $code => $name)
+                                        <flux:select.option
+                                            value="{{ $code }}"
+                                            label="{{ $name }}"
+                                        >
+                                            <div class="flex items-center gap-2">
+                                                <flux:flag country="{{ $code }}" size="xs" />
+                                                <span>{{ $name }}</span>
+                                            </div>
+                                        </flux:select.option>
+                                    @endforeach
+                                </flux:select>
                             </div>
 
                         </div>

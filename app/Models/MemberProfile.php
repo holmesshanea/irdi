@@ -21,6 +21,7 @@ class MemberProfile extends Model
         'city',
         'state_province',
         'country',
+        'country_code',
         'bio',
         'website',
         'profile_image',

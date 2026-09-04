@@ -20,6 +20,7 @@ class MemberProfileSeeder extends Seeder
                 'city' => 'Saranac Lake',
                 'state_province' => 'New York',
                 'country' => 'United States',
+                'country_code' => 'US',
                 'bio' => 'IRDI Member and responsible metal detectorist.',
                 'directory_visible' => true,
             ]

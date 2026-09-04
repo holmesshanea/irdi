@@ -44,7 +44,7 @@ class extends Component
                 });
             })
             ->when($this->country, function ($query) {
-                $query->where('country', $this->country);
+                $query->where('country_code', $this->country);
             })
             ->when($this->stateProvince, function ($query) {
                 $query->where('state_province', $this->stateProvince);
@@ -102,11 +102,14 @@ class extends Component
     {
         return MemberProfile::query()
             ->publicDirectory()
+            ->whereNotNull('country_code')
+            ->where('country_code', '!=', '')
             ->whereNotNull('country')
             ->where('country', '!=', '')
+            ->select(['country_code', 'country'])
             ->distinct()
             ->orderBy('country')
-            ->pluck('country');
+            ->pluck('country', 'country_code');
     }
 
     public function getStatesProvincesProperty()
@@ -114,7 +117,7 @@ class extends Component
         return MemberProfile::query()
             ->publicDirectory()
             ->when($this->country, function ($query) {
-                $query->where('country', $this->country);
+                $query->where('country_code', $this->country);
             })
             ->whereNotNull('state_province')
             ->where('state_province', '!=', '')
@@ -128,7 +131,7 @@ class extends Component
         return MemberProfile::query()
             ->publicDirectory()
             ->when($this->country, function ($query) {
-                $query->where('country', $this->country);
+                $query->where('country_code', $this->country);
             })
             ->when($this->stateProvince, function ($query) {
                 $query->where('state_province', $this->stateProvince);
@@ -245,14 +248,25 @@ class extends Component
                     />
                 </div>
 
-                <flux:select wire:model.live="country">
-                    <flux:select.option value="">
+                <flux:select
+                    wire:model.live="country"
+                    variant="listbox"
+                    searchable
+                    placeholder="All Countries"
+                >
+                    <flux:select.option value="" label="All Countries">
                         All Countries
                     </flux:select.option>
 
-                    @foreach ($this->countries as $country)
-                        <flux:select.option value="{{ $country }}">
-                            {{ $country }}
+                    @foreach ($this->countries as $code => $name)
+                        <flux:select.option
+                            value="{{ $code }}"
+                            label="{{ $name }}"
+                        >
+                            <div class="flex items-center gap-2">
+                                <flux:flag country="{{ $code }}" size="xs" />
+                                <span>{{ $name }}</span>
+                            </div>
                         </flux:select.option>
                     @endforeach
                 </flux:select>
@@ -433,13 +447,25 @@ class extends Component
                                     @endif
 
                                     @if ($profile->city || $profile->state_province || $profile->country)
-                                        <flux:text class="mt-2">
-                                            {{ collect([
-                                                $profile->city,
-                                                $profile->state_province,
-                                                $profile->country,
-                                            ])->filter()->implode(', ') }}
-                                        </flux:text>
+                                        <div class="mt-2 flex items-center gap-2 text-sm text-zinc-600">
+
+                                            @if ($profile->country_code)
+                                                <flux:flag
+                                                    country="{{ $profile->country_code }}"
+                                                    size="xs"
+                                                    class="shrink-0"
+                                                />
+                                            @endif
+
+                                            <span>
+                                                {{ collect([
+                                                    $profile->city,
+                                                    $profile->state_province,
+                                                    $profile->country,
+                                                ])->filter()->implode(', ') }}
+                                            </span>
+
+                                        </div>
                                     @endif
 
                                     @if ($profile->user->member_since)
