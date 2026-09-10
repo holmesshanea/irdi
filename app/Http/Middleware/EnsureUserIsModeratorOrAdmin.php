@@ -14,7 +14,7 @@ class EnsureUserIsModeratorOrAdmin
 
         if (
             $user === null
-            || (! $user->is_admin && ! $user->is_moderator)
+            || ! $user->isModeratorOrAdministrator()
         ) {
             abort(403);
         }

@@ -414,7 +414,11 @@ class extends Component
                                     </div>
 
                                     <div class="mt-1 flex flex-wrap gap-2">
-                                        @if ($log->actor->is_admin)
+                                        @if ($log->actor->is_super_admin)
+                                            <flux:badge size="sm" color="amber">
+                                                Super Administrator
+                                            </flux:badge>
+                                        @elseif ($log->actor->is_admin)
                                             <flux:badge size="sm" color="red">
                                                 Administrator
                                             </flux:badge>

@@ -85,7 +85,11 @@ class extends Component
         }
 
         if ($this->designation === 'admin') {
-            $query->where('is_admin', true);
+            $query->where(function ($query) {
+                $query
+                    ->where('is_admin', true)
+                    ->orWhere('is_super_admin', true);
+            });
         }
 
         if ($this->designation === 'moderator') {

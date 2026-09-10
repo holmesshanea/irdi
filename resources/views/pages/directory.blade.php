@@ -59,7 +59,9 @@ class extends Component
             })
             ->when($this->designation === 'admin', function ($query) {
                 $query->whereHas('user', function ($query) {
-                    $query->where('is_admin', true);
+                    $query->where(function ($query) {
+                        $query->where('is_admin', true)->orWhere('is_super_admin', true);
+                    });
                 });
             })
             ->when($this->designation === 'moderator', function ($query) {
@@ -412,13 +414,18 @@ class extends Component
                                     </div>
 
                                     @if (
-                                        $profile->user->is_admin
+                                        $profile->user->is_super_admin
+                                        || $profile->user->is_admin
                                         || $profile->user->is_moderator
                                         || $profile->user->is_charter_member
                                     )
                                         <div class="mt-3 flex flex-wrap gap-2">
 
-                                            @if ($profile->user->is_admin)
+                                            @if ($profile->user->is_super_admin)
+                                                <flux:badge size="sm" color="amber">
+                                                    Super Administrator
+                                                </flux:badge>
+                                            @elseif ($profile->user->is_admin)
                                                 <flux:badge
                                                     size="sm"
                                                     color="red"

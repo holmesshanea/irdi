@@ -39,6 +39,7 @@ class extends Component
 
     public function disableMessaging(): void
     {
+        $this->ensureCanEnforceTarget();
         $this->validate([
             'restrictionType' => ['required', 'in:7_days,30_days,permanent'],
             'enforcementReason' => ['required', 'string', 'min:10', 'max:1000'],
@@ -97,6 +98,7 @@ class extends Component
 
     public function restoreMessaging(): void
     {
+        $this->ensureCanEnforceTarget();
         $this->validate([
             'restoreReason' => ['required', 'string', 'min:10', 'max:1000'],
         ], [
@@ -143,6 +145,7 @@ class extends Component
 
     public function suspendMembership(): void
     {
+        $this->ensureCanEnforceTarget();
         if ($this->user->id === Auth::id()) {
             $this->addError(
                 'suspensionReason',
@@ -204,6 +207,7 @@ class extends Component
 
     public function restoreMembership(): void
     {
+        $this->ensureCanEnforceTarget();
         if ($this->user->membership_status !== 'suspended') {
             $this->addError(
                 'membershipRestoreReason',
@@ -257,6 +261,7 @@ class extends Component
 
     public function banMember(): void
     {
+        $this->ensureCanEnforceTarget();
         if ($this->user->id === Auth::id()) {
             $this->addError('banReason', 'You cannot ban your own administrator account.');
 
@@ -370,6 +375,7 @@ class extends Component
 
     public function unbanMember(): void
     {
+        $this->ensureCanEnforceTarget();
         if ($this->user->membership_status !== 'banned') {
             $this->addError('unbanReason', 'Only a banned membership can be unbanned.');
 
@@ -429,14 +435,41 @@ class extends Component
 
     private function ensureAdministrator(): void
     {
-        if (! auth()->user()?->is_admin) {
+        if (! auth()->user()?->isAdministrator()) {
+            abort(403);
+        }
+    }
+
+    private function ensureCanEnforceTarget(): void
+    {
+        $actor = auth()->user();
+
+        if ($actor === null) {
+            abort(403);
+        }
+
+        if ($this->user->is_super_admin && ! $actor->is_super_admin) {
+            abort(403);
+        }
+    }
+
+    private function ensureCanManageStaffTarget(): void
+    {
+        $this->ensureAdministrator();
+
+        if ($this->user->is_super_admin) {
+            $this->addError(
+                'staffRole',
+                'Super Administrator access is protected and cannot be changed here.'
+            );
+
             abort(403);
         }
     }
 
     public function makeModerator(): void
     {
-        $this->ensureAdministrator();
+        $this->ensureCanManageStaffTarget();
 
         if ($this->user->is_admin) {
             $this->addError(
@@ -473,7 +506,7 @@ class extends Component
 
     public function removeModerator(): void
     {
-        $this->ensureAdministrator();
+        $this->ensureCanManageStaffTarget();
 
         if (! $this->user->is_moderator) {
             return;
@@ -501,7 +534,7 @@ class extends Component
 
     public function makeAdministrator(): void
     {
-        $this->ensureAdministrator();
+        $this->ensureCanManageStaffTarget();
 
         if ($this->user->is_admin) {
             return;
@@ -534,7 +567,7 @@ class extends Component
 
     public function removeAdministrator(): void
     {
-        $this->ensureAdministrator();
+        $this->ensureCanManageStaffTarget();
 
         if ($this->user->id === Auth::id()) {
             $this->addError(
@@ -764,7 +797,11 @@ class extends Component
                         </dt>
 
                         <dd class="mt-1 flex flex-wrap gap-2">
-                            @if ($user->is_admin)
+                            @if ($user->is_super_admin)
+                                <flux:badge color="amber">
+                                    Super Administrator
+                                </flux:badge>
+                            @elseif ($user->is_admin)
                                 <flux:badge color="red">
                                     Administrator
                                 </flux:badge>
@@ -940,7 +977,7 @@ class extends Component
 
         </div>
 
-        @if (auth()->user()->is_admin)
+        @if (auth()->user()->isAdministrator())
 
             {{-- Staff Management --}}
             <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">

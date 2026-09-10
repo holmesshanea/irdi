@@ -116,8 +116,8 @@
             ? \Illuminate\Support\Facades\Storage::url($navProfile->profile_image)
             : null;
 
-        $isStaff = $navUser->is_admin || $navUser->is_moderator;
-        $staffMenuLabel = $navUser->is_admin ? 'Admin' : 'Moderator';
+        $isStaff = $navUser->isModeratorOrAdministrator();
+        $staffMenuLabel = $navUser->is_super_admin ? 'Super Admin' : ($navUser->is_admin ? 'Admin' : 'Moderator');
 
         $pendingReviewCount = $isStaff
             ? \App\Models\PropertyReview::query()->whereNull('admin_reviewed_at')->count()

@@ -62,6 +62,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'best_practices_agreed_at' => 'datetime',
             'password' => 'hashed',
             'is_admin' => 'boolean',
+            'is_super_admin' => 'boolean',
             'is_moderator' => 'boolean',
             'is_charter_member' => 'boolean',
             'email_member_message_notifications' => 'boolean',
@@ -80,6 +81,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return Str::length($initials) > 1
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
             : $initials;
+    }
+
+    public function isAdministrator(): bool
+    {
+        return (bool) $this->is_super_admin || (bool) $this->is_admin;
+    }
+
+    public function isModeratorOrAdministrator(): bool
+    {
+        return $this->isAdministrator() || (bool) $this->is_moderator;
     }
 
     public function messagingIsDisabled(): bool
