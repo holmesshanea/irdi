@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Flux\Flux;
 
 new
 #[Layout('components.layouts.public')]
@@ -18,6 +19,20 @@ class extends Component
 
         $this->ethicsAgreed = $user->ethics_agreed_at !== null;
         $this->bestPracticesAgreed = $user->best_practices_agreed_at !== null;
+
+        if (session()->pull('email_verified_successfully')) {
+            Flux::toast(
+                text: 'Your email address has been verified. Next, review and agree to the IRDI Code of Ethics.',
+                heading: 'Email verified!',
+                duration: 10000,
+                variant: 'success',
+                action: [
+                    'label' => 'Review Code of Ethics',
+                    'href' => route('code-of-ethics'),
+                    'navigate' => true,
+                ],
+            );
+        }
     }
 
     public function activateMembership(): void
@@ -106,10 +121,10 @@ class extends Component
         }
 
         session()->flash(
-            'status',
+            'membership_activated_successfully',
             $user->is_charter_member
-                ? 'Your IRDI membership is now active. Welcome, Charter Member!'
-                : 'Your IRDI membership is now active.'
+                ? 'charter'
+                : 'member'
         );
 
         $this->redirectRoute('account');
@@ -149,6 +164,104 @@ class extends Component
         <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
 
             <div class="mx-auto max-w-3xl">
+
+                {{-- Membership Progress --}}
+                @php
+                    $user = auth()->user();
+
+                    $membershipSteps = [
+                        [
+                            'label' => 'Account',
+                            'complete' => true,
+                        ],
+                        [
+                            'label' => 'Email',
+                            'complete' => $user->hasVerifiedEmail(),
+                        ],
+                        [
+                            'label' => 'Ethics',
+                            'complete' => $ethicsAgreed,
+                        ],
+                        [
+                            'label' => 'Best Practices',
+                            'complete' => $bestPracticesAgreed,
+                        ],
+                        [
+                            'label' => 'Active',
+                            'complete' => $user->membership_status === 'active',
+                        ],
+                    ];
+
+                    $membershipStepsCompleted = collect($membershipSteps)
+                        ->where('complete', true)
+                        ->count();
+                @endphp
+
+                <flux:card class="mb-6 p-6">
+
+                    <div class="flex items-center justify-between gap-4">
+
+                        <div>
+                            <h2 class="text-xl font-semibold text-irdi-green">
+                                Membership Progress
+                            </h2>
+
+                            <p class="mt-1 text-sm text-zinc-600">
+                                Complete each step to activate your IRDI membership.
+                            </p>
+                        </div>
+
+                        <div class="shrink-0 text-sm font-semibold text-blue-600">
+                            {{ $membershipStepsCompleted }} of 5
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6">
+
+                        <flux:progress
+                            :value="$membershipStepsCompleted"
+                            max="5"
+                            color="blue"
+                        />
+
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-5 gap-2">
+
+                        @foreach ($membershipSteps as $step)
+
+                            <div class="text-center">
+
+                                @if ($step['complete'])
+
+                                    <flux:icon.check-circle
+                                        class="mx-auto size-5 text-green-600"
+                                    />
+
+                                    <p class="mt-2 text-xs font-medium text-green-700">
+                                        {{ $step['label'] }}
+                                    </p>
+
+                                @else
+
+                                    <div class="mx-auto flex size-5 items-center justify-center rounded-full border-2 border-zinc-300">
+                                        <div class="size-1.5 rounded-full bg-zinc-300"></div>
+                                    </div>
+
+                                    <p class="mt-2 text-xs font-medium text-zinc-500">
+                                        {{ $step['label'] }}
+                                    </p>
+
+                                @endif
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                </flux:card>
 
                 {{-- Membership Requirements --}}
                 <flux:card class="p-6">

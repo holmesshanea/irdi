@@ -828,6 +828,10 @@
 
 </footer>
 
+@persist('toast')
+<flux:toast invert />
+@endpersist
+
 @livewireScripts
 @fluxScripts
 

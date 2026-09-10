@@ -13,10 +13,8 @@ class EmailVerificationResponse implements VerifyEmailResponse
             ? new JsonResponse([
                 'message' => 'Your email address has been verified successfully.',
             ])
-            : redirect('/account')
-                ->with(
-                    'status',
-                    'Your email address has been verified successfully.'
-                );
+            : redirect()
+                ->route('membership.join')
+                ->with('email_verified_successfully', true);
     }
 }

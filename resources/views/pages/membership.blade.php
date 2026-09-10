@@ -39,6 +39,53 @@
                     and protecting our shared history.
                 </p>
 
+                @guest
+                    <div class="mt-8 flex flex-wrap justify-center gap-3">
+
+                        <flux:button
+                            href="{{ route('register') }}"
+                            class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                        >
+                            Create an Account
+                        </flux:button>
+
+                        <flux:button
+                            href="{{ route('login') }}"
+                            variant="outline"
+                            class="border-white text-white hover:bg-white hover:text-irdi-green"
+                        >
+                            Log In
+                        </flux:button>
+
+                    </div>
+                @endguest
+
+                @auth
+                    <div class="mt-8 flex justify-center">
+
+                        @if (auth()->user()->membership_status === 'active')
+
+                            <flux:button
+                                href="{{ route('account') }}"
+                                class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                            >
+                                View My Account
+                            </flux:button>
+
+                        @else
+
+                            <flux:button
+                                href="{{ route('membership.join') }}"
+                                class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                            >
+                                Become an IRDI Member
+                            </flux:button>
+
+                        @endif
+
+                    </div>
+                @endauth
+
                 <p class="mt-4 font-semibold text-white">
                     IRDI Membership is completely free.
                 </p>

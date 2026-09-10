@@ -1,5 +1,6 @@
 <?php
 
+use Flux\Flux;
 use Livewire\Component;
 
 new class extends Component
@@ -9,6 +10,15 @@ new class extends Component
     public function mount(): void
     {
         $this->agreed = auth()->user()->ethics_agreed_at !== null;
+
+        if (! $this->agreed && auth()->user()->membership_status !== 'active') {
+            Flux::toast(
+                text: 'Please read the entire IRDI Code of Ethics. When finished, check "I have read and agree to follow the IRDI Code of Ethics." at the bottom of this page.',
+                heading: 'Review the Code of Ethics',
+                duration: 10000,
+                variant: 'warning',
+            );
+        }
     }
 
     public function updatedAgreed(bool $value): void
@@ -24,6 +34,20 @@ new class extends Component
         $user->update([
             'ethics_agreed_at' => $value ? now() : null,
         ]);
+
+        if ($value) {
+            Flux::toast(
+                text: 'You have agreed to follow the IRDI Code of Ethics. Continue to the IRDI Best Practices.',
+                heading: 'Code of Ethics complete!',
+                duration: 10000,
+                variant: 'success',
+                action: [
+                    'label' => 'View Best Practices',
+                    'href' => route('best-practices'),
+                    'navigate' => true,
+                ],
+            );
+        }
     }
 };
 ?>

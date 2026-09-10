@@ -1,4 +1,5 @@
 <x-layouts.public :noindex="true">
+    <livewire:membership.activation-toast />
 
     @php
         $currentUser = auth()->user();
