@@ -440,36 +440,51 @@ class extends Component
         }
     }
 
+    private function staffRank(User $user): int
+    {
+        return match (true) {
+            $user->is_super_admin => 3,
+            $user->is_admin => 2,
+            $user->is_moderator => 1,
+            default => 0,
+        };
+    }
+
     private function ensureCanEnforceTarget(): void
     {
         $actor = auth()->user();
 
-        if ($actor === null) {
-            abort(403);
-        }
-
-        if ($this->user->is_super_admin && ! $actor->is_super_admin) {
+        if ($actor === null || $this->staffRank($actor) <= $this->staffRank($this->user)) {
             abort(403);
         }
     }
 
-    private function ensureCanManageStaffTarget(): void
+    private function ensureCanManageModeratorTarget(): void
     {
         $this->ensureAdministrator();
 
-        if ($this->user->is_super_admin) {
+        if ($this->user->is_super_admin || $this->user->is_admin) {
             $this->addError(
                 'staffRole',
-                'Super Administrator access is protected and cannot be changed here.'
+                'Administrator and Super Administrator access can only be managed by the Super Administrator.'
             );
 
             abort(403);
         }
     }
 
+    private function ensureCanManageAdministratorTarget(): void
+    {
+        $actor = auth()->user();
+
+        if ($actor === null || ! $actor->is_super_admin || $this->user->is_super_admin) {
+            abort(403);
+        }
+    }
+
     public function makeModerator(): void
     {
-        $this->ensureCanManageStaffTarget();
+        $this->ensureCanManageModeratorTarget();
 
         if ($this->user->is_admin) {
             $this->addError(
@@ -506,7 +521,7 @@ class extends Component
 
     public function removeModerator(): void
     {
-        $this->ensureCanManageStaffTarget();
+        $this->ensureCanManageModeratorTarget();
 
         if (! $this->user->is_moderator) {
             return;
@@ -534,7 +549,7 @@ class extends Component
 
     public function makeAdministrator(): void
     {
-        $this->ensureCanManageStaffTarget();
+        $this->ensureCanManageAdministratorTarget();
 
         if ($this->user->is_admin) {
             return;
@@ -567,7 +582,7 @@ class extends Component
 
     public function removeAdministrator(): void
     {
-        $this->ensureCanManageStaffTarget();
+        $this->ensureCanManageAdministratorTarget();
 
         if ($this->user->id === Auth::id()) {
             $this->addError(
@@ -988,7 +1003,7 @@ class extends Component
                     </h2>
 
                     <p class="mt-1 text-sm text-zinc-500">
-                        Administrator-only controls for Moderator and Administrator access.
+                        Administrators can manage Moderators. Only the Super Administrator can manage Administrator access.
                     </p>
                 </div>
 
@@ -1011,9 +1026,13 @@ class extends Component
                         </p>
 
                         <div class="mt-5">
-                            @if ($user->is_admin)
+                            @if ($user->is_super_admin)
                                 <p class="text-sm text-zinc-500">
-                                    Administrators already have all Moderator permissions.
+                                    Super Administrator access is protected.
+                                </p>
+                            @elseif ($user->is_admin)
+                                <p class="text-sm text-zinc-500">
+                                    Administrator access can only be managed by the Super Administrator.
                                 </p>
                             @elseif ($user->is_moderator)
                                 <flux:button
@@ -1037,23 +1056,22 @@ class extends Component
                         </div>
                     </div>
 
-                    <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
-                        <h3 class="font-semibold text-zinc-900">
-                            Administrator
-                        </h3>
+                    @if (auth()->user()->is_super_admin)
+                        <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                            <h3 class="font-semibold text-zinc-900">
+                                Administrator
+                            </h3>
 
-                        <p class="mt-2 text-sm leading-6 text-zinc-600">
-                            Administrators have full moderation access and can assign or remove
-                            Moderator and Administrator privileges.
-                        </p>
+                            <p class="mt-2 text-sm leading-6 text-zinc-600">
+                                Only the Super Administrator can assign or remove Administrator access.
+                            </p>
 
-                        <div class="mt-5">
-                            @if ($user->is_admin)
-                                @if ($user->id === auth()->id())
+                            <div class="mt-5">
+                                @if ($user->is_super_admin)
                                     <p class="text-sm text-zinc-500">
-                                        You cannot remove your own Administrator access.
+                                        Super Administrator access is protected.
                                     </p>
-                                @else
+                                @elseif ($user->is_admin)
                                     <flux:button
                                         type="button"
                                         variant="danger"
@@ -1062,19 +1080,19 @@ class extends Component
                                     >
                                         Remove Administrator
                                     </flux:button>
+                                @else
+                                    <flux:button
+                                        type="button"
+                                        variant="primary"
+                                        wire:click="makeAdministrator"
+                                        wire:confirm="Make this member an IRDI Administrator? Moderator access will be removed because Administrator includes all Moderator permissions."
+                                    >
+                                        Make Administrator
+                                    </flux:button>
                                 @endif
-                            @else
-                                <flux:button
-                                    type="button"
-                                    variant="primary"
-                                    wire:click="makeAdministrator"
-                                    wire:confirm="Make this member an IRDI Administrator? Moderator access will be removed because Administrator includes all Moderator permissions."
-                                >
-                                    Make Administrator
-                                </flux:button>
-                            @endif
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
                 </div>
 

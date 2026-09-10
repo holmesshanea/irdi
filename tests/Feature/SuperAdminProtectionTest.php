@@ -132,3 +132,108 @@ test('super administrator can manage ordinary staff without administrator flag',
 
     expect($member->fresh()->is_admin)->toBeFalse();
 });
+
+test('administrator cannot assign administrator access', function () {
+    $administrator = activeStaffUser(['is_admin' => true]);
+    $member = activeStaffUser();
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->call('makeAdministrator')
+        ->assertStatus(403);
+
+    expect($member->fresh()->is_admin)->toBeFalse();
+});
+
+test('administrator cannot remove another administrator', function () {
+    $administrator = activeStaffUser(['is_admin' => true]);
+    $otherAdministrator = activeStaffUser(['is_admin' => true]);
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.members.show', ['user' => $otherAdministrator])
+        ->call('removeAdministrator')
+        ->assertStatus(403);
+
+    expect($otherAdministrator->fresh()->is_admin)->toBeTrue();
+});
+
+test('administrator can assign and remove moderator access', function () {
+    $administrator = activeStaffUser(['is_admin' => true]);
+    $member = activeStaffUser();
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->call('makeModerator')
+        ->assertHasNoErrors();
+
+    expect($member->fresh()->is_moderator)->toBeTrue();
+
+    Livewire::test('admin.members.show', ['user' => $member->fresh()])
+        ->call('removeModerator')
+        ->assertHasNoErrors();
+
+    expect($member->fresh()->is_moderator)->toBeFalse();
+});
+
+test('administrator can enforce against moderator', function () {
+    $administrator = activeStaffUser(['is_admin' => true]);
+    $moderator = activeStaffUser(['is_moderator' => true]);
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.members.show', ['user' => $moderator])
+        ->set('suspensionReason', 'Administrator enforcement against a moderator is permitted.')
+        ->call('suspendMembership')
+        ->assertHasNoErrors();
+
+    expect($moderator->fresh()->membership_status)->toBe('suspended');
+});
+
+test('moderator cannot enforce against administrator', function () {
+    $moderator = activeStaffUser(['is_moderator' => true]);
+    $administrator = activeStaffUser(['is_admin' => true]);
+
+    $this->actingAs($moderator);
+
+    Livewire::test('admin.members.show', ['user' => $administrator])
+        ->set('suspensionReason', 'A moderator must not enforce against an administrator.')
+        ->call('suspendMembership')
+        ->assertStatus(403);
+
+    expect($administrator->fresh()->membership_status)->toBe('active');
+});
+
+test('moderator cannot enforce against another moderator', function () {
+    $moderator = activeStaffUser(['is_moderator' => true]);
+    $otherModerator = activeStaffUser(['is_moderator' => true]);
+
+    $this->actingAs($moderator);
+
+    Livewire::test('admin.members.show', ['user' => $otherModerator])
+        ->set('suspensionReason', 'A moderator must not enforce against another moderator.')
+        ->call('suspendMembership')
+        ->assertStatus(403);
+
+    expect($otherModerator->fresh()->membership_status)->toBe('active');
+});
+
+test('super administrator can enforce against administrator', function () {
+    $superAdmin = activeStaffUser([
+        'is_super_admin' => true,
+        'is_admin' => false,
+        'is_moderator' => false,
+    ]);
+    $administrator = activeStaffUser(['is_admin' => true]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $administrator])
+        ->set('suspensionReason', 'Super Administrator enforcement against an administrator is permitted.')
+        ->call('suspendMembership')
+        ->assertHasNoErrors();
+
+    expect($administrator->fresh()->membership_status)->toBe('suspended');
+});
