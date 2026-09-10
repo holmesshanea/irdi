@@ -27,7 +27,7 @@ class ContactMessage extends Mailable
             replyTo: [
                 new Address($this->email, $this->name),
             ],
-            subject: 'IRDI Contact: '.$this->contactSubject,
+            subject: __('IRDI Contact: :subject', ['subject' => $this->contactSubject]),
         );
     }
 

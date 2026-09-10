@@ -74,7 +74,7 @@ class FortifyServiceProvider extends ServiceProvider
 
             if ($user->membership_status === 'banned') {
                 throw ValidationException::withMessages([
-                    Fortify::username() => 'This IRDI account has been banned. If you believe this is an error, please contact IRDI.',
+                    Fortify::username() => __('This IRDI account has been banned. If you believe this is an error, please contact IRDI.'),
                 ]);
             }
 

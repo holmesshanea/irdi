@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PropertyReviewInvitationController;
 use App\Models\MemberProfile;
 use App\Models\User;
@@ -12,6 +13,9 @@ use Illuminate\Support\Facades\Storage;
 | Public Pages
 |--------------------------------------------------------------------------
 */
+
+Route::post('/language/{locale}', LanguageController::class)
+    ->name('language.switch');
 
 Route::get('/', function () {
     return view('pages.home', [
@@ -169,7 +173,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->route('account')
             ->with(
                 'status',
-                'Your profile has been deleted. Your IRDI account and membership were not affected.'
+                __('Your profile has been deleted. Your IRDI account and membership were not affected.')
             );
     })->name('account.profiles.destroy');
 

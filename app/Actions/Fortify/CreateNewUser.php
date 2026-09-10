@@ -45,7 +45,7 @@ class CreateNewUser implements CreatesNewUsers
                             ->exists();
 
                         if ($isBanned) {
-                            $fail('This email address is not eligible to register for an IRDI account.');
+                            $fail(__('This email address is not eligible to register for an IRDI account.'));
                         }
                     },
                     Rule::unique(User::class),
@@ -63,7 +63,7 @@ class CreateNewUser implements CreatesNewUsers
                 ->exists()
         ) {
             throw ValidationException::withMessages([
-                'email' => 'Registration is not available from this network. Please contact IRDI if you believe this is an error.',
+                'email' => __('Registration is not available from this network. Please contact IRDI if you believe this is an error.'),
             ]);
         }
 

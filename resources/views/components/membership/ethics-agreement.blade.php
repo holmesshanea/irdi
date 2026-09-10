@@ -13,8 +13,8 @@ new class extends Component
 
         if (! $this->agreed && auth()->user()->membership_status !== 'active') {
             Flux::toast(
-                text: 'Please read the entire IRDI Code of Ethics. When finished, check "I have read and agree to follow the IRDI Code of Ethics." at the bottom of this page.',
-                heading: 'Review the Code of Ethics',
+                text: __('Please read the entire IRDI Code of Ethics. When finished, check "I have read and agree to follow the IRDI Code of Ethics." at the bottom of this page.'),
+                heading: __('Review the Code of Ethics'),
                 duration: 10000,
                 variant: 'warning',
             );
@@ -37,12 +37,12 @@ new class extends Component
 
         if ($value) {
             Flux::toast(
-                text: 'You have agreed to follow the IRDI Code of Ethics. Continue to the IRDI Best Practices.',
-                heading: 'Code of Ethics complete!',
+                text: __('You have agreed to follow the IRDI Code of Ethics. Continue to the IRDI Best Practices.'),
+                heading: __('Code of Ethics complete!'),
                 duration: 10000,
                 variant: 'success',
                 action: [
-                    'label' => 'View Best Practices',
+                    'label' => __('View Best Practices'),
                     'href' => route('best-practices'),
                     'navigate' => true,
                 ],
@@ -56,13 +56,13 @@ new class extends Component
 
     <flux:checkbox
         wire:model.live="agreed"
-        label="I have read and agree to follow the IRDI Code of Ethics."
+        label="{{ __('I have read and agree to follow the IRDI Code of Ethics.') }}"
         :disabled="auth()->user()->membership_status === 'active'"
     />
 
     @if ($agreed)
         <p class="mt-3 text-sm text-green-700">
-            Your agreement has been saved.
+            {{ __('Your agreement has been saved.') }}
         </p>
     @endif
 

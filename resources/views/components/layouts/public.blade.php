@@ -75,7 +75,7 @@
     {{-- Structured Data --}}
     <script type="application/ld+json">
         {!! json_encode([
-            '@context' => 'https://schema.org',
+            '@'.'context' => 'https://schema.org',
             '@graph' => [
                 [
                     '@type' => 'Organization',
@@ -165,43 +165,77 @@
             href="{{ route('home') }}"
             :current="request()->routeIs('home')"
         >
-            Home
+            {{ __('common.home') }}
         </flux:navbar.item>
 
         <flux:navbar.item
             href="{{ route('about') }}"
             :current="request()->routeIs('about')"
         >
-            About
+            {{ __('common.about') }}
         </flux:navbar.item>
 
         <flux:navbar.item
             href="{{ route('membership') }}"
             :current="request()->routeIs('membership')"
         >
-            Membership
+            {{ __('common.membership') }}
         </flux:navbar.item>
 
         <flux:navbar.item
             href="{{ route('directory') }}"
             :current="request()->routeIs('directory')"
         >
-            Directory
+            {{ __('common.directory') }}
         </flux:navbar.item>
 
         <flux:navbar.item
             href="{{ route('faq') }}"
             :current="request()->routeIs('faq')"
         >
-            FAQ
+            {{ __('common.faq') }}
         </flux:navbar.item>
 
         <flux:navbar.item
             href="{{ route('contact') }}"
             :current="request()->routeIs('contact')"
         >
-            Contact
+            {{ __('common.contact') }}
         </flux:navbar.item>
+
+        <flux:dropdown position="bottom" align="end">
+            <flux:button variant="ghost" icon="language" size="sm">
+                {{ strtoupper(app()->getLocale()) }}
+            </flux:button>
+
+            <flux:navmenu class="min-w-44">
+                <div class="px-3 py-2">
+                    <flux:text size="sm" class="font-medium text-zinc-500">
+                        {{ __('common.language') }}
+                    </flux:text>
+                </div>
+
+                @foreach (config('locales.supported') as $localeCode => $localeName)
+                    <form method="POST" action="{{ route('language.switch', $localeCode) }}">
+                        @csrf
+
+                        <flux:navmenu.item
+                            as="button"
+                            type="submit"
+                            class="w-full"
+                        >
+                            <div class="flex w-full items-center justify-between gap-3">
+                                <span>{{ $localeName }}</span>
+
+                                @if (app()->getLocale() === $localeCode)
+                                    <flux:icon.check class="size-4 text-irdi-green" />
+                                @endif
+                            </div>
+                        </flux:navmenu.item>
+                    </form>
+                @endforeach
+            </flux:navmenu>
+        </flux:dropdown>
 
         {{-- Guest navigation --}}
         @guest
@@ -212,7 +246,7 @@
                     href="{{ route('login') }}"
                     :current="request()->routeIs('login')"
                 >
-                    Log In
+                    {{ __('common.login') }}
                 </flux:navbar.item>
 
             </div>
@@ -221,7 +255,7 @@
                 href="{{ route('register') }}"
                 :current="request()->routeIs('register')"
             >
-                Create Account
+                {{ __('common.create_account') }}
             </flux:navbar.item>
 
         @endguest
@@ -236,7 +270,7 @@
                     :current="request()->routeIs('resources')"
                     icon="book-open"
                 >
-                    Resources
+                    {{ __('common.resources') }}
                 </flux:navbar.item>
 
             @endif
@@ -252,7 +286,7 @@
                     <flux:navmenu class="min-w-64">
                         <div class="px-3 py-2">
                             <flux:text size="sm" class="text-zinc-500">
-                                Signed in as
+                                {{ __('common.signed_in_as') }}
                             </flux:text>
 
                             <flux:heading class="mt-1! truncate">
@@ -266,7 +300,7 @@
                             href="{{ route('account') }}"
                             icon="user-circle"
                         >
-                            Account
+                            {{ __('common.account') }}
                         </flux:navmenu.item>
 
                         @if ($navProfile)
@@ -274,7 +308,7 @@
                                 href="{{ route('member-profiles.show', $navProfile->username) }}"
                                 icon="identification"
                             >
-                                My Profile
+                                {{ __('common.my_profile') }}
                             </flux:navmenu.item>
                         @endif
 
@@ -283,7 +317,7 @@
                                 href="{{ route('messages.index') }}"
                                 icon="envelope"
                             >
-                                Messages
+                                {{ __('common.messages') }}
                             </flux:navmenu.item>
                         @endif
 
@@ -300,7 +334,7 @@
                                 href="{{ route('admin.members.index') }}"
                                 icon="users"
                             >
-                                Member Management
+                                {{ __('common.member_management') }}
                             </flux:navmenu.item>
 
                             <flux:navmenu.item
@@ -308,7 +342,7 @@
                                 icon="shield-check"
                             >
                                 <div class="flex w-full items-center justify-between gap-3">
-                                    <span>Moderate Reviews</span>
+                                    <span>{{ __('common.moderate_reviews') }}</span>
 
                                     @if ($pendingReviewCount > 0)
                                         <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
@@ -323,7 +357,7 @@
                                 icon="flag"
                             >
                                 <div class="flex w-full items-center justify-between gap-3">
-                                    <span>Message Reports</span>
+                                    <span>{{ __('common.message_reports') }}</span>
 
                                     @if ($pendingMessageReportCount > 0)
                                         <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-800">
@@ -337,7 +371,7 @@
                                 href="{{ route('admin.activity.index') }}"
                                 icon="clock"
                             >
-                                Activity Log
+                                {{ __('common.activity_log') }}
                             </flux:navmenu.item>
                         @endif
 
@@ -352,7 +386,7 @@
                                 icon="arrow-right-start-on-rectangle"
                                 class="w-full"
                             >
-                                Log Out
+                                {{ __('common.logout') }}
                             </flux:navmenu.item>
                         </form>
                     </flux:navmenu>
@@ -424,43 +458,77 @@
             href="{{ route('home') }}"
             :current="request()->routeIs('home')"
         >
-            Home
+            {{ __('common.home') }}
         </flux:sidebar.item>
 
         <flux:sidebar.item
             href="{{ route('about') }}"
             :current="request()->routeIs('about')"
         >
-            About
+            {{ __('common.about') }}
         </flux:sidebar.item>
 
         <flux:sidebar.item
             href="{{ route('membership') }}"
             :current="request()->routeIs('membership')"
         >
-            Membership
+            {{ __('common.membership') }}
         </flux:sidebar.item>
 
         <flux:sidebar.item
             href="{{ route('directory') }}"
             :current="request()->routeIs('directory')"
         >
-            Directory
+            {{ __('common.directory') }}
         </flux:sidebar.item>
 
         <flux:sidebar.item
             href="{{ route('faq') }}"
             :current="request()->routeIs('faq')"
         >
-            FAQ
+            {{ __('common.faq') }}
         </flux:sidebar.item>
 
         <flux:sidebar.item
             href="{{ route('contact') }}"
             :current="request()->routeIs('contact')"
         >
-            Contact
+            {{ __('common.contact') }}
         </flux:sidebar.item>
+
+        <div class="my-4 border-t border-zinc-200"></div>
+
+        <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            {{ __('common.language') }}
+        </div>
+
+        <flux:dropdown position="bottom" align="start">
+            <flux:button variant="ghost" icon="language" class="w-full justify-start">
+                {{ config('locales.supported.'.app()->getLocale(), 'English') }}
+            </flux:button>
+
+            <flux:navmenu class="min-w-52">
+                @foreach (config('locales.supported') as $localeCode => $localeName)
+                    <form method="POST" action="{{ route('language.switch', $localeCode) }}">
+                        @csrf
+
+                        <flux:navmenu.item
+                            as="button"
+                            type="submit"
+                            class="w-full"
+                        >
+                            <div class="flex w-full items-center justify-between gap-3">
+                                <span>{{ $localeName }}</span>
+
+                                @if (app()->getLocale() === $localeCode)
+                                    <flux:icon.check class="size-4 text-irdi-green" />
+                                @endif
+                            </div>
+                        </flux:navmenu.item>
+                    </form>
+                @endforeach
+            </flux:navmenu>
+        </flux:dropdown>
 
         {{-- Guest navigation --}}
         @guest
@@ -468,21 +536,21 @@
             <div class="my-4 border-t border-zinc-200"></div>
 
             <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Account
+                {{ __('common.account') }}
             </div>
 
             <flux:sidebar.item
                 href="{{ route('login') }}"
                 :current="request()->routeIs('login')"
             >
-                Log In
+                {{ __('common.login') }}
             </flux:sidebar.item>
 
             <flux:sidebar.item
                 href="{{ route('register') }}"
                 :current="request()->routeIs('register')"
             >
-                Create Account
+                {{ __('common.create_account') }}
             </flux:sidebar.item>
 
         @endguest
@@ -503,7 +571,7 @@
                     :current="request()->routeIs('admin.members.*')"
                     icon="users"
                 >
-                    Member Management
+                    {{ __('common.member_management') }}
                 </flux:sidebar.item>
 
                 <flux:sidebar.item
@@ -512,7 +580,7 @@
                     icon="shield-check"
                 >
                     <div class="flex w-full items-center justify-between gap-3">
-                        <span>Moderate Reviews</span>
+                        <span>{{ __('common.moderate_reviews') }}</span>
 
                         @if ($pendingReviewCount > 0)
                             <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-amber-100 px-1.5 py-0.5 text-xs font-semibold text-amber-800">
@@ -528,7 +596,7 @@
                     icon="flag"
                 >
                     <div class="flex w-full items-center justify-between gap-3">
-                        <span>Message Reports</span>
+                        <span>{{ __('common.message_reports') }}</span>
 
                         @if ($pendingMessageReportCount > 0)
                             <span class="inline-flex min-w-5 items-center justify-center rounded-full bg-red-100 px-1.5 py-0.5 text-xs font-semibold text-red-800">
@@ -543,7 +611,7 @@
                     :current="request()->routeIs('admin.activity.*')"
                     icon="clock"
                 >
-                    Activity Log
+                    {{ __('common.activity_log') }}
                 </flux:sidebar.item>
 
             @endif
@@ -551,7 +619,7 @@
             <div class="my-4 border-t border-zinc-200"></div>
 
             <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
-                Member
+                {{ __('common.member') }}
             </div>
 
             @if ($navUser->membership_status === 'active')
@@ -561,7 +629,7 @@
                     :current="request()->routeIs('resources')"
                     icon="book-open"
                 >
-                    Resources
+                    {{ __('common.resources') }}
                 </flux:sidebar.item>
 
             @endif
@@ -571,7 +639,7 @@
                 :current="request()->routeIs('account') || request()->routeIs('account.*')"
                 icon="user-circle"
             >
-                Account
+                {{ __('common.account') }}
             </flux:sidebar.item>
 
             @if ($navProfile)
@@ -580,7 +648,7 @@
                     :current="request()->routeIs('member-profiles.show')"
                     icon="identification"
                 >
-                    My Profile
+                    {{ __('common.my_profile') }}
                 </flux:sidebar.item>
             @endif
 
@@ -590,7 +658,7 @@
                     :current="request()->routeIs('messages.*')"
                     icon="envelope"
                 >
-                    Messages
+                    {{ __('common.messages') }}
                 </flux:sidebar.item>
             @endif
 
@@ -602,7 +670,7 @@
                     type="submit"
                     icon="arrow-right-start-on-rectangle"
                 >
-                    Log Out
+                    {{ __('common.logout') }}
                 </flux:sidebar.item>
             </form>
 
@@ -653,8 +721,7 @@
                 </div>
 
                 <p class="mt-4 max-w-sm text-sm leading-6 text-zinc-500">
-                    Promoting ethical metal detecting, responsible stewardship,
-                    and respect for our shared history.
+                    {{ __('common.tagline') }}
                 </p>
 
             </div>
@@ -662,7 +729,7 @@
             {{-- Footer navigation --}}
             <div>
                 <p class="text-sm font-semibold text-zinc-900">
-                    Explore
+                    {{ __('common.explore') }}
                 </p>
 
                 <nav class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
@@ -671,42 +738,42 @@
                         href="{{ route('home') }}"
                         class="text-zinc-600 transition hover:text-irdi-green"
                     >
-                        Home
+                        {{ __('common.home') }}
                     </a>
 
                     <a
                         href="{{ route('about') }}"
                         class="text-zinc-600 transition hover:text-irdi-green"
                     >
-                        About
+                        {{ __('common.about') }}
                     </a>
 
                     <a
                         href="{{ route('membership') }}"
                         class="text-zinc-600 transition hover:text-irdi-green"
                     >
-                        Membership
+                        {{ __('common.membership') }}
                     </a>
 
                     <a
                         href="{{ route('directory') }}"
                         class="text-zinc-600 transition hover:text-irdi-green"
                     >
-                        Directory
+                        {{ __('common.directory') }}
                     </a>
 
                     <a
                         href="{{ route('faq') }}"
                         class="text-zinc-600 transition hover:text-irdi-green"
                     >
-                        FAQ
+                        {{ __('common.faq') }}
                     </a>
 
                     <a
                         href="{{ route('contact') }}"
                         class="text-zinc-600 transition hover:text-irdi-green"
                     >
-                        Contact
+                        {{ __('common.contact') }}
                     </a>
 
                 </nav>
@@ -715,7 +782,7 @@
             {{-- Social media --}}
             <div>
                 <p class="text-sm font-semibold text-zinc-900">
-                    Follow IRDI
+                    {{ __('common.follow_irdi') }}
                 </p>
 
                 <div class="mt-4 flex items-center gap-4">
@@ -798,7 +865,7 @@
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 
                 <p class="text-sm text-zinc-500">
-                    &copy; {{ date('Y') }} IRDI. All rights reserved.
+                    &copy; {{ date('Y') }} IRDI. {{ __('common.all_rights_reserved') }}
                 </p>
 
                 <nav
@@ -809,14 +876,14 @@
                         href="{{ route('privacy-policy') }}"
                         class="text-zinc-500 transition hover:text-irdi-green"
                     >
-                        Privacy Policy
+                        {{ __('common.privacy_policy') }}
                     </a>
 
                     <a
                         href="{{ route('terms') }}"
                         class="text-zinc-500 transition hover:text-irdi-green"
                     >
-                        Terms
+                        {{ __('common.terms') }}
                     </a>
                 </nav>
 

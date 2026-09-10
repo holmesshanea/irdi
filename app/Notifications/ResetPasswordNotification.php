@@ -44,14 +44,14 @@ class ResetPasswordNotification extends Notification
         );
 
         return (new MailMessage)
-            ->subject('Reset Your IRDI Password')
-            ->greeting('Hello '.$notifiable->name.'!')
-            ->line('We received a request to reset the password for your IRDI account.')
-            ->line('Click the button below to choose a new password.')
-            ->action('Reset Password', $url)
-            ->line("This password reset link will expire in {$minutes} minutes.")
-            ->line('If you did not request a password reset, you can safely ignore this email. No changes will be made to your account.')
-            ->salutation('The IRDI Team');
+            ->subject(__('Reset Your IRDI Password'))
+            ->greeting(__('Hello :name!', ['name' => $notifiable->name]))
+            ->line(__('We received a request to reset the password for your IRDI account.'))
+            ->line(__('Click the button below to choose a new password.'))
+            ->action(__('Reset Password'), $url)
+            ->line(__('This password reset link will expire in :minutes minutes.', ['minutes' => $minutes]))
+            ->line(__('If you did not request a password reset, you can safely ignore this email. No changes will be made to your account.'))
+            ->salutation(__('The IRDI Team'));
     }
 
     /**

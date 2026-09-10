@@ -14,11 +14,6 @@ class extends Component
 {
     use WithFileUploads;
 
-    protected array $messages = [
-        'profileImage.max' => 'The profile image must be 5 MB or smaller.',
-        'profileImage.image' => 'The profile image must be a valid image file.',
-    ];
-
     public MemberProfile $profile;
 
     public string $profileName = '';
@@ -86,7 +81,7 @@ class extends Component
      */
     public function getCountriesProperty(): array
     {
-        return Countries::getNames();
+        return Countries::getNames(app()->getLocale());
     }
 
     private function profileImageDisk(): string
@@ -142,13 +137,16 @@ class extends Component
                 'size:2',
                 function (string $attribute, mixed $value, \Closure $fail): void {
                     if (! Countries::exists((string) $value)) {
-                        $fail('Please select a valid country.');
+                        $fail(__('Please select a valid country.'));
                     }
                 },
             ],
             'bio' => ['nullable', 'string', 'max:1000'],
             'website' => ['nullable', 'url', 'max:255'],
             'profileImage' => ['nullable', 'image', 'max:5120'],
+        ], [
+            'profileImage.max' => __('The profile image must be 5 MB or smaller.'),
+            'profileImage.image' => __('The profile image must be a valid image file.'),
         ]);
 
         if ($this->profileImage) {
@@ -169,7 +167,7 @@ class extends Component
         }
 
         $countryCode = strtoupper($validated['countryCode']);
-        $countryName = Countries::getName($countryCode);
+        $countryName = Countries::getName($countryCode, 'en');
 
         $this->profile->update([
             'profile_name' => $validated['profileName'],
@@ -192,7 +190,7 @@ class extends Component
                 $validated['emailMemberMessageNotifications'],
         ]);
 
-        session()->flash('status', 'Your profile has been updated.');
+        session()->flash('status', __('Your profile has been updated.'));
 
         $this->redirectRoute('account');
     }
@@ -213,13 +211,13 @@ class extends Component
             <div class="text-center">
 
                 <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Edit Profile
+                    {{ __('Edit Profile') }}
                 </h1>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg text-zinc-600">
-                    Update your IRDI member profile.
+                    {{ __('Update your IRDI member profile.') }}
                 </p>
 
             </div>
@@ -239,18 +237,15 @@ class extends Component
                         <div class="min-w-0">
 
                             <h2 class="font-semibold text-red-900">
-                                Your IRDI membership is suspended
+                                {{ __('Your IRDI membership is suspended') }}
                             </h2>
 
                             <p class="mt-2 text-sm leading-6 text-red-800">
-                                You may continue to update your stored profile information while your membership is suspended.
-                                Your public Member Directory listing and member-to-member messaging preferences are temporarily
-                                unavailable and will remain unchanged until your membership is restored.
+                                {{ __('You may continue to update your stored profile information while your membership is suspended. Your public Member Directory listing and member-to-member messaging preferences are temporarily unavailable and will remain unchanged until your membership is restored.') }}
                             </p>
 
                             <p class="mt-4 text-sm leading-6 text-red-800">
-                                If you have questions about your membership suspension or believe it should be reviewed,
-                                please contact IRDI.
+                                {{ __('If you have questions about your membership suspension or believe it should be reviewed, please contact IRDI.') }}
                             </p>
 
                             <div class="mt-4">
@@ -260,7 +255,7 @@ class extends Component
                                     size="sm"
                                     wire:navigate
                                 >
-                                    Contact IRDI
+                                    {{ __('Contact IRDI') }}
                                 </flux:button>
                             </div>
 
@@ -280,24 +275,24 @@ class extends Component
 
                         <div>
                             <h2 class="font-semibold text-irdi-green">
-                                Profile Completion
+                                {{ __('Profile Completion') }}
                             </h2>
 
                             <p class="mt-1 text-sm text-zinc-600">
-                                Complete the important public fields to make your IRDI profile more useful in the Member Directory.
+                                {{ __('Complete the important public fields to make your IRDI profile more useful in the Member Directory.') }}
                             </p>
                         </div>
 
                         @if ($this->profileIsComplete())
 
                             <flux:badge color="green">
-                                Profile Complete
+                                {{ __('Profile Complete') }}
                             </flux:badge>
 
                         @else
 
                             <flux:badge color="amber">
-                                Needs Attention
+                                {{ __('Needs Attention') }}
                             </flux:badge>
 
                         @endif
@@ -316,11 +311,11 @@ class extends Component
 
                     <div>
                         <p class="text-sm font-medium text-zinc-700">
-                            Profile Image
+                            {{ __('Profile Image') }}
                         </p>
 
                         <p class="mt-1 mb-4 text-sm text-zinc-500">
-                            Add an image to represent you in the IRDI Member Directory and on your public profile page.
+                            {{ __('Add an image to represent you in the IRDI Member Directory and on your public profile page.') }}
                         </p>
 
                         <div class="flex items-start gap-6">
@@ -330,12 +325,12 @@ class extends Component
 
                                     <img
                                         src="{{ $profileImage->temporaryUrl() }}"
-                                        alt="New profile image preview"
+                                        alt="{{ __('New profile image preview') }}"
                                         class="h-32 w-32 rounded-full object-cover"
                                     >
 
                                     <p class="mt-2 text-center text-xs text-zinc-500">
-                                        New image preview
+                                        {{ __('New image preview') }}
                                     </p>
 
                                 @elseif ($profile->profile_image)
@@ -360,7 +355,7 @@ class extends Component
                                 <flux:input
                                     type="file"
                                     wire:model="profileImage"
-                                    label="Upload Profile Image"
+                                    label="{{ __('Upload Profile Image') }}"
                                     accept="image/jpeg,image/png,image/webp"
                                 />
 
@@ -369,11 +364,11 @@ class extends Component
                                         <flux:button
                                             type="button"
                                             wire:click="removeProfileImage"
-                                            wire:confirm="Are you sure you want to remove your profile image?"
+                                            wire:confirm="{{ __('Are you sure you want to remove your profile image?') }}"
                                             variant="danger"
                                             size="sm"
                                         >
-                                            Remove Profile Image
+                                            {{ __('Remove Profile Image') }}
                                         </flux:button>
                                     </div>
                                 @endif
@@ -385,36 +380,36 @@ class extends Component
 
                     <flux:input
                         wire:model="profileName"
-                        label="Display Name"
+                        label="{{ __('Display Name') }}"
                         required
                     />
 
                     <flux:input
                         value="{{ '@' . $profile->username }}"
-                        label="Username"
-                        description="Your username is your permanent IRDI public handle and cannot be changed."
+                        label="{{ __('Username') }}"
+                        description="{{ __('Your username is your permanent IRDI public handle and cannot be changed.') }}"
                         disabled
                     />
 
                     <div>
                         <h2 class="text-sm font-medium text-zinc-700">
-                            Public Location
+                            {{ __('Public Location') }}
                         </h2>
 
                         <p class="mt-1 text-sm text-zinc-500">
-                            Add your general location so other members can see where you're based. Do not enter a street address.
+                            {{ __('Add your general location so other members can see where you\'re based. Do not enter a street address.') }}
                         </p>
 
                         <div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
 
                             <flux:input
                                 wire:model.live="city"
-                                label="City"
+                                label="{{ __('City') }}"
                             />
 
                             <flux:input
                                 wire:model.live="stateProvince"
-                                label="State / Province"
+                                label="{{ __('State / Province') }}"
                             />
 
                             <div class="sm:col-span-2">
@@ -422,8 +417,8 @@ class extends Component
                                     wire:model.live="countryCode"
                                     variant="listbox"
                                     searchable
-                                    label="Country"
-                                    placeholder="Select a country"
+                                    label="{{ __('Country') }}"
+                                    placeholder="{{ __('Select a country') }}"
                                 >
                                     @foreach ($this->countries as $code => $name)
                                         <flux:select.option
@@ -444,8 +439,8 @@ class extends Component
 
                     <flux:textarea
                         wire:model.live="bio"
-                        label="Bio"
-                        description="This information will be displayed publicly on your profile."
+                        label="{{ __('Bio') }}"
+                        description="{{ __('This information will be displayed publicly on your profile.') }}"
                         rows="5"
                     />
 
@@ -455,10 +450,10 @@ class extends Component
 
                     <flux:input
                         wire:model="website"
-                        label="Website"
+                        label="{{ __('Website') }}"
                         type="url"
                         placeholder="https://example.com"
-                        description="Optional. This website will be displayed publicly on your profile."
+                        description="{{ __('Optional. This website will be displayed publicly on your profile.') }}"
                     />
 
                     @if ($this->membershipSuspended)
@@ -466,8 +461,8 @@ class extends Component
                         <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                             <flux:switch
                                 wire:model="directoryVisible"
-                                label="Show this profile in the Member Directory"
-                                description="Unavailable while your IRDI membership is suspended. Your saved preference will be preserved."
+                                label="{{ __('Show this profile in the Member Directory') }}"
+                                description="{{ __('Unavailable while your IRDI membership is suspended. Your saved preference will be preserved.') }}"
                                 disabled
                             />
                         </div>
@@ -475,8 +470,8 @@ class extends Component
                         <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                             <flux:switch
                                 wire:model.live="allowMemberMessages"
-                                label="Allow messages from other IRDI members"
-                                description="Unavailable while your IRDI membership is suspended. Your saved preference will be preserved."
+                                label="{{ __('Allow messages from other IRDI members') }}"
+                                description="{{ __('Unavailable while your IRDI membership is suspended. Your saved preference will be preserved.') }}"
                                 disabled
                             />
                         </div>
@@ -485,14 +480,14 @@ class extends Component
 
                         <flux:switch
                             wire:model="directoryVisible"
-                            label="Show this profile in the Member Directory"
-                            description="When enabled, your profile can appear in the public IRDI Member Directory and anyone can view your public profile page."
+                            label="{{ __('Show this profile in the Member Directory') }}"
+                            description="{{ __('When enabled, your profile can appear in the public IRDI Member Directory and anyone can view your public profile page.') }}"
                         />
 
                         <flux:switch
                             wire:model.live="allowMemberMessages"
-                            label="Allow messages from other IRDI members"
-                            description="Other active IRDI members can send you private messages through your IRDI profile. Your email address will not be shared."
+                            label="{{ __('Allow messages from other IRDI members') }}"
+                            description="{{ __('Other active IRDI members can send you private messages through your IRDI profile. Your email address will not be shared.') }}"
                         />
 
                     @endif
@@ -503,8 +498,8 @@ class extends Component
 
                             <flux:switch
                                 wire:model="emailMemberMessageNotifications"
-                                label="Email me when I receive a new IRDI message"
-                                description="IRDI will send a notification to your account email address when you receive a new private message. The message itself will not be included in the email."
+                                label="{{ __('Email me when I receive a new IRDI message') }}"
+                                description="{{ __('IRDI will send a notification to your account email address when you receive a new private message. The message itself will not be included in the email.') }}"
                             />
 
                         </div>
@@ -520,11 +515,11 @@ class extends Component
                             wire:target="save"
                         >
                             <span wire:loading.remove wire:target="save">
-                                Save Changes
+                                {{ __('Save Changes') }}
                             </span>
 
                             <span wire:loading wire:target="save">
-                                Saving...
+                                {{ __('Saving...') }}
                             </span>
                         </flux:button>
 
@@ -532,7 +527,7 @@ class extends Component
                             :href="route('account')"
                             variant="ghost"
                         >
-                            Cancel
+                            {{ __('Cancel') }}
                         </flux:button>
 
                     </div>

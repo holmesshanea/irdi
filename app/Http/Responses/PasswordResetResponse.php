@@ -10,9 +10,9 @@ class PasswordResetResponse implements PasswordResetResponseContract
     public function toResponse($request)
     {
         return $request->wantsJson()
-            ? new JsonResponse(['message' => 'Your password has been reset successfully.'])
+            ? new JsonResponse(['message' => __('Your password has been reset successfully.')])
             : redirect()
                 ->route('login')
-                ->with('status', 'Your password has been reset successfully. You may now log in.');
+                ->with('status', __('Your password has been reset successfully. You may now log in.'));
     }
 }

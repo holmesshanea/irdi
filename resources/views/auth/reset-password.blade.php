@@ -7,13 +7,13 @@
 
                 <div class="text-center">
                     <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                        Reset Your Password
+                        {{ __('Reset Your Password') }}
                     </h1>
 
                     <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                     <p class="mt-6 text-zinc-600">
-                        Enter a new password for your IRDI account.
+                        {{ __('Enter a new password for your IRDI account.') }}
                     </p>
                 </div>
 
@@ -32,7 +32,7 @@
 
                             <flux:input
                                 name="email"
-                                label="Email Address"
+                                label="{{ __('Email Address') }}"
                                 type="email"
                                 value="{{ old('email', $request->email) }}"
                                 required
@@ -41,7 +41,7 @@
 
                             <flux:input
                                 name="password"
-                                label="New Password"
+                                label="{{ __('New Password') }}"
                                 type="password"
                                 required
                                 autocomplete="new-password"
@@ -50,7 +50,7 @@
 
                             <flux:input
                                 name="password_confirmation"
-                                label="Confirm New Password"
+                                label="{{ __('Confirm New Password') }}"
                                 type="password"
                                 required
                                 autocomplete="new-password"
@@ -62,7 +62,7 @@
                                 variant="primary"
                                 class="w-full"
                             >
-                                Reset Password
+                                {{ __('Reset Password') }}
                             </flux:button>
 
                         </div>

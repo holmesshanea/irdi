@@ -7,13 +7,13 @@
 
                 <div class="text-center">
                     <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                        Create Your IRDI Account
+                        {{ __('Create Your IRDI Account') }}
                     </h1>
 
                     <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                     <p class="mt-6 text-zinc-600">
-                        Create an account to begin your IRDI membership journey.
+                        {{ __('Create an account to begin your IRDI membership journey.') }}
                     </p>
                 </div>
 
@@ -26,7 +26,7 @@
 
                             <flux:input
                                 name="name"
-                                label="Name"
+                                label="{{ __('Name') }}"
                                 type="text"
                                 value="{{ old('name') }}"
                                 required
@@ -36,7 +36,7 @@
 
                             <flux:input
                                 name="email"
-                                label="Email Address"
+                                label="{{ __('Email Address') }}"
                                 type="email"
                                 value="{{ old('email') }}"
                                 required
@@ -45,7 +45,7 @@
 
                             <flux:input
                                 name="password"
-                                label="Password"
+                                label="{{ __('Password') }}"
                                 type="password"
                                 required
                                 autocomplete="new-password"
@@ -54,7 +54,7 @@
 
                             <flux:input
                                 name="password_confirmation"
-                                label="Confirm Password"
+                                label="{{ __('Confirm Password') }}"
                                 type="password"
                                 required
                                 autocomplete="new-password"
@@ -66,20 +66,20 @@
                                 variant="primary"
                                 class="w-full"
                             >
-                                Create Account
+                                {{ __('Create Account') }}
                             </flux:button>
 
                         </div>
                     </form>
 
                     <div class="mt-6 text-center text-sm text-zinc-600">
-                        Already have an account?
+                        {{ __('Already have an account?') }}
 
                         <a
                             href="{{ route('login') }}"
                             class="font-medium text-irdi-green hover:underline"
                         >
-                            Log in
+                            {{ __('Log in') }}
                         </a>
                     </div>
 

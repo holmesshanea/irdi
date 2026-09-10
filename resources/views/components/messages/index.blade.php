@@ -97,7 +97,7 @@ class extends Component
 
         $this->clearSelection();
 
-        session()->flash('status', 'Selected messages deleted.');
+        session()->flash('status', __('Selected messages deleted.'));
     }
 
     public function clearCurrentFolder(): void
@@ -112,7 +112,7 @@ class extends Component
                     'sender_deleted_at' => now(),
                 ]);
 
-            session()->flash('status', 'Your Sent messages have been cleared.');
+            session()->flash('status', __('Your Sent messages have been cleared.'));
         } else {
             Message::query()
                 ->where('recipient_id', $userId)
@@ -121,7 +121,7 @@ class extends Component
                     'recipient_deleted_at' => now(),
                 ]);
 
-            session()->flash('status', 'Your Inbox has been cleared.');
+            session()->flash('status', __('Your Inbox has been cleared.'));
         }
 
         $this->clearSelection();
@@ -207,13 +207,13 @@ class extends Component
             <div class="text-center">
 
                 <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Messages
+                    {{ __('Messages') }}
                 </h1>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg text-zinc-600">
-                    Read and manage your private IRDI messages.
+                    {{ __('Read and manage your private IRDI messages.') }}
                 </p>
 
             </div>
@@ -229,51 +229,49 @@ class extends Component
 
                         <div class="min-w-0">
                             <h2 class="font-semibold text-amber-900">
-                                Your messaging privileges are suspended
+                                {{ __('Your messaging privileges are suspended') }}
                             </h2>
 
                             <p class="mt-2 text-sm leading-6 text-amber-800">
-                                You can continue to read and manage your existing messages,
-                                but you cannot send new messages while this restriction is active.
+                                {{ __('You can continue to read and manage your existing messages, but you cannot send new messages while this restriction is active.') }}
                             </p>
 
                             <dl class="mt-4 space-y-2 text-sm">
                                 <div class="flex flex-wrap gap-x-2">
                                     <dt class="font-medium text-amber-900">
-                                        Suspended since:
+                                        {{ __('Suspended since:') }}
                                     </dt>
 
                                     <dd class="text-amber-800">
-                                        {{ auth()->user()->messaging_disabled_at->format('F j, Y \a\t g:i A') }}
+                                        {{ __(':date at :time', ['date' => auth()->user()->messaging_disabled_at->translatedFormat('F j, Y'), 'time' => auth()->user()->messaging_disabled_at->translatedFormat('g:i A')]) }}
                                     </dd>
                                 </div>
 
                                 @if (auth()->user()->messaging_disabled_until)
                                     <div class="flex flex-wrap gap-x-2">
                                         <dt class="font-medium text-amber-900">
-                                            Scheduled restoration:
+                                            {{ __('Scheduled restoration:') }}
                                         </dt>
 
                                         <dd class="text-amber-800">
-                                            {{ auth()->user()->messaging_disabled_until->format('F j, Y \a\t g:i A') }}
+                                            {{ __(':date at :time', ['date' => auth()->user()->messaging_disabled_until->translatedFormat('F j, Y'), 'time' => auth()->user()->messaging_disabled_until->translatedFormat('g:i A')]) }}
                                         </dd>
                                     </div>
                                 @else
                                     <div class="flex flex-wrap gap-x-2">
                                         <dt class="font-medium text-amber-900">
-                                            Duration:
+                                            {{ __('Duration:') }}
                                         </dt>
 
                                         <dd class="text-amber-800">
-                                            Indefinite
+                                            {{ __('Indefinite') }}
                                         </dd>
                                     </div>
                                 @endif
                             </dl>
 
                             <p class="mt-4 text-sm leading-6 text-amber-800">
-                                If you have questions about this restriction or believe it should be reviewed,
-                                please contact IRDI.
+                                {{ __('If you have questions about this restriction or believe it should be reviewed, please contact IRDI.') }}
                             </p>
 
                             <div class="mt-4">
@@ -283,7 +281,7 @@ class extends Component
                                     size="sm"
                                     wire:navigate
                                 >
-                                    Contact IRDI
+                                    {{ __('Contact IRDI') }}
                                 </flux:button>
                             </div>
                         </div>
@@ -302,7 +300,7 @@ class extends Component
                             wire:click="showInbox"
                             :variant="$tab === 'inbox' ? 'primary' : 'outline'"
                         >
-                            Inbox
+                            {{ __('Inbox') }}
 
                             @if ($unreadCount > 0)
                                 ({{ $unreadCount }})
@@ -314,7 +312,7 @@ class extends Component
                             wire:click="showSent"
                             :variant="$tab === 'sent' ? 'primary' : 'outline'"
                         >
-                            Sent
+                            {{ __('Sent') }}
                         </flux:button>
 
                     </div>
@@ -325,13 +323,13 @@ class extends Component
                             type="button"
                             wire:click="clearCurrentFolder"
                             wire:confirm="{{ $tab === 'inbox'
-                                ? 'Clear Inbox? This will remove all messages from your Inbox. This does not remove them from the sender\'s Sent messages.'
-                                : 'Clear Sent Messages? This will remove all messages from your Sent list. Recipients will still keep their copies.'
+                                ? __('Clear Inbox? This will remove all messages from your Inbox. This does not remove them from the sender\'s Sent messages.')
+                                : __('Clear Sent Messages? This will remove all messages from your Sent list. Recipients will still keep their copies.')
                             }}"
                             variant="danger"
                             size="sm"
                         >
-                            {{ $tab === 'inbox' ? 'Clear Inbox' : 'Clear Sent' }}
+                            {{ $tab === 'inbox' ? __('Clear Inbox') : __('Clear Sent') }}
                         </flux:button>
 
                     @endif
@@ -346,9 +344,9 @@ class extends Component
 
                             <p class="text-sm text-zinc-600">
                                 @if ($tab === 'inbox')
-                                    You don't have any messages yet.
+                                    {{ __("You don't have any messages yet.") }}
                                 @else
-                                    You haven't sent any messages yet.
+                                    {{ __("You haven't sent any messages yet.") }}
                                 @endif
                             </p>
 
@@ -366,7 +364,7 @@ class extends Component
                                     class="size-4 rounded border-zinc-300 text-irdi-green focus:ring-irdi-green"
                                 >
 
-                                Select All
+                                {{ __('Select All') }}
 
                             </label>
 
@@ -375,7 +373,7 @@ class extends Component
                                 <flux:button
                                     type="button"
                                     wire:click="deleteSelected"
-                                    wire:confirm="Delete the selected messages? They will be removed from your {{ $tab === 'inbox' ? 'Inbox' : 'Sent messages' }}, but the other member will keep their copy."
+                                    wire:confirm="{{ __('Delete the selected messages? They will be removed from your :folder, but the other member will keep their copy.', ['folder' => $tab === 'inbox' ? __('Inbox') : __('Sent messages')]) }}"
                                     variant="danger"
                                     size="sm"
                                     icon="trash"
@@ -412,7 +410,7 @@ class extends Component
                                             type="checkbox"
                                             value="{{ $message->id }}"
                                             wire:model.live="selectedMessages"
-                                            aria-label="Select message {{ $message->subject }}"
+                                            aria-label="{{ __('Select message :subject', ['subject' => $message->subject]) }}"
                                             class="size-4 rounded border-zinc-300 text-irdi-green focus:ring-irdi-green"
                                         >
 
@@ -442,9 +440,9 @@ class extends Component
                                                         "
                                                     >
                                                         @if ($tab === 'sent')
-                                                            To:
+                                                            {{ __('To') }}:
                                                         @else
-                                                            From:
+                                                            {{ __('From') }}:
                                                         @endif
 
                                                         {{ $otherProfile?->profile_name ?? $otherUser->name }}
@@ -467,7 +465,7 @@ class extends Component
                                                             size="sm"
                                                             color="amber"
                                                         >
-                                                            Unread
+                                                            {{ __('Unread') }}
                                                         </flux:badge>
 
                                                     @endif
@@ -497,7 +495,7 @@ class extends Component
                                             </div>
 
                                             <p class="shrink-0 text-xs text-zinc-500">
-                                                {{ $message->created_at->format('M j, Y g:i A') }}
+                                                {{ $message->created_at->translatedFormat('M j, Y g:i A') }}
                                             </p>
 
                                         </div>

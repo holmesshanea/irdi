@@ -44,7 +44,7 @@ class PropertyReviewInvitationController extends Controller
 
         if ($alreadyReviewed) {
             return back()->withErrors([
-                'reviewer_email_'.$profile->id => 'This email address has already submitted feedback for this IRDI member.',
+                'reviewer_email_'.$profile->id => __('This email address has already submitted feedback for this IRDI member.'),
             ]);
         }
 
@@ -60,18 +60,16 @@ class PropertyReviewInvitationController extends Controller
         ]);
 
         Mail::to($reviewerEmail)->send(
-            new PropertyReviewInvitationMail(
+            (new PropertyReviewInvitationMail(
                 profile: $profile,
                 reviewUrl: $reviewUrl,
-                expiresAt: $invitation->expires_at->format('F j, Y'),
-            )
+                expiresAt: $invitation->expires_at->translatedFormat('F j, Y'),
+            ))->locale(app()->getLocale())
         );
 
         return back()->with(
             'status',
-            'Property owner feedback invitation sent to '
-            .$reviewerEmail
-            .'.'
+            __('Property owner feedback invitation sent to :email.', ['email' => $reviewerEmail])
         );
     }
 
@@ -92,14 +90,14 @@ class PropertyReviewInvitationController extends Controller
         if ($invitation->isUsed()) {
             return back()->with(
                 'status',
-                'This invitation has already been completed and cannot be resent.'
+                __('This invitation has already been completed and cannot be resent.')
             );
         }
 
         if ($invitation->isCancelled()) {
             return back()->with(
                 'status',
-                'This invitation has been cancelled and cannot be resent.'
+                __('This invitation has been cancelled and cannot be resent.')
             );
         }
 
@@ -116,18 +114,16 @@ class PropertyReviewInvitationController extends Controller
         ]);
 
         Mail::to($invitation->reviewer_email)->send(
-            new PropertyReviewInvitationMail(
+            (new PropertyReviewInvitationMail(
                 profile: $profile,
                 reviewUrl: $reviewUrl,
-                expiresAt: $invitation->expires_at->format('F j, Y'),
-            )
+                expiresAt: $invitation->expires_at->translatedFormat('F j, Y'),
+            ))->locale(app()->getLocale())
         );
 
         return back()->with(
             'status',
-            'Property owner feedback invitation resent to '
-            .$invitation->reviewer_email
-            .'.'
+            __('Property owner feedback invitation resent to :email.', ['email' => $invitation->reviewer_email])
         );
     }
 
@@ -143,14 +139,14 @@ class PropertyReviewInvitationController extends Controller
         if ($invitation->isUsed()) {
             return back()->with(
                 'status',
-                'This invitation has already been completed and cannot be cancelled.'
+                __('This invitation has already been completed and cannot be cancelled.')
             );
         }
 
         if ($invitation->isCancelled()) {
             return back()->with(
                 'status',
-                'This invitation has already been cancelled.'
+                __('This invitation has already been cancelled.')
             );
         }
 
@@ -163,7 +159,7 @@ class PropertyReviewInvitationController extends Controller
 
         return back()->with(
             'status',
-            'Property owner feedback invitation cancelled.'
+            __('Property owner feedback invitation cancelled.')
         );
     }
 }

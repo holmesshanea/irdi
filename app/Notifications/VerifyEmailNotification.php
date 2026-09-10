@@ -18,12 +18,12 @@ class VerifyEmailNotification extends VerifyEmail
         $verificationUrl = $this->verificationUrl($notifiable);
 
         return (new MailMessage)
-            ->subject('Verify Your IRDI Email Address')
-            ->greeting('Hello '.$notifiable->name.'!')
-            ->line('Thank you for creating your IRDI account.')
-            ->line('Please verify your email address to complete your account setup.')
-            ->action('Verify Email Address', $verificationUrl)
-            ->line('If you did not create an IRDI account, you can safely ignore this email.')
-            ->salutation('The IRDI Team');
+            ->subject(__('Verify Your IRDI Email Address'))
+            ->greeting(__('Hello :name!', ['name' => $notifiable->name]))
+            ->line(__('Thank you for creating your IRDI account.'))
+            ->line(__('Please verify your email address to complete your account setup.'))
+            ->action(__('Verify Email Address'), $verificationUrl)
+            ->line(__('If you did not create an IRDI account, you can safely ignore this email.'))
+            ->salutation(__('The IRDI Team'));
     }
 }

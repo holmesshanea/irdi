@@ -6,6 +6,7 @@ use App\Notifications\ResetPasswordNotification;
 use App\Notifications\VerifyEmailNotification;
 use Database\Factories\UserFactory;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Translation\HasLocalePreference;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -26,6 +27,7 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property string $membership_status
+ * @property string $locale
  * @property Carbon|null $member_since
  * @property Carbon|null $ethics_agreed_at
  * @property Carbon|null $best_practices_agreed_at
@@ -41,9 +43,10 @@ use Illuminate\Support\Str;
     'ethics_agreed_at',
     'best_practices_agreed_at',
     'email_member_message_notifications',
+    'locale',
 ])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements MustVerifyEmail
+class User extends Authenticatable implements HasLocalePreference, MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -81,6 +84,15 @@ class User extends Authenticatable implements MustVerifyEmail
         return Str::length($initials) > 1
             ? Str::substr($initials, 0, 1).Str::substr($initials, -1)
             : $initials;
+    }
+
+    public function preferredLocale(): string
+    {
+        $supported = array_keys((array) config('locales.supported', []));
+
+        return in_array($this->locale, $supported, true)
+            ? $this->locale
+            : (string) config('locales.default', 'en');
     }
 
     public function isAdministrator(): bool

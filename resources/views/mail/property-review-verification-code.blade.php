@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your IRDI Verification Code</title>
+    <title>{{ __('Your IRDI Verification Code') }}</title>
 </head>
 
 <body style="margin:0; padding:0; background:#f4f4f5; font-family:Arial, sans-serif; color:#27272a;">
@@ -24,11 +24,11 @@
                     <td style="padding:40px; text-align:center;">
 
                         <h1 style="margin:0; color:#174121; font-size:26px;">
-                            Verify Your Email
+                            {{ __('Verify Your Email') }}
                         </h1>
 
                         <p style="margin:24px 0 0; font-size:16px; line-height:1.6;">
-                            Enter this six-digit code on the IRDI Property Owner Feedback page:
+                            {{ __('Enter this six-digit code on the IRDI Property Owner Feedback page:') }}
                         </p>
 
                         <div
@@ -48,11 +48,11 @@
                         </div>
 
                         <p style="margin:0; font-size:14px; line-height:1.6; color:#71717a;">
-                            This code expires in 10 minutes.
+                            {{ __('This code expires in 10 minutes.') }}
                         </p>
 
                         <p style="margin:16px 0 0; font-size:14px; line-height:1.6; color:#71717a;">
-                            If you did not request this code, you may ignore this email.
+                            {{ __('If you did not request this code, you may ignore this email.') }}
                         </p>
 
                         <hr style="margin:32px 0; border:0; border-top:1px solid #e4e4e7;">

@@ -17,14 +17,14 @@ new class extends Component
 
         if ($user->memberProfile) {
             Flux::toast(
-                text: 'Your IRDI membership is now active. Welcome to the International Responsible Detectorist Institute!',
+                text: __('Your IRDI membership is now active. Welcome to the International Responsible Detectorist Institute!'),
                 heading: $membershipType === 'charter'
-                    ? 'Welcome, Charter Member!'
-                    : 'Welcome to IRDI!',
+                    ? __('Welcome, Charter Member!')
+                    : __('Welcome to IRDI!'),
                 duration: 10000,
                 variant: 'success',
                 action: [
-                    'label' => 'View My Profile',
+                    'label' => __('View My Profile'),
                     'href' => route('member-profiles.show', [
                         'profile' => $user->memberProfile->username,
                     ]),
@@ -36,14 +36,14 @@ new class extends Component
         }
 
         Flux::toast(
-            text: 'Your IRDI membership is now active. Your next step is to create your public IRDI member profile.',
+            text: __('Your IRDI membership is now active. Your next step is to create your public IRDI member profile.'),
             heading: $membershipType === 'charter'
-                ? 'Welcome, Charter Member!'
-                : 'Welcome to IRDI!',
+                ? __('Welcome, Charter Member!')
+                : __('Welcome to IRDI!'),
             duration: 10000,
             variant: 'success',
             action: [
-                'label' => 'Create My Profile',
+                'label' => __('Create My Profile'),
                 'href' => route('member-profiles.create'),
                 'navigate' => true,
             ],

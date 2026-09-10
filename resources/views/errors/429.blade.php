@@ -5,7 +5,7 @@
         <div class="mx-auto max-w-2xl">
 
             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-irdi-gold">
-                Error 429
+                {{ __('Error 429') }}
             </p>
 
             <flux:heading
@@ -13,13 +13,11 @@
                 level="1"
                 class="mt-4 text-irdi-green"
             >
-                You’re moving a little too quickly.
+                {{ __('You’re moving a little too quickly.') }}
             </flux:heading>
 
             <flux:text class="mt-4 text-base leading-7">
-                IRDI has temporarily limited requests from your connection.
-                This helps protect member accounts and our website from automated
-                or excessive activity.
+                {{ __('IRDI has temporarily limited requests from your connection. This helps protect member accounts and our website from automated or excessive activity.') }}
             </flux:text>
 
             <div class="mx-auto mt-8 h-1 w-16 rounded-full bg-irdi-gold"></div>
@@ -27,12 +25,11 @@
             <div class="mt-10 rounded-2xl border border-zinc-200 bg-zinc-50 p-8 dark:border-zinc-700 dark:bg-zinc-900">
 
                 <flux:heading size="lg" level="2">
-                    Please try again in a few moments.
+                    {{ __('Please try again in a few moments.') }}
                 </flux:heading>
 
                 <flux:text class="mt-2">
-                    You can wait briefly and try your request again, or return
-                    to the IRDI home page.
+                    {{ __('You can wait briefly and try your request again, or return to the IRDI home page.') }}
                 </flux:text>
 
                 <div class="mt-6">
@@ -41,7 +38,7 @@
                         variant="primary"
                         wire:navigate
                     >
-                        Return Home
+                        {{ __('Return Home') }}
                     </flux:button>
                 </div>
 

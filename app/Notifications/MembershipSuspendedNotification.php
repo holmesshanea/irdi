@@ -25,12 +25,12 @@ class MembershipSuspendedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Your IRDI Membership Has Been Suspended')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your IRDI membership has been suspended.')
-            ->line('While your membership is suspended, your public member profile and member card are unavailable, you cannot send or receive new IRDI member messages, and you cannot request new property owner reviews.')
-            ->line('Your IRDI account and existing records remain available.')
-            ->action('View Your Account', route('account'))
-            ->line('If you have questions about this action, please contact IRDI.');
+            ->subject(__('Your IRDI Membership Has Been Suspended'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your IRDI membership has been suspended.'))
+            ->line(__('While your membership is suspended, your public member profile and member card are unavailable, you cannot send or receive new IRDI member messages, and you cannot request new property owner reviews.'))
+            ->line(__('Your IRDI account and existing records remain available.'))
+            ->action(__('View Your Account'), route('account'))
+            ->line(__('If you have questions about this action, please contact IRDI.'));
     }
 }

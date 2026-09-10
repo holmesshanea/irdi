@@ -30,7 +30,7 @@ new class extends Component
         $email = strtolower($validated['email']);
 
         if ($email === strtolower($user->email)) {
-            $this->addError('email', 'This is already your current email address.');
+            $this->addError('email', __('This is already your current email address.'));
 
             return;
         }
@@ -46,7 +46,7 @@ new class extends Component
 
         session()->flash(
             'email-status',
-            'Your email address has been updated. Please check your new email address for a verification link.'
+            __('Your email address has been updated. Please check your new email address for a verification link.')
         );
     }
 };
@@ -56,12 +56,11 @@ new class extends Component
     <div class="rounded-xl border border-zinc-200 bg-white p-6">
 
         <h2 class="text-lg font-semibold text-irdi-green">
-            Email Address
+            {{ __('Email Address') }}
         </h2>
 
         <p class="mt-2 text-sm text-zinc-600">
-            Change the email address associated with your IRDI account.
-            Your new email address must be verified.
+            {{ __('Change the email address associated with your IRDI account. Your new email address must be verified.') }}
         </p>
 
         @if (session('email-status'))
@@ -73,7 +72,7 @@ new class extends Component
         <form wire:submit="updateEmail" class="mt-6 space-y-4">
 
             <flux:field>
-                <flux:label>Email Address</flux:label>
+                <flux:label>{{ __('Email Address') }}</flux:label>
 
                 <flux:input
                     wire:model="email"
@@ -89,7 +88,7 @@ new class extends Component
                     type="submit"
                     variant="primary"
                 >
-                    Change Email Address
+                    {{ __('Change Email Address') }}
                 </flux:button>
             </div>
 

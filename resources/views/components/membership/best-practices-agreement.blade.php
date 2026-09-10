@@ -13,8 +13,8 @@ new class extends Component
 
         if (! $this->agreed && auth()->user()->membership_status !== 'active') {
             Flux::toast(
-                text: 'Please read the entire IRDI Best Practices. When finished, check "I have read and agree to follow the IRDI Best Practices." at the bottom of this page.',
-                heading: 'Review the Best Practices',
+                text: __('Please read the entire IRDI Best Practices. When finished, check "I have read and agree to follow the IRDI Best Practices." at the bottom of this page.'),
+                heading: __('Review the Best Practices'),
                 duration: 10000,
                 variant: 'warning',
             );
@@ -37,12 +37,12 @@ new class extends Component
 
         if ($value) {
             Flux::toast(
-                text: 'You have agreed to follow the IRDI Best Practices. You have now completed both membership requirements and are ready to activate your IRDI membership.',
-                heading: 'Best Practices complete!',
+                text: __('You have agreed to follow the IRDI Best Practices. You have now completed both membership requirements and are ready to activate your IRDI membership.'),
+                heading: __('Best Practices complete!'),
                 duration: 10000,
                 variant: 'success',
                 action: [
-                    'label' => 'Complete Membership',
+                    'label' => __('Complete Membership'),
                     'href' => route('membership.join'),
                     'navigate' => true,
                 ],
@@ -56,13 +56,13 @@ new class extends Component
 
     <flux:checkbox
         wire:model.live="agreed"
-        label="I have read and agree to follow the IRDI Best Practices."
+        label="{{ __('I have read and agree to follow the IRDI Best Practices.') }}"
         :disabled="auth()->user()->membership_status === 'active'"
     />
 
     @if ($agreed)
         <p class="mt-3 text-sm text-green-700">
-            Your agreement has been saved.
+            {{ __('Your agreement has been saved.') }}
         </p>
     @endif
 

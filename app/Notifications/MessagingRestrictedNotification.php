@@ -30,25 +30,26 @@ class MessagingRestrictedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('Your IRDI Messaging Access Has Been Restricted')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your ability to send and receive new IRDI member messages has been restricted.')
-            ->line('You can still access your account and existing message history.');
+            ->subject(__('Your IRDI Messaging Access Has Been Restricted'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your ability to send and receive new IRDI member messages has been restricted.'))
+            ->line(__('You can still access your account and existing message history.'));
 
         if ($this->expiresAt) {
-            $mail->line(
-                'This restriction is temporary and is scheduled to expire on '
-                .$this->expiresAt->format('F j, Y \a\t g:i A')
-                .'.'
-            );
+            $mail->line(__('This restriction is temporary and is scheduled to expire on :date.', [
+                'date' => __(':date at :time', [
+                    'date' => $this->expiresAt->translatedFormat('F j, Y'),
+                    'time' => $this->expiresAt->translatedFormat('g:i A'),
+                ]),
+            ]));
         } else {
             $mail->line(
-                'This restriction will remain in effect until an administrator restores your messaging access.'
+                __('This restriction will remain in effect until an administrator restores your messaging access.')
             );
         }
 
         return $mail
-            ->action('View Your Account', route('account'))
-            ->line('If you have questions about this action, please contact IRDI.');
+            ->action(__('View Your Account'), route('account'))
+            ->line(__('If you have questions about this action, please contact IRDI.'));
     }
 }

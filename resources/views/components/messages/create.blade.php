@@ -46,7 +46,7 @@ class extends Component
             if ($originalMessage !== null) {
                 $this->subject = str_starts_with($originalMessage->subject, 'Re:')
                     ? $originalMessage->subject
-                    : 'Re: ' . $originalMessage->subject;
+                    : __('Re: :subject', ['subject' => $originalMessage->subject]);
             }
         }
     }
@@ -88,7 +88,7 @@ class extends Component
                 $this->messagingRestricted = true;
 
                 $this->messagingRestrictionMessage =
-                    'Your IRDI membership is currently suspended. Member-to-member messaging is unavailable while your membership is suspended.';
+                    __('Your IRDI membership is currently suspended. Member-to-member messaging is unavailable while your membership is suspended.');
 
                 return false;
             }
@@ -104,7 +104,7 @@ class extends Component
             $this->messagingRestricted = true;
 
             $this->messagingRestrictionMessage =
-                'You can continue to read and manage your existing messages, but you cannot send new messages while this restriction is active.';
+                __('You can continue to read and manage your existing messages, but you cannot send new messages while this restriction is active.');
 
             return false;
         }
@@ -188,7 +188,7 @@ class extends Component
         if (! $this->ensureCanMessage()) {
             $this->addError(
                 'body',
-                $this->messagingRestrictionMessage ?? 'Your ability to send private messages is currently restricted.'
+                $this->messagingRestrictionMessage ?? __('Your ability to send private messages is currently restricted.')
             );
 
             return;
@@ -269,13 +269,13 @@ class extends Component
             <div class="text-center">
 
                 <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Message Member
+                    {{ __('Message Member') }}
                 </h1>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg text-zinc-600">
-                    Send a private message to another IRDI member.
+                    {{ __('Send a private message to another IRDI member.') }}
                 </p>
 
             </div>
@@ -291,7 +291,7 @@ class extends Component
                         <div>
 
                             <h2 class="font-semibold text-green-800">
-                                Message sent
+                                {{ __('Message sent') }}
                             </h2>
 
                             <p class="mt-1 text-sm text-green-700">
@@ -311,7 +311,7 @@ class extends Component
                 <div class="border-b border-zinc-200 pb-6">
 
                     <p class="text-sm text-zinc-500">
-                        Sending message to
+                        {{ __('Sending message to') }}
                     </p>
 
                     <div class="mt-2">
@@ -345,7 +345,7 @@ class extends Component
                                 <div class="min-w-0">
 
                                     <h2 class="font-semibold text-red-900">
-                                        Your IRDI membership is suspended
+                                        {{ __('Your IRDI membership is suspended') }}
                                     </h2>
 
                                     <p class="mt-2 text-sm leading-6 text-red-800">
@@ -353,8 +353,7 @@ class extends Component
                                     </p>
 
                                     <p class="mt-4 text-sm leading-6 text-red-800">
-                                        If you have questions about your membership suspension or believe it should be reviewed,
-                                        please contact IRDI.
+                                        {{ __('If you have questions about your membership suspension or believe it should be reviewed, please contact IRDI.') }}
                                     </p>
 
                                     <div class="mt-4">
@@ -364,7 +363,7 @@ class extends Component
                                             size="sm"
                                             wire:navigate
                                         >
-                                            Contact IRDI
+                                            {{ __('Contact IRDI') }}
                                         </flux:button>
                                     </div>
 
@@ -389,7 +388,7 @@ class extends Component
                                 <div class="min-w-0">
 
                                     <h2 class="font-semibold text-amber-900">
-                                        Your messaging privileges are suspended
+                                        {{ __('Your messaging privileges are suspended') }}
                                     </h2>
 
                                     <p class="mt-2 text-sm leading-6 text-amber-800">
@@ -400,32 +399,32 @@ class extends Component
 
                                         <div class="flex flex-wrap gap-x-2">
                                             <dt class="font-medium text-amber-900">
-                                                Suspended since:
+                                                {{ __('Suspended since:') }}
                                             </dt>
 
                                             <dd class="text-amber-800">
-                                                {{ auth()->user()->messaging_disabled_at->format('F j, Y \a\t g:i A') }}
+                                                {{ __(':date at :time', ['date' => auth()->user()->messaging_disabled_at->translatedFormat('F j, Y'), 'time' => auth()->user()->messaging_disabled_at->translatedFormat('g:i A')]) }}
                                             </dd>
                                         </div>
 
                                         @if (auth()->user()->messaging_disabled_until)
                                             <div class="flex flex-wrap gap-x-2">
                                                 <dt class="font-medium text-amber-900">
-                                                    Scheduled restoration:
+                                                    {{ __('Scheduled restoration:') }}
                                                 </dt>
 
                                                 <dd class="text-amber-800">
-                                                    {{ auth()->user()->messaging_disabled_until->format('F j, Y \a\t g:i A') }}
+                                                    {{ __(':date at :time', ['date' => auth()->user()->messaging_disabled_until->translatedFormat('F j, Y'), 'time' => auth()->user()->messaging_disabled_until->translatedFormat('g:i A')]) }}
                                                 </dd>
                                             </div>
                                         @else
                                             <div class="flex flex-wrap gap-x-2">
                                                 <dt class="font-medium text-amber-900">
-                                                    Duration:
+                                                    {{ __('Duration:') }}
                                                 </dt>
 
                                                 <dd class="text-amber-800">
-                                                    Indefinite
+                                                    {{ __('Indefinite') }}
                                                 </dd>
                                             </div>
                                         @endif
@@ -433,8 +432,7 @@ class extends Component
                                     </dl>
 
                                     <p class="mt-4 text-sm leading-6 text-amber-800">
-                                        If you have questions about this restriction or believe it should be reviewed,
-                                        please contact IRDI.
+                                        {{ __('If you have questions about this restriction or believe it should be reviewed, please contact IRDI.') }}
                                     </p>
 
                                     <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -445,7 +443,7 @@ class extends Component
                                             size="sm"
                                             wire:navigate
                                         >
-                                            Contact IRDI
+                                            {{ __('Contact IRDI') }}
                                         </flux:button>
 
                                         <flux:button
@@ -453,7 +451,7 @@ class extends Component
                                             variant="ghost"
                                             size="sm"
                                         >
-                                            Back to Profile
+                                            {{ __('Back to Profile') }}
                                         </flux:button>
 
                                     </div>
@@ -472,7 +470,7 @@ class extends Component
 
                         <flux:input
                             wire:model="subject"
-                            label="Subject"
+                            label="{{ __('Subject') }}"
                             maxlength="150"
                             required
                         />
@@ -481,7 +479,7 @@ class extends Component
 
                             <flux:textarea
                                 wire:model.live="body"
-                                label="Message"
+                                label="{{ __('Message') }}"
                                 rows="8"
                                 maxlength="5000"
                                 required
@@ -494,7 +492,7 @@ class extends Component
                         </div>
 
                         <div class="rounded-lg bg-zinc-50 p-4 text-sm text-zinc-600">
-                            This message will be delivered through IRDI. Your email address will not be shared with the recipient.
+                            {{ __('This message will be delivered through IRDI. Your email address will not be shared with the recipient.') }}
                         </div>
 
                         <div class="flex flex-wrap items-center gap-3">
@@ -507,11 +505,11 @@ class extends Component
                                 wire:target="send"
                             >
                                 <span wire:loading.remove wire:target="send">
-                                    Send Message
+                                    {{ __('Send Message') }}
                                 </span>
 
                                 <span wire:loading wire:target="send">
-                                    Sending...
+                                    {{ __('Sending...') }}
                                 </span>
                             </flux:button>
 
@@ -519,7 +517,7 @@ class extends Component
                                 :href="route('member-profiles.show', $profile)"
                                 variant="ghost"
                             >
-                                Cancel
+                                {{ __('Cancel') }}
                             </flux:button>
 
                         </div>

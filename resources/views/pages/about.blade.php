@@ -1,6 +1,6 @@
 <x-layouts.public
-    title="About IRDI | Ethical & Responsible Metal Detecting"
-    description="Learn about IRDI, an international membership organization promoting ethical metal detecting, responsible stewardship, respect for landowners, and protection of our shared history."
+    title="{{ __('About IRDI | Ethical & Responsible Metal Detecting') }}"
+    description="{{ __('Learn about IRDI, an international membership organization promoting ethical metal detecting, responsible stewardship, respect for landowners, and protection of our shared history.') }}"
 >
 
     {{-- About Hero --}}
@@ -30,13 +30,11 @@
                 </p>
 
                 <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    About IRDI
+                    {{ __('About IRDI') }}
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    Metal detecting gives us a unique connection to the past—and with
-                    that opportunity comes a responsibility to protect the history,
-                    places, and relationships that make the hobby possible.
+                    {{ __('Metal detecting gives us a unique connection to the past—and with that opportunity comes a responsibility to protect the history, places, and relationships that make the hobby possible.') }}
                 </p>
 
             </div>
@@ -53,7 +51,7 @@
                 {{-- Left side --}}
                 <div>
                     <h2 class="text-3xl font-bold tracking-tight text-irdi-green">
-                        Who We Are
+                        {{ __('Who We Are') }}
                     </h2>
 
                     <div class="mt-4 h-1 w-20 bg-irdi-gold"></div>
@@ -63,10 +61,7 @@
                 <div class="text-lg leading-8 text-zinc-600">
 
                     <p>
-                        IRDI is an international membership organization dedicated to
-                        promoting ethical metal detecting, protecting our shared history,
-                        and encouraging responsible detecting through education, best
-                        practices, and respect for landowners.
+                        {{ __('IRDI is an international membership organization dedicated to promoting ethical metal detecting, protecting our shared history, and encouraging responsible detecting through education, best practices, and respect for landowners.') }}
                     </p>
 
                 </div>
@@ -84,15 +79,13 @@
             <div class="mx-auto max-w-4xl text-center">
 
                 <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                    Our Mission
+                    {{ __('Our Mission') }}
                 </h2>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-8 text-xl leading-9 text-white">
-                    Our mission is to promote responsible metal detecting through
-                    education, ethical stewardship, respect for landowners, and a
-                    commitment to protecting our shared history for future generations.
+                    {{ __('Our mission is to promote responsible metal detecting through education, ethical stewardship, respect for landowners, and a commitment to protecting our shared history for future generations.') }}
                 </p>
 
             </div>
@@ -109,13 +102,11 @@
 
                     <div>
                         <h3 class="text-xl font-semibold text-white">
-                            Protect Our Shared History
+                            {{ __('Protect Our Shared History') }}
                         </h3>
 
                         <p class="mt-3 leading-7 text-zinc-200">
-                            Every artifact tells a story. IRDI encourages responsible
-                            recovery and thoughtful stewardship so that today’s discoveries
-                            can continue to educate and inspire future generations.
+                            {{ __('Every artifact tells a story. IRDI encourages responsible recovery and thoughtful stewardship so that today’s discoveries can continue to educate and inspire future generations.') }}
                         </p>
                     </div>
 
@@ -130,14 +121,11 @@
 
                     <div>
                         <h3 class="text-xl font-semibold text-white">
-                            Respect Landowners
+                            {{ __('Respect Landowners') }}
                         </h3>
 
                         <p class="mt-3 leading-7 text-zinc-200">
-                            Responsible detectorists earn trust through honesty, courtesy,
-                            and respect for private property. Every hunt begins with
-                            permission and ends with leaving the land exactly as it
-                            should be—or better.
+                            {{ __('Responsible detectorists earn trust through honesty, courtesy, and respect for private property. Every hunt begins with permission and ends with leaving the land exactly as it should be—or better.') }}
                         </p>
                     </div>
 
@@ -152,14 +140,11 @@
 
                     <div>
                         <h3 class="text-xl font-semibold text-white">
-                            Lead by Example
+                            {{ __('Lead by Example') }}
                         </h3>
 
                         <p class="mt-3 leading-7 text-zinc-200">
-                            IRDI Members demonstrate that responsible metal detecting
-                            is about more than finding artifacts. It is about integrity,
-                            education, and helping build a positive future for the hobby
-                            through ethical practices.
+                            {{ __('IRDI Members demonstrate that responsible metal detecting is about more than finding artifacts. It is about integrity, education, and helping build a positive future for the hobby through ethical practices.') }}
                         </p>
                     </div>
 
@@ -177,15 +162,13 @@
             <div class="mx-auto max-w-4xl text-center">
 
                 <h2 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Become Part of Something Bigger
+                    {{ __('Become Part of Something Bigger') }}
                 </h2>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg leading-8 text-zinc-600">
-                    Every responsible detectorist has the power to make a difference.
-                    By joining IRDI, you’re helping protect our shared history, promote
-                    ethical detecting, and build a stronger future for the hobby.
+                    {{ __('Every responsible detectorist has the power to make a difference. By joining IRDI, you’re helping protect our shared history, promote ethical detecting, and build a stronger future for the hobby.') }}
                 </p>
 
                 <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -194,14 +177,14 @@
                         href="{{ route('membership') }}"
                         variant="primary"
                     >
-                        Become a Member
+                        {{ __('Become a Member') }}
                     </flux:button>
 
                     <flux:button
                         href="{{ route('directory') }}"
                         variant="ghost"
                     >
-                        Member Directory
+                        {{ __('Member Directory') }}
                     </flux:button>
 
                 </div>

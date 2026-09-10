@@ -127,7 +127,7 @@ class extends Component
         session()->flash(
             'status',
             ($this->otherProfile?->profile_name ?? $this->otherUser->name)
-            . ' has been blocked.'
+            . __(' has been blocked.')
         );
     }
 
@@ -147,7 +147,7 @@ class extends Component
         session()->flash(
             'status',
             ($this->otherProfile?->profile_name ?? $this->otherUser->name)
-            . ' has been unblocked.'
+            . __(' has been unblocked.')
         );
     }
 
@@ -233,7 +233,7 @@ class extends Component
 
         session()->flash(
             'status',
-            'Thank you. This message has been reported to IRDI for review.'
+            __('Thank you. This message has been reported to IRDI for review.')
         );
     }
 
@@ -260,7 +260,7 @@ class extends Component
             ]);
         }
 
-        session()->flash('status', 'Message deleted.');
+        session()->flash('status', __('Message deleted.'));
 
         $this->redirectRoute('messages.index');
     }
@@ -281,13 +281,13 @@ class extends Component
             <div class="text-center">
 
                 <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Message
+                    {{ __('Message') }}
                 </h1>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg text-zinc-600">
-                    Your private IRDI message.
+                    {{ __('Your private IRDI message.') }}
                 </p>
 
             </div>
@@ -302,9 +302,9 @@ class extends Component
 
                             <p class="text-sm text-zinc-500">
                                 @if ($this->isReceived)
-                                    From
+                                    {{ __('From') }}
                                 @else
-                                    To
+                                    {{ __('To') }}
                                 @endif
                             </p>
 
@@ -325,11 +325,11 @@ class extends Component
                         <div class="text-left sm:text-right">
 
                             <p class="text-sm text-zinc-500">
-                                {{ $message->created_at->format('F j, Y') }}
+                                {{ $message->created_at->translatedFormat('F j, Y') }}
                             </p>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                {{ $message->created_at->format('g:i A') }}
+                                {{ $message->created_at->translatedFormat('g:i A') }}
                             </p>
 
                         </div>
@@ -341,7 +341,7 @@ class extends Component
                 <div class="py-6">
 
                     <p class="text-sm font-medium text-zinc-500">
-                        Subject
+                        {{ __('Subject') }}
                     </p>
 
                     <h2 class="mt-2 text-xl font-semibold text-zinc-900">
@@ -361,43 +361,43 @@ class extends Component
                     <div class="mt-8 rounded-lg border border-amber-200 bg-amber-50 p-5">
 
                         <h3 class="font-semibold text-zinc-900">
-                            Report Message
+                            {{ __('Report Message') }}
                         </h3>
 
                         <p class="mt-1 text-sm text-zinc-600">
-                            Tell IRDI why you are reporting this message. Reports are reviewed privately.
+                            {{ __('Tell IRDI why you are reporting this message. Reports are reviewed privately.') }}
                         </p>
 
                         <form wire:submit="reportMessage" class="mt-5 space-y-5">
 
                             <flux:select
                                 wire:model="reportReason"
-                                label="Reason for report"
-                                placeholder="Select a reason"
+                                label="{{ __('Reason for report') }}"
+                                placeholder="{{ __('Select a reason') }}"
                                 required
                             >
                                 <flux:select.option value="harassment">
-                                    Harassment or abusive behavior
+                                    {{ __('Harassment or abusive behavior') }}
                                 </flux:select.option>
 
                                 <flux:select.option value="spam">
-                                    Spam or unwanted solicitation
+                                    {{ __('Spam or unwanted solicitation') }}
                                 </flux:select.option>
 
                                 <flux:select.option value="inappropriate">
-                                    Inappropriate content
+                                    {{ __('Inappropriate content') }}
                                 </flux:select.option>
 
                                 <flux:select.option value="threatening">
-                                    Threatening behavior
+                                    {{ __('Threatening behavior') }}
                                 </flux:select.option>
 
                                 <flux:select.option value="impersonation">
-                                    Impersonation or misleading identity
+                                    {{ __('Impersonation or misleading identity') }}
                                 </flux:select.option>
 
                                 <flux:select.option value="other">
-                                    Other
+                                    {{ __('Other') }}
                                 </flux:select.option>
                             </flux:select>
 
@@ -405,8 +405,8 @@ class extends Component
 
                                 <flux:textarea
                                     wire:model.live="reportDetails"
-                                    label="Additional details"
-                                    description="Optional. Provide any information that may help IRDI review this report."
+                                    label="{{ __('Additional details') }}"
+                                    description="{{ __('Optional. Provide any information that may help IRDI review this report.') }}"
                                     rows="5"
                                     maxlength="2000"
                                 />
@@ -426,11 +426,11 @@ class extends Component
                                     wire:target="reportMessage"
                                 >
                                     <span wire:loading.remove wire:target="reportMessage">
-                                        Submit Report
+                                        {{ __('Submit Report') }}
                                     </span>
 
                                     <span wire:loading wire:target="reportMessage">
-                                        Submitting...
+                                        {{ __('Submitting...') }}
                                     </span>
                                 </flux:button>
 
@@ -439,7 +439,7 @@ class extends Component
                                     wire:click="cancelReporting"
                                     variant="ghost"
                                 >
-                                    Cancel
+                                    {{ __('Cancel') }}
                                 </flux:button>
 
                             </div>
@@ -468,7 +468,7 @@ class extends Component
                             variant="primary"
                             icon="arrow-uturn-left"
                         >
-                            Reply
+                            {{ __('Reply') }}
                         </flux:button>
 
                     @endif
@@ -478,7 +478,7 @@ class extends Component
                         variant="outline"
                         icon="arrow-left"
                     >
-                        Back to Messages
+                        {{ __('Back to Messages') }}
                     </flux:button>
 
                     @if ($this->otherProfile)
@@ -487,7 +487,7 @@ class extends Component
                             :href="route('member-profiles.show', $this->otherProfile)"
                             variant="ghost"
                         >
-                            View Member Profile
+                            {{ __('View Member Profile') }}
                         </flux:button>
 
                     @endif
@@ -497,10 +497,10 @@ class extends Component
                         <flux:button
                             type="button"
                             wire:click="unblockMember"
-                            wire:confirm="Unblock this member? They may be able to message you again depending on your messaging preferences."
+                            wire:confirm="{{ __('Unblock this member? They may be able to message you again depending on your messaging preferences.') }}"
                             variant="outline"
                         >
-                            Unblock Member
+                            {{ __('Unblock Member') }}
                         </flux:button>
 
                     @else
@@ -508,10 +508,10 @@ class extends Component
                         <flux:button
                             type="button"
                             wire:click="blockMember"
-                            wire:confirm="Block this member? You will no longer be able to exchange private messages with each other."
+                            wire:confirm="{{ __('Block this member? You will no longer be able to exchange private messages with each other.') }}"
                             variant="danger"
                         >
-                            Block Member
+                            {{ __('Block Member') }}
                         </flux:button>
 
                     @endif
@@ -523,7 +523,7 @@ class extends Component
                             variant="outline"
                             disabled
                         >
-                            Reported
+                            {{ __('Reported') }}
                         </flux:button>
 
                     @elseif (! $showReportForm)
@@ -534,7 +534,7 @@ class extends Component
                             variant="outline"
                             icon="flag"
                         >
-                            Report Message
+                            {{ __('Report Message') }}
                         </flux:button>
 
                     @endif
@@ -542,11 +542,11 @@ class extends Component
                     <flux:button
                         type="button"
                         wire:click="deleteMessage"
-                        wire:confirm="Delete this message? It will be removed from your messages, but the other member will keep their copy."
+                        wire:confirm="{{ __('Delete this message? It will be removed from your messages, but the other member will keep their copy.') }}"
                         variant="danger"
                         icon="trash"
                     >
-                        Delete Message
+                        {{ __('Delete Message') }}
                     </flux:button>
 
                 </div>

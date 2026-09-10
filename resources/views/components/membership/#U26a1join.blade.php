@@ -22,12 +22,12 @@ class extends Component
 
         if (session()->pull('email_verified_successfully')) {
             Flux::toast(
-                text: 'Your email address has been verified. Next, review and agree to the IRDI Code of Ethics.',
-                heading: 'Email verified!',
+                text: __('Your email address has been verified. Next, review and agree to the IRDI Code of Ethics.'),
+                heading: __('Email verified!'),
                 duration: 10000,
                 variant: 'success',
                 action: [
-                    'label' => 'Review Code of Ethics',
+                    'label' => __('Review Code of Ethics'),
                     'href' => route('code-of-ethics'),
                     'navigate' => true,
                 ],
@@ -42,7 +42,7 @@ class extends Component
         if ($user->membership_status === 'active') {
             session()->flash(
                 'status',
-                'Your IRDI membership is already active.'
+                __('Your IRDI membership is already active.')
             );
 
             $this->redirectRoute('account');
@@ -53,7 +53,7 @@ class extends Component
         if (in_array($user->membership_status, ['suspended', 'banned'], true)) {
             session()->flash(
                 'status',
-                'This membership cannot be activated from the membership page.'
+                __('This membership cannot be activated from the membership page.')
             );
 
             $this->redirectRoute('account');
@@ -112,7 +112,7 @@ class extends Component
         if ($user->membership_status !== 'active') {
             session()->flash(
                 'status',
-                'Your membership could not be activated.'
+                __('Your membership could not be activated.')
             );
 
             $this->redirectRoute('account');
@@ -141,18 +141,18 @@ class extends Component
 
                 @if (auth()->user()->membership_status === 'active')
                     <div class="mb-8 rounded-lg bg-green-50 p-4 text-sm font-medium text-green-800">
-                        Membership already activated!
+                        {{ __('Membership already activated!') }}
                     </div>
                 @endif
 
                 <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Become an IRDI Member
+                    {{ __('Become an IRDI Member') }}
                 </h1>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg leading-8 text-zinc-600">
-                    Review and agree to the IRDI Code of Ethics and Best Practices before completing your membership.
+                    {{ __('Review and agree to the IRDI Code of Ethics and Best Practices before completing your membership.') }}
                 </p>
 
             </div>
@@ -171,23 +171,23 @@ class extends Component
 
                     $membershipSteps = [
                         [
-                            'label' => 'Account',
+                            'label' => __('Account'),
                             'complete' => true,
                         ],
                         [
-                            'label' => 'Email',
+                            'label' => __('Email'),
                             'complete' => $user->hasVerifiedEmail(),
                         ],
                         [
-                            'label' => 'Ethics',
+                            'label' => __('Ethics'),
                             'complete' => $ethicsAgreed,
                         ],
                         [
-                            'label' => 'Best Practices',
+                            'label' => __('Best Practices'),
                             'complete' => $bestPracticesAgreed,
                         ],
                         [
-                            'label' => 'Active',
+                            'label' => __('Active'),
                             'complete' => $user->membership_status === 'active',
                         ],
                     ];
@@ -203,16 +203,16 @@ class extends Component
 
                         <div>
                             <h2 class="text-xl font-semibold text-irdi-green">
-                                Membership Progress
+                                {{ __('Membership Progress') }}
                             </h2>
 
                             <p class="mt-1 text-sm text-zinc-600">
-                                Complete each step to activate your IRDI membership.
+                                {{ __('Complete each step to activate your IRDI membership.') }}
                             </p>
                         </div>
 
                         <div class="shrink-0 text-sm font-semibold text-blue-600">
-                            {{ $membershipStepsCompleted }} of 5
+                            {{ $membershipStepsCompleted }} {{ __('of :total', ['total' => 5]) }}
                         </div>
 
                     </div>
@@ -267,11 +267,11 @@ class extends Component
                 <flux:card class="p-6">
 
                     <h2 class="text-xl font-semibold text-irdi-green">
-                        Membership Requirements
+                        {{ __('Membership Requirements') }}
                     </h2>
 
                     <p class="mt-4 text-zinc-600">
-                        To become an active IRDI Member, review each member document and record your agreement at the bottom of that page.
+                        {{ __('To become an active IRDI Member, review each member document and record your agreement at the bottom of that page.') }}
                     </p>
 
                 </flux:card>
@@ -283,11 +283,11 @@ class extends Component
 
                         <div>
                             <h2 class="text-xl font-semibold text-irdi-green">
-                                IRDI Code of Ethics
+                                {{ __('IRDI Code of Ethics') }}
                             </h2>
 
                             <p class="mt-3 text-zinc-600">
-                                Review the ethical principles and responsibilities expected of every IRDI member.
+                                {{ __('Review the ethical principles and responsibilities expected of every IRDI member.') }}
                             </p>
                         </div>
 
@@ -296,11 +296,11 @@ class extends Component
                                 color="green"
                                 icon="check-circle"
                             >
-                                Agreed
+                                {{ __('Agreed') }}
                             </flux:badge>
                         @else
                             <flux:badge color="zinc">
-                                Agreement Required
+                                {{ __('Agreement Required') }}
                             </flux:badge>
                         @endif
 
@@ -312,7 +312,7 @@ class extends Component
                             variant="outline"
                             icon="book-open"
                         >
-                            {{ $ethicsAgreed ? 'Review Code of Ethics' : 'Read Code of Ethics' }}
+                            {{ $ethicsAgreed ? __('Review Code of Ethics') : __('Read Code of Ethics') }}
                         </flux:button>
                     </div>
 
@@ -325,11 +325,11 @@ class extends Component
 
                         <div>
                             <h2 class="text-xl font-semibold text-irdi-green">
-                                IRDI Best Practices
+                                {{ __('IRDI Best Practices') }}
                             </h2>
 
                             <p class="mt-3 text-zinc-600">
-                                Review IRDI's practical guidance for responsible, respectful, and lawful metal detecting.
+                                {{ __('Review IRDI\'s practical guidance for responsible, respectful, and lawful metal detecting.') }}
                             </p>
                         </div>
 
@@ -338,11 +338,11 @@ class extends Component
                                 color="green"
                                 icon="check-circle"
                             >
-                                Agreed
+                                {{ __('Agreed') }}
                             </flux:badge>
                         @else
                             <flux:badge color="zinc">
-                                Agreement Required
+                                {{ __('Agreement Required') }}
                             </flux:badge>
                         @endif
 
@@ -354,7 +354,7 @@ class extends Component
                             variant="outline"
                             icon="book-open"
                         >
-                            {{ $bestPracticesAgreed ? 'Review Best Practices' : 'Read Best Practices' }}
+                            {{ $bestPracticesAgreed ? __('Review Best Practices') : __('Read Best Practices') }}
                         </flux:button>
                     </div>
 
@@ -364,25 +364,25 @@ class extends Component
                 <flux:card class="mt-6 p-6">
 
                     <h2 class="text-xl font-semibold text-irdi-green">
-                        Complete Your Membership
+                        {{ __('Complete Your Membership') }}
                     </h2>
 
                     @if (auth()->user()->membership_status === 'active')
 
                         <p class="mt-4 text-zinc-600">
-                            Your IRDI membership has already been activated.
+                            {{ __('Your IRDI membership has already been activated.') }}
                         </p>
 
                     @elseif (! $ethicsAgreed || ! $bestPracticesAgreed)
 
                         <p class="mt-4 text-zinc-600">
-                            You must agree to both the Code of Ethics and Best Practices before activating your membership.
+                            {{ __('You must agree to both the Code of Ethics and Best Practices before activating your membership.') }}
                         </p>
 
                     @else
 
                         <p class="mt-4 text-zinc-600">
-                            You have completed both membership requirements and are ready to become an IRDI Member.
+                            {{ __('You have completed both membership requirements and are ready to become an IRDI Member.') }}
                         </p>
 
                     @endif
@@ -398,7 +398,7 @@ class extends Component
                                 || ! $bestPracticesAgreed
                             "
                         >
-                            Become an IRDI Member
+                            {{ __('Become an IRDI Member') }}
                         </flux:button>
 
                     </div>

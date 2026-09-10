@@ -27,8 +27,8 @@ new class extends Component
                 'confirmed',
             ],
         ], [
-            'currentPassword.current_password' => 'The current password is incorrect.',
-            'password.confirmed' => 'The new password confirmation does not match.',
+            'currentPassword.current_password' => __('The current password is incorrect.'),
+            'password.confirmed' => __('The new password confirmation does not match.'),
         ]);
 
         auth()->user()->update([
@@ -43,7 +43,7 @@ new class extends Component
 
         session()->flash(
             'password-status',
-            'Your password has been updated successfully.'
+            __('Your password has been updated successfully.')
         );
     }
 };
@@ -53,11 +53,11 @@ new class extends Component
     <div class="rounded-xl border border-zinc-200 bg-white p-6">
 
         <h2 class="text-lg font-semibold text-irdi-green">
-            Password
+            {{ __('Password') }}
         </h2>
 
         <p class="mt-2 text-sm text-zinc-600">
-            Update the password used to sign in to your IRDI account.
+            {{ __('Update the password used to sign in to your IRDI account.') }}
         </p>
 
         @if (session('password-status'))
@@ -69,7 +69,7 @@ new class extends Component
         <form wire:submit="updatePassword" class="mt-6 space-y-4">
 
             <flux:field>
-                <flux:label>Current Password</flux:label>
+                <flux:label>{{ __('Current Password') }}</flux:label>
 
                 <flux:input
                     wire:model="currentPassword"
@@ -82,7 +82,7 @@ new class extends Component
             </flux:field>
 
             <flux:field>
-                <flux:label>New Password</flux:label>
+                <flux:label>{{ __('New Password') }}</flux:label>
 
                 <flux:input
                     wire:model="password"
@@ -92,14 +92,14 @@ new class extends Component
                 />
 
                 <flux:description>
-                    Use at least 12 characters with uppercase and lowercase letters, a number, and a symbol.
+                    {{ __('Use at least 12 characters with uppercase and lowercase letters, a number, and a symbol.') }}
                 </flux:description>
 
                 <flux:error name="password" />
             </flux:field>
 
             <flux:field>
-                <flux:label>Confirm New Password</flux:label>
+                <flux:label>{{ __('Confirm New Password') }}</flux:label>
 
                 <flux:input
                     wire:model="password_confirmation"
@@ -116,7 +116,7 @@ new class extends Component
                     type="submit"
                     variant="primary"
                 >
-                    Change Password
+                    {{ __('Change Password') }}
                 </flux:button>
             </div>
 

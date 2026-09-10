@@ -7,13 +7,13 @@
 
                 <div class="text-center">
                     <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-Log In to IRDI
+{{ __('Log In to IRDI') }}
 </h1>
 
                     <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                     <p class="mt-6 text-zinc-600">
-Access your IRDI account and continue your membership journey.
+{{ __('Access your IRDI account and continue your membership journey.') }}
                     </p>
                 </div>
 
@@ -30,7 +30,7 @@ Access your IRDI account and continue your membership journey.
 
     <flux:input
         name="email"
-        label="Email Address"
+        label="{{ __('Email Address') }}"
         type="email"
         value="{{ old('email') }}"
         required
@@ -40,7 +40,7 @@ Access your IRDI account and continue your membership journey.
 
     <flux:input
         name="password"
-        label="Password"
+        label="{{ __('Password') }}"
         type="password"
         required
         autocomplete="current-password"
@@ -51,14 +51,14 @@ Access your IRDI account and continue your membership journey.
 
         <flux:checkbox
             name="remember"
-            label="Remember me"
+            label="{{ __('Remember me') }}"
         />
 
         <a
             href="{{ route('password.request') }}"
             class="text-sm font-medium text-irdi-green hover:underline"
         >
-            Forgot password?
+            {{ __('Forgot password?') }}
         </a>
 
     </div>
@@ -68,20 +68,20 @@ Access your IRDI account and continue your membership journey.
         variant="primary"
         class="w-full"
     >
-        Log In
+        {{ __('Log In') }}
     </flux:button>
 
 </div>
 </form>
 
 <div class="mt-6 text-center text-sm text-zinc-600">
-    Don't have an account?
+    {{ __('Don\'t have an account?') }}
 
     <a
         href="{{ route('register') }}"
         class="font-medium text-irdi-green hover:underline"
     >
-        Create one
+        {{ __('Create one') }}
     </a>
 </div>
 

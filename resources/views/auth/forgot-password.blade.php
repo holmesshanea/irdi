@@ -8,13 +8,13 @@
 
                 <div class="text-center">
                     <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                        Forgot Your Password?
+                        {{ __('Forgot Your Password?') }}
                     </h1>
 
                     <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                     <p class="mt-6 text-zinc-600">
-                        Enter your email address and we'll send you a link to reset your password.
+                        {{ __('Enter your email address and we\'ll send you a link to reset your password.') }}
                     </p>
                 </div>
 
@@ -33,7 +33,7 @@
 
                             <flux:input
                                 name="email"
-                                label="Email Address"
+                                label="{{ __('Email Address') }}"
                                 type="email"
                                 value="{{ old('email') }}"
                                 required
@@ -46,7 +46,7 @@
                                 variant="primary"
                                 class="w-full"
                             >
-                                Email Password Reset Link
+                                {{ __('Email Password Reset Link') }}
                             </flux:button>
 
                         </div>
@@ -57,7 +57,7 @@
                             href="{{ route('login') }}"
                             class="font-medium text-irdi-green hover:underline"
                         >
-                            Back to Log In
+                            {{ __('Back to Log In') }}
                         </a>
                     </div>
 

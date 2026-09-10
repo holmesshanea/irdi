@@ -25,11 +25,11 @@ class MessagingRestoredNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Your IRDI Messaging Access Has Been Restored')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your IRDI member messaging access has been restored.')
-            ->line('You can once again send and receive new messages from other eligible IRDI members.')
-            ->action('View Messages', route('messages.index'))
-            ->line('Thank you for being part of IRDI.');
+            ->subject(__('Your IRDI Messaging Access Has Been Restored'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your IRDI member messaging access has been restored.'))
+            ->line(__('You can once again send and receive new messages from other eligible IRDI members.'))
+            ->action(__('View Messages'), route('messages.index'))
+            ->line(__('Thank you for being part of IRDI.'));
     }
 }

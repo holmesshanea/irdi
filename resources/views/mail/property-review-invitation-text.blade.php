@@ -1,17 +1,17 @@
-IRDI Property Owner Feedback
+{{ __('IRDI Property Owner Feedback') }}
 
-{{ $profile->profile_name }} has invited you to provide feedback about your experience with them as an IRDI Detectorist.
+{{ __(':name has invited you to provide feedback about your experience with them as an IRDI Detectorist.', ['name' => $profile->profile_name]) }}
 
-You do not need an IRDI account to participate.
+{{ __('You do not need an IRDI account to participate.') }}
 
-Before submitting feedback, IRDI will ask you to verify this email address. Your email address will remain private and will not be displayed publicly.
+{{ __('Before submitting feedback, IRDI will ask you to verify this email address. Your email address will remain private and will not be displayed publicly.') }}
 
-Leave feedback here:
+{{ __('Leave feedback here:') }}
 
 {{ $reviewUrl }}
 
-This invitation can only be used once and expires {{ $expiresAt }}.
+{{ __('This invitation can only be used once and expires :date.', ['date' => $expiresAt]) }}
 
-If you were not expecting this invitation, you may ignore this email.
+{{ __('If you were not expecting this invitation, you may ignore this email.') }}
 
 IRDI — International Responsible Detectorist Institute

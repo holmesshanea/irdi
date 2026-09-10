@@ -22,8 +22,9 @@ class PropertyReviewInvitationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: $this->profile->profile_name
-            .' has invited you to provide IRDI Property Owner Feedback',
+            subject: __(':name has invited you to provide IRDI Property Owner Feedback', [
+                'name' => $this->profile->profile_name,
+            ]),
         );
     }
 

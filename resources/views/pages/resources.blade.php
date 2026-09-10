@@ -1,6 +1,6 @@
 <x-layouts.public
-    title="Resources | IRDI"
-    description="Member resources from the International Responsible Detectorist Institute, including ethical standards, best practices, educational materials, and responsible detecting guidance."
+    title="{{ __('Resources | IRDI') }}"
+    description="{{ __('Member resources from the International Responsible Detectorist Institute, including ethical standards, best practices, educational materials, and responsible detecting guidance.') }}"
 >
 
     {{-- Resources Hero --}}
@@ -30,12 +30,11 @@
                 </p>
 
                 <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    Resources
+                    {{ __('Resources') }}
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    Explore IRDI standards, educational materials, and trusted resources
-                    that support ethical, responsible, and informed metal detecting.
+                    {{ __('Explore IRDI standards, educational materials, and trusted resources that support ethical, responsible, and informed metal detecting.') }}
                 </p>
 
             </div>
@@ -51,13 +50,13 @@
                 <div class="mb-8">
 
                     <h2 class="text-2xl font-bold tracking-tight text-irdi-green">
-                        IRDI Resources
+                        {{ __('IRDI Resources') }}
                     </h2>
 
                     <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                     <p class="mt-4 text-zinc-600">
-                        Standards and guidance developed by IRDI for responsible detectorists.
+                        {{ __('Standards and guidance developed by IRDI for responsible detectorists.') }}
                     </p>
 
                 </div>
@@ -74,12 +73,11 @@
                         </div>
 
                         <h3 class="mt-5 text-xl font-semibold text-irdi-green">
-                            Code of Ethics for Responsible Detecting
+                            {{ __('Code of Ethics for Responsible Detecting') }}
                         </h3>
 
                         <p class="mt-3 flex-1 text-sm leading-6 text-zinc-600">
-                            Review the ethical principles and responsibilities expected
-                            of every IRDI member and responsible detectorist.
+                            {{ __('Review the ethical principles and responsibilities expected of every IRDI member and responsible detectorist.') }}
                         </p>
 
                         <div class="mt-6">
@@ -88,7 +86,7 @@
                                 variant="outline"
                                 icon="book-open"
                             >
-                                View Code of Ethics
+                                {{ __('View Code of Ethics') }}
                             </flux:button>
                         </div>
 
@@ -104,12 +102,11 @@
                         </div>
 
                         <h3 class="mt-5 text-xl font-semibold text-irdi-green">
-                            Best Practices of Responsible Detecting
+                            {{ __('Best Practices of Responsible Detecting') }}
                         </h3>
 
                         <p class="mt-3 flex-1 text-sm leading-6 text-zinc-600">
-                            Practical guidance for detecting responsibly, respecting
-                            property, protecting history, and representing the hobby well.
+                            {{ __('Practical guidance for detecting responsibly, respecting property, protecting history, and representing the hobby well.') }}
                         </p>
 
                         <div class="mt-6">
@@ -118,7 +115,7 @@
                                 variant="outline"
                                 icon="book-open"
                             >
-                                View Best Practices
+                                {{ __('View Best Practices') }}
                             </flux:button>
                         </div>
 

@@ -6,6 +6,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Symfony\Component\Intl\Countries;
 
 new
 #[Layout('components.layouts.public')]
@@ -106,12 +107,12 @@ class extends Component
             ->publicDirectory()
             ->whereNotNull('country_code')
             ->where('country_code', '!=', '')
-            ->whereNotNull('country')
-            ->where('country', '!=', '')
-            ->select(['country_code', 'country'])
             ->distinct()
-            ->orderBy('country')
-            ->pluck('country', 'country_code');
+            ->pluck('country_code')
+            ->mapWithKeys(fn (string $code): array => [
+                $code => Countries::getName($code, app()->getLocale()),
+            ])
+            ->sort();
     }
 
     public function getStatesProvincesProperty()
@@ -224,11 +225,11 @@ class extends Component
                 </p>
 
                 <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    Member Directory
+                    {{ __('Member Directory') }}
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    Search for active IRDI Members.
+                    {{ __('Search for active IRDI Members.') }}
                 </p>
 
             </div>
@@ -245,7 +246,7 @@ class extends Component
                     <flux:input
                         wire:model.live.debounce.300ms="search"
                         type="search"
-                        placeholder="Search by name or username..."
+                        placeholder="{{ __('Search by name or username...') }}"
                         icon="magnifying-glass"
                     />
                 </div>
@@ -254,10 +255,10 @@ class extends Component
                     wire:model.live="country"
                     variant="listbox"
                     searchable
-                    placeholder="All Countries"
+                    placeholder="{{ __('All Countries') }}"
                 >
-                    <flux:select.option value="" label="All Countries">
-                        All Countries
+                    <flux:select.option value="" label="{{ __('All Countries') }}">
+                        {{ __('All Countries') }}
                     </flux:select.option>
 
                     @foreach ($this->countries as $code => $name)
@@ -275,7 +276,7 @@ class extends Component
 
                 <flux:select wire:model.live="stateProvince">
                     <flux:select.option value="">
-                        All States / Provinces
+                        {{ __('All States / Provinces') }}
                     </flux:select.option>
 
                     @foreach ($this->statesProvinces as $stateProvince)
@@ -287,7 +288,7 @@ class extends Component
 
                 <flux:select wire:model.live="city">
                     <flux:select.option value="">
-                        All Cities
+                        {{ __('All Cities') }}
                     </flux:select.option>
 
                     @foreach ($this->cities as $city)
@@ -299,37 +300,37 @@ class extends Component
 
                 <flux:select wire:model.live="sort">
                     <flux:select.option value="name_asc">
-                        Name A–Z
+                        {{ __('Name A–Z') }}
                     </flux:select.option>
 
                     <flux:select.option value="name_desc">
-                        Name Z–A
+                        {{ __('Name Z–A') }}
                     </flux:select.option>
 
                     <flux:select.option value="newest">
-                        Newest Members
+                        {{ __('Newest Members') }}
                     </flux:select.option>
 
                     <flux:select.option value="longest">
-                        Longest-Standing Members
+                        {{ __('Longest-Standing Members') }}
                     </flux:select.option>
                 </flux:select>
 
                 <flux:select wire:model.live="designation">
                     <flux:select.option value="all">
-                        All Members
+                        {{ __('All Members') }}
                     </flux:select.option>
 
                     <flux:select.option value="charter">
-                        Charter Members
+                        {{ __('Charter Members') }}
                     </flux:select.option>
 
                     <flux:select.option value="admin">
-                        Administrators
+                        {{ __('Administrators') }}
                     </flux:select.option>
 
                     <flux:select.option value="moderator">
-                        Moderators
+                        {{ __('Moderators') }}
                     </flux:select.option>
                 </flux:select>
 
@@ -342,7 +343,7 @@ class extends Component
                         variant="ghost"
                         icon="x-mark"
                     >
-                        Clear Filters
+                        {{ __('Clear Filters') }}
                     </flux:button>
                 </div>
             @endif
@@ -354,7 +355,7 @@ class extends Component
 
                 <div>
                     <flux:heading size="lg">
-                        Directory Results
+                        {{ __('Directory Results') }}
                     </flux:heading>
 
                     <flux:text class="mt-1">
@@ -368,7 +369,7 @@ class extends Component
                     wire:target="search,country,stateProvince,city,sort,designation,clearFilters"
                     class="text-sm text-zinc-500"
                 >
-                    Updating results...
+                    {{ __('Updating results...') }}
                 </div>
 
             </div>
@@ -423,21 +424,21 @@ class extends Component
 
                                             @if ($profile->user->is_super_admin)
                                                 <flux:badge size="sm" color="amber">
-                                                    Super Administrator
+                                                    {{ __('Super Administrator') }}
                                                 </flux:badge>
                                             @elseif ($profile->user->is_admin)
                                                 <flux:badge
                                                     size="sm"
                                                     color="red"
                                                 >
-                                                    Administrator
+                                                    {{ __('Administrator') }}
                                                 </flux:badge>
                                             @elseif ($profile->user->is_moderator)
                                                 <flux:badge
                                                     size="sm"
                                                     color="blue"
                                                 >
-                                                    Moderator
+                                                    {{ __('Moderator') }}
                                                 </flux:badge>
                                             @endif
 
@@ -446,7 +447,7 @@ class extends Component
                                                     size="sm"
                                                     color="amber"
                                                 >
-                                                    Charter Member
+                                                    {{ __('Charter Member') }}
                                                 </flux:badge>
                                             @endif
 
@@ -468,7 +469,7 @@ class extends Component
                                                 {{ collect([
                                                     $profile->city,
                                                     $profile->state_province,
-                                                    $profile->country,
+                                                    ($profile->country_code ? Countries::getName($profile->country_code, app()->getLocale()) : $profile->country),
                                                 ])->filter()->implode(', ') }}
                                             </span>
 
@@ -477,12 +478,12 @@ class extends Component
 
                                     @if ($profile->user->member_since)
                                         <div class="mt-2 text-xs text-zinc-500">
-                                            IRDI Member Since {{ $profile->user->member_since->format('F Y') }}
+                                            {{ __('IRDI Member Since :date', ['date' => $profile->user->member_since->translatedFormat('F Y')]) }}
                                         </div>
                                     @endif
 
                                     <div class="mt-4 flex items-center gap-1 text-sm font-medium text-irdi-green">
-                                        <span>View Profile</span>
+                                        <span>{{ __('View Profile') }}</span>
                                         <flux:icon.arrow-right class="size-4" />
                                     </div>
 
@@ -498,11 +499,11 @@ class extends Component
                     <div class="col-span-full rounded-xl border border-zinc-200 bg-white px-6 py-12 text-center">
 
                         <flux:heading size="lg">
-                            No matching members found
+                            {{ __('No matching members found') }}
                         </flux:heading>
 
                         <flux:text class="mt-2">
-                            Try changing your search or filters.
+                            {{ __('Try changing your search or filters.') }}
                         </flux:text>
 
                         @if ($this->hasActiveFilters)
@@ -511,7 +512,7 @@ class extends Component
                                     wire:click="clearFilters"
                                     variant="primary"
                                 >
-                                    Clear Filters
+                                    {{ __('Clear Filters') }}
                                 </flux:button>
                             </div>
                         @endif

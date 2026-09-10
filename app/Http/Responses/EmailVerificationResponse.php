@@ -11,7 +11,7 @@ class EmailVerificationResponse implements VerifyEmailResponse
     {
         return $request->wantsJson()
             ? new JsonResponse([
-                'message' => 'Your email address has been verified successfully.',
+                'message' => __('Your email address has been verified successfully.'),
             ])
             : redirect()
                 ->route('membership.join')

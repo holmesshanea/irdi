@@ -19,7 +19,7 @@ class PropertyReviewVerificationCodeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Your IRDI verification code',
+            subject: __('Your IRDI verification code'),
         );
     }
 

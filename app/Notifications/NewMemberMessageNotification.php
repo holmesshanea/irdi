@@ -34,11 +34,11 @@ class NewMemberMessageNotification extends Notification implements ShouldQueue
             : $sender->name;
 
         return (new MailMessage)
-            ->subject('You have a new message on IRDI')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line($senderName.' sent you a new private message on IRDI.')
-            ->line('Sign in to IRDI to read and reply.')
-            ->action('View Messages', route('messages.index'))
-            ->line('Your email address has not been shared with the sender.');
+            ->subject(__('You have a new message on IRDI'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__(':name sent you a new private message on IRDI.', ['name' => $senderName]))
+            ->line(__('Sign in to IRDI to read and reply.'))
+            ->action(__('View Messages'), route('messages.index'))
+            ->line(__('Your email address has not been shared with the sender.'));
     }
 }

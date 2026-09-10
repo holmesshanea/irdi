@@ -6,17 +6,16 @@
 
                 <div class="text-center">
                     <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                        Verify Your Email
+                        {{ __('Verify Your Email') }}
                     </h1>
 
                     <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                     <p class="mt-6 text-zinc-600">
-                        We sent a verification link to
+                        {{ __('We sent a verification link to') }}
                         <span class="font-medium text-zinc-900">
         {{ auth()->user()->email }}
-    </span>.
-                        Please click that link before continuing.
+    </span>{{ __('. Please click that link before continuing.') }}
                     </p>
                 </div>
 
@@ -24,7 +23,7 @@
 
                     @if (session('status') === 'verification-link-sent')
                         <div class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-800">
-                            A new verification link has been sent to your email address.
+                            {{ __('A new verification link has been sent to your email address.') }}
                         </div>
                     @endif
 
@@ -36,7 +35,7 @@
                             variant="primary"
                             class="w-full"
                         >
-                            Resend Verification Email
+                            {{ __('Resend Verification Email') }}
                         </flux:button>
                     </form>
 
@@ -52,7 +51,7 @@
                             variant="ghost"
                             class="w-full"
                         >
-                            Log Out
+                            {{ __('Log Out') }}
                         </flux:button>
                     </form>
 

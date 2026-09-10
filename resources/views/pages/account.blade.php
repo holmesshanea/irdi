@@ -46,7 +46,7 @@
                 </p>
 
                 <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    Your IRDI Account
+                    {{ __('Your IRDI Account') }}
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
@@ -68,13 +68,13 @@
 
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold tracking-tight text-irdi-green">
-                            Account Overview
+                            {{ __('Account Overview') }}
                         </h2>
 
                         <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                         <p class="mt-4 text-sm text-zinc-600">
-                            Review your IRDI account information and membership details.
+                            {{ __('Review your IRDI account information and membership details.') }}
                         </p>
                     </div>
 
@@ -82,14 +82,14 @@
                     <flux:card class="p-6">
 
                         <h3 class="text-lg font-semibold text-irdi-green">
-                            Account Information
+                            {{ __('Account Information') }}
                         </h3>
 
                         <div class="mt-6 space-y-4">
 
                             <div>
                                 <p class="text-sm font-medium text-zinc-500">
-                                    Name
+                                    {{ __('Name') }}
                                 </p>
 
                                 <p class="mt-1 text-zinc-900">
@@ -99,7 +99,7 @@
 
                             <div>
                                 <p class="text-sm font-medium text-zinc-500">
-                                    Email Address
+                                    {{ __('Email Address') }}
                                 </p>
 
                                 <p class="mt-1 text-zinc-900">
@@ -109,17 +109,17 @@
 
                             <div>
                                 <p class="text-sm font-medium text-zinc-500">
-                                    Email Status
+                                    {{ __('Email Status') }}
                                 </p>
 
                                 <div class="mt-2">
                                     @if (auth()->user()->hasVerifiedEmail())
                                         <flux:badge color="green">
-                                            Verified
+                                            {{ __('Verified') }}
                                         </flux:badge>
                                     @else
                                         <flux:badge color="amber">
-                                            Verification Required
+                                            {{ __('Verification Required') }}
                                         </flux:badge>
                                     @endif
                                 </div>
@@ -133,27 +133,27 @@
                     <flux:card class="mt-6 p-6">
 
                         <h3 class="text-lg font-semibold text-irdi-green">
-                            Membership
+                            {{ __('Membership') }}
                         </h3>
 
                         <div class="mt-6">
 
                             <p class="text-sm font-medium text-zinc-500">
-                                Membership Status
+                                {{ __('Membership Status') }}
                             </p>
 
                             <div class="mt-2">
                                 @if (auth()->user()->membership_status === 'active')
                                     <flux:badge color="green">
-                                        Active
+                                        {{ __('Active') }}
                                     </flux:badge>
                                 @elseif (auth()->user()->membership_status === 'suspended')
                                     <flux:badge color="red">
-                                        Suspended
+                                        {{ __('Suspended') }}
                                     </flux:badge>
                                 @else
                                     <flux:badge color="zinc">
-                                        Inactive
+                                        {{ __('Inactive') }}
                                     </flux:badge>
                                 @endif
                             </div>
@@ -161,11 +161,11 @@
                             @if (auth()->user()->member_since)
                                 <div class="mt-6">
                                     <p class="text-sm font-medium text-zinc-500">
-                                        Member Since
+                                        {{ __('Member Since') }}
                                     </p>
 
                                     <p class="mt-1 text-zinc-900">
-                                        {{ auth()->user()->member_since->format('F j, Y') }}
+                                        {{ auth()->user()->member_since->translatedFormat('F j, Y') }}
                                     </p>
                                 </div>
                             @endif
@@ -177,7 +177,7 @@
                             @if (auth()->user()->membership_status === 'active')
 
                                 <p class="text-sm text-zinc-600">
-                                    Your IRDI membership is active.
+                                    {{ __('Your IRDI membership is active.') }}
                                 </p>
 
                             @elseif (auth()->user()->membership_status === 'suspended')
@@ -188,29 +188,29 @@
 
                                         <div class="min-w-0">
                                             <h4 class="font-semibold text-red-900">
-                                                Your IRDI membership is suspended
+                                                {{ __('Your IRDI membership is suspended') }}
                                             </h4>
 
                                             <p class="mt-2 text-sm leading-6 text-red-800">
-                                                Your account and historical information are preserved, but active-member privileges are unavailable while your membership is suspended.
+                                                {{ __('Your account and historical information are preserved, but active-member privileges are unavailable while your membership is suspended.') }}
                                             </p>
 
                                             @if ($membershipSuspension)
                                                 <dl class="mt-4 space-y-2 text-sm">
                                                     <div class="flex flex-wrap gap-x-2">
                                                         <dt class="font-medium text-red-900">
-                                                            Suspended since:
+                                                            {{ __('Suspended since:') }}
                                                         </dt>
 
                                                         <dd class="text-red-800">
-                                                            {{ $membershipSuspension->created_at->format('F j, Y \a\t g:i A') }}
+                                                            {{ __(':date at :time', ['date' => $membershipSuspension->created_at->translatedFormat('F j, Y'), 'time' => $membershipSuspension->created_at->translatedFormat('g:i A')]) }}
                                                         </dd>
                                                     </div>
 
                                                     @if (filled($membershipSuspension->reason))
                                                         <div>
                                                             <dt class="font-medium text-red-900">
-                                                                Reason:
+                                                                {{ __('Reason:') }}
                                                             </dt>
 
                                                             <dd class="mt-1 leading-6 text-red-800">
@@ -223,16 +223,16 @@
 
                                             <div class="mt-4 rounded-lg border border-red-200 bg-white/60 p-4">
                                                 <p class="text-sm font-medium text-red-900">
-                                                    While suspended:
+                                                    {{ __('While suspended:') }}
                                                 </p>
 
                                                 <p class="mt-2 text-sm leading-6 text-red-800">
-                                                    Your public member profile and Member Directory listing are unavailable. You cannot use your IRDI Member Card, request new property-owner reviews, access active-member resources, or send new member-to-member messages. You may still access your account settings and existing account information.
+                                                    {{ __('Your public member profile and Member Directory listing are unavailable. You cannot use your IRDI Member Card, request new property-owner reviews, access active-member resources, or send new member-to-member messages. You may still access your account settings and existing account information.') }}
                                                 </p>
                                             </div>
 
                                             <p class="mt-4 text-sm leading-6 text-red-800">
-                                                If you have questions about this suspension or believe it should be reviewed, please contact IRDI.
+                                                {{ __('If you have questions about this suspension or believe it should be reviewed, please contact IRDI.') }}
                                             </p>
 
                                             <div class="mt-4">
@@ -242,7 +242,7 @@
                                                     size="sm"
                                                     wire:navigate
                                                 >
-                                                    Contact IRDI
+                                                    {{ __('Contact IRDI') }}
                                                 </flux:button>
                                             </div>
                                         </div>
@@ -252,7 +252,7 @@
                             @else
 
                                 <p class="text-sm text-zinc-600">
-                                    Complete the membership process to activate your IRDI membership.
+                                    {{ __('Complete the membership process to activate your IRDI membership.') }}
                                 </p>
 
                                 <div class="mt-4">
@@ -260,7 +260,7 @@
                                         href="{{ route('membership.join') }}"
                                         variant="primary"
                                     >
-                                        Become an IRDI Member
+                                        {{ __('Become an IRDI Member') }}
                                     </flux:button>
                                 </div>
 
@@ -277,14 +277,13 @@
 
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold tracking-tight text-irdi-green">
-                            Account Settings
+                            {{ __('Account Settings') }}
                         </h2>
 
                         <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                         <p class="mt-4 text-sm text-zinc-600">
-                            Manage the email address and password associated with your IRDI account.
-                            Your account name cannot be changed after registration.
+                            {{ __('Manage the email address and password associated with your IRDI account. Your account name cannot be changed after registration.') }}
                         </p>
                     </div>
 
@@ -302,13 +301,13 @@
 
                         <div class="mb-6">
                             <h2 class="text-2xl font-bold tracking-tight text-irdi-green">
-                                Member Resources
+                                {{ __('Member Resources') }}
                             </h2>
 
                             <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                             <p class="mt-4 text-sm text-zinc-600">
-                                Review the IRDI standards and guidance that support responsible metal detecting.
+                                {{ __('Review the IRDI standards and guidance that support responsible metal detecting.') }}
                             </p>
                         </div>
 
@@ -317,11 +316,11 @@
                             <flux:card class="p-6">
 
                                 <h3 class="text-lg font-semibold text-irdi-green">
-                                    Code of Ethics
+                                    {{ __('Code of Ethics') }}
                                 </h3>
 
                                 <p class="mt-3 text-sm leading-6 text-zinc-600">
-                                    Review the ethical principles and responsibilities expected of IRDI members.
+                                    {{ __('Review the ethical principles and responsibilities expected of IRDI members.') }}
                                 </p>
 
                                 @if (auth()->user()->ethics_agreed_at)
@@ -343,7 +342,7 @@
                                         variant="outline"
                                         icon="book-open"
                                     >
-                                        View Code of Ethics
+                                        {{ __('View Code of Ethics') }}
                                     </flux:button>
                                 </div>
 
@@ -352,11 +351,11 @@
                             <flux:card class="p-6">
 
                                 <h3 class="text-lg font-semibold text-irdi-green">
-                                    Best Practices
+                                    {{ __('Best Practices') }}
                                 </h3>
 
                                 <p class="mt-3 text-sm leading-6 text-zinc-600">
-                                    Review practical guidance for responsible, respectful, and lawful detecting.
+                                    {{ __('Review practical guidance for responsible, respectful, and lawful detecting.') }}
                                 </p>
 
                                 @if (auth()->user()->best_practices_agreed_at)
@@ -378,7 +377,7 @@
                                         variant="outline"
                                         icon="book-open"
                                     >
-                                        View Best Practices
+                                        {{ __('View Best Practices') }}
                                     </flux:button>
                                 </div>
 
@@ -394,13 +393,13 @@
 
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold tracking-tight text-irdi-green">
-                            Member Profile
+                            {{ __('Member Profile') }}
                         </h2>
 
                         <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                         <p class="mt-4 text-sm text-zinc-600">
-                            Create and manage your public IRDI member profile.
+                            {{ __('Create and manage your public IRDI member profile.') }}
                         </p>
                     </div>
 
@@ -444,7 +443,7 @@
                                                 class="text-sm font-medium text-irdi-green hover:underline"
                                                 x-on:click="open = ! open"
                                             >
-                                                Request Property Owner Review
+                                                {{ __('Request Property Owner Review') }}
                                             </button>
 
                                         </div>
@@ -465,11 +464,11 @@
                                                     for="reviewer_email_{{ $profile->id }}"
                                                     class="block text-sm font-medium text-zinc-700"
                                                 >
-                                                    Property Owner Email
+                                                    {{ __('Property Owner Email') }}
                                                 </label>
 
                                                 <p class="mt-1 text-xs leading-5 text-zinc-500">
-                                                    IRDI will email the property owner a private, single-use feedback invitation.
+                                                    {{ __('IRDI will email the property owner a private, single-use feedback invitation.') }}
                                                 </p>
 
                                                 <input
@@ -477,7 +476,7 @@
                                                     name="reviewer_email"
                                                     type="email"
                                                     required
-                                                    placeholder="owner@example.com"
+                                                    placeholder="{{ __('owner@example.com') }}"
                                                     class="mt-3 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
                                                 >
 
@@ -495,7 +494,7 @@
                                                         size="sm"
                                                         x-on:click="open = false"
                                                     >
-                                                        Cancel
+                                                        {{ __('Cancel') }}
                                                     </flux:button>
 
                                                     <flux:button
@@ -504,7 +503,7 @@
                                                         size="sm"
                                                         icon="envelope"
                                                     >
-                                                        Send Invitation
+                                                        {{ __('Send Invitation') }}
                                                     </flux:button>
 
                                                 </div>
@@ -566,21 +565,21 @@
                                                     size="sm"
                                                     color="green"
                                                 >
-                                                    IRDI Member
+                                                    {{ __('IRDI Member') }}
                                                 </flux:badge>
                                             @elseif (auth()->user()->membership_status === 'suspended')
                                                 <flux:badge
                                                     size="sm"
                                                     color="red"
                                                 >
-                                                    Membership Suspended
+                                                    {{ __('Membership Suspended') }}
                                                 </flux:badge>
                                             @else
                                                 <flux:badge
                                                     size="sm"
                                                     color="zinc"
                                                 >
-                                                    Inactive
+                                                    {{ __('Inactive') }}
                                                 </flux:badge>
                                             @endif
 
@@ -612,7 +611,7 @@
                                                         {{ collect([
                                                             $profile->city,
                                                             $profile->state_province,
-                                                            $profile->country,
+                                                            ($profile->country_code ? \Symfony\Component\Intl\Countries::getName($profile->country_code, app()->getLocale()) : $profile->country),
                                                         ])->filter()->implode(', ') }}
                                                     </span>
 
@@ -634,19 +633,19 @@
                                                 @if (auth()->user()->membership_status === 'suspended')
 
                                                     <flux:badge color="red">
-                                                        Directory Unavailable While Suspended
+                                                        {{ __('Directory Unavailable While Suspended') }}
                                                     </flux:badge>
 
                                                 @elseif ($profile->directory_visible)
 
                                                     <flux:badge color="green">
-                                                        Directory Visible
+                                                        {{ __('Directory Visible') }}
                                                     </flux:badge>
 
                                                 @else
 
                                                     <flux:badge color="zinc">
-                                                        Directory Hidden
+                                                        {{ __('Directory Hidden') }}
                                                     </flux:badge>
 
                                                 @endif
@@ -654,13 +653,13 @@
                                                 @if ($profileComplete)
 
                                                     <flux:badge color="green">
-                                                        Profile Complete
+                                                        {{ __('Profile Complete') }}
                                                     </flux:badge>
 
                                                 @else
 
                                                     <flux:badge color="amber">
-                                                        Needs Attention
+                                                        {{ __('Needs Attention') }}
                                                     </flux:badge>
 
                                                 @endif
@@ -685,16 +684,16 @@
                                                     size="sm"
                                                     icon="eye"
                                                 >
-                                                    View Profile
+                                                    {{ __('View Profile') }}
                                                 </flux:button>
 
                                             @else
 
                                                 <span
                                                     class="inline-flex cursor-not-allowed items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 opacity-60"
-                                                    title="Unavailable while membership is suspended."
+                                                    title="{{ __('Unavailable while membership is suspended.') }}"
                                                 >
-        View Profile
+        {{ __('View Profile') }}
     </span>
 
                                             @endif
@@ -705,7 +704,7 @@
                                                 size="sm"
                                                 icon="pencil-square"
                                             >
-                                                Edit
+                                                {{ __('Edit') }}
                                             </flux:button>
 
                                             @if (auth()->user()->membership_status === 'active')
@@ -716,16 +715,16 @@
                                                     size="sm"
                                                     icon="identification"
                                                 >
-                                                    Member Card
+                                                    {{ __('Member Card') }}
                                                 </flux:button>
 
                                             @else
 
                                                 <span
                                                     class="inline-flex cursor-not-allowed items-center gap-2 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-medium text-zinc-400 opacity-60"
-                                                    title="Unavailable while membership is suspended."
+                                                    title="{{ __('Unavailable while membership is suspended.') }}"
                                                 >
-        Member Card
+        {{ __('Member Card') }}
     </span>
 
                                             @endif
@@ -749,13 +748,13 @@
                                                 size="sm"
                                                 icon="star"
                                             >
-                                                My Reviews
+                                                {{ __('My Reviews') }}
                                             </flux:button>
 
                                             <form
                                                 action="{{ route('account.profiles.destroy', $profile) }}"
                                                 method="POST"
-                                                onsubmit="return confirm('Are you sure you want to permanently delete your profile? This will not delete your IRDI account or membership.');"
+                                                onsubmit="return confirm(@js(__('Are you sure you want to permanently delete your profile? This will not delete your IRDI account or membership.')));"
                                             >
                                                 @csrf
                                                 @method('DELETE')
@@ -766,7 +765,7 @@
                                                     size="sm"
                                                     icon="trash"
                                                 >
-                                                    Delete
+                                                    {{ __('Delete') }}
                                                 </flux:button>
                                             </form>
 
@@ -784,11 +783,11 @@
 
                                 <div>
                                     <p class="font-medium text-zinc-900">
-                                        Create your IRDI member profile
+                                        {{ __('Create your IRDI member profile') }}
                                     </p>
 
                                     <p class="mt-1 text-sm text-zinc-600">
-                                        Your profile identifies you in the Member Directory and gives you access to your public member card and property owner reviews.
+                                        {{ __('Your profile identifies you in the Member Directory and gives you access to your public member card and property owner reviews.') }}
                                     </p>
                                 </div>
 
@@ -797,7 +796,7 @@
                                     variant="primary"
                                     icon="plus"
                                 >
-                                    Create Profile
+                                    {{ __('Create Profile') }}
                                 </flux:button>
 
                             </div>
@@ -805,7 +804,7 @@
                         @else
 
                             <p class="text-sm text-zinc-500">
-                                Activate your IRDI membership before creating a member profile.
+                                {{ __('Activate your IRDI membership before creating a member profile.') }}
                             </p>
 
                         @endif
@@ -819,13 +818,13 @@
 
                     <div class="mb-6">
                         <h2 class="text-2xl font-bold tracking-tight text-red-700">
-                            Danger Zone
+                            {{ __('Danger Zone') }}
                         </h2>
 
                         <div class="mt-2 h-1 w-16 bg-red-500"></div>
 
                         <p class="mt-4 text-sm text-zinc-600">
-                            Permanently delete your IRDI account and all associated membership data and profile information.
+                            {{ __('Permanently delete your IRDI account and all associated membership data and profile information.') }}
                         </p>
                     </div>
 
@@ -833,9 +832,7 @@
 
                         <div class="rounded-lg bg-red-50 p-4">
                             <p class="text-sm text-red-800">
-                                Deleting your account is permanent. Your IRDI account,
-                                membership, member profile, reviews, and associated data
-                                will be deleted.
+                                {{ __('Deleting your account is permanent. Your IRDI account, membership, member profile, reviews, and associated data will be deleted.') }}
                             </p>
                         </div>
 
@@ -845,7 +842,7 @@
                                 variant="danger"
                                 icon="trash"
                             >
-                                Delete Account
+                                {{ __('Delete Account') }}
                             </flux:button>
                         </div>
 

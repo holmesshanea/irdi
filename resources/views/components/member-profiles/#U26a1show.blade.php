@@ -4,6 +4,7 @@ use App\Models\MemberProfile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
+use Symfony\Component\Intl\Countries;
 use tbQuar\Facades\Quar;
 
 new
@@ -79,13 +80,13 @@ class extends Component
             $this->profile->country,
         ])->filter()->implode(', ');
 
-        $description = 'View ' . $this->profile->profile_name . '\'s IRDI member profile';
+        $description = __('View :name\'s IRDI member profile', ['name' => $this->profile->profile_name]);
 
         if ($location !== '') {
-            $description .= ' in ' . $location;
+            $description .= __(' in :location', ['location' => $location]);
         }
 
-        $description .= ', including membership information, profile details, and property owner feedback.';
+        $description .= __(', including membership information, profile details, and property owner feedback.');
 
         return $this->view()
             ->layout('components.layouts.public', [
@@ -94,7 +95,7 @@ class extends Component
                     'profile' => $this->profile->username,
                 ]),
             ])
-            ->title($this->profile->profile_name . ' | IRDI Member');
+            ->title(__('Profile title: :name | IRDI Member', ['name' => $this->profile->profile_name]));
     }
 };
 ?>
@@ -125,30 +126,25 @@ class extends Component
                     @endif
 
                     @if (
-                        $profile->user->is_super_admin
-                        || $profile->user->is_admin
+                        $profile->user->is_admin
                         || $profile->user->is_moderator
                         || $profile->user->is_charter_member
                     )
                         <div class="flex flex-wrap justify-center gap-2">
 
-                            @if ($profile->user->is_super_admin)
-                                <flux:badge color="amber">
-                                    Super Administrator
-                                </flux:badge>
-                            @elseif ($profile->user->is_admin)
+                            @if ($profile->user->is_admin)
                                 <flux:badge color="red">
-                                    Administrator
+                                    {{ __('Administrator') }}
                                 </flux:badge>
                             @elseif ($profile->user->is_moderator)
                                 <flux:badge color="blue">
-                                    Moderator
+                                    {{ __('Moderator') }}
                                 </flux:badge>
                             @endif
 
                             @if ($profile->user->is_charter_member)
                                 <flux:badge color="amber">
-                                    Charter Member
+                                    {{ __('Charter Member') }}
                                 </flux:badge>
                             @endif
 
@@ -180,7 +176,7 @@ class extends Component
                                 {{ collect([
                                     $profile->city,
                                     $profile->state_province,
-                                    $profile->country,
+                                    ($profile->country_code ? Countries::getName($profile->country_code, app()->getLocale()) : $profile->country),
                                 ])->filter()->implode(', ') }}
                             </span>
 
@@ -189,7 +185,7 @@ class extends Component
 
                     @if ($profile->user->member_since)
                         <p class="mt-2 text-sm text-zinc-500">
-                            IRDI Member Since {{ $profile->user->member_since->format('F Y') }}
+                            {{ __('IRDI Member Since :date', ['date' => $profile->user->member_since->translatedFormat('F Y')]) }}
                         </p>
                     @endif
 
@@ -207,7 +203,7 @@ class extends Component
                                 variant="primary"
                                 icon="envelope"
                             >
-                                Message Member
+                                {{ __('Message Member') }}
                             </flux:button>
 
                         </div>
@@ -235,7 +231,7 @@ class extends Component
                             <div>
 
                                 <h2 class="text-lg font-semibold text-irdi-green">
-                                    Bio
+                                    {{ __('Bio') }}
                                 </h2>
 
                                 <p class="mt-4 whitespace-pre-line leading-7 text-zinc-700">
@@ -251,7 +247,7 @@ class extends Component
                             <div class="@if($profile->bio) mt-6 border-t border-zinc-200 pt-6 @endif">
 
                                 <h2 class="text-lg font-semibold text-irdi-green">
-                                    Website
+                                    {{ __('Website') }}
                                 </h2>
 
                                 <p class="mt-3">
@@ -280,19 +276,18 @@ class extends Component
                         <div>
 
                             <h2 class="text-lg font-semibold text-irdi-green">
-                                Property Owner Feedback
+                                {{ __('Property Owner Feedback') }}
                             </h2>
 
                             <p class="mt-2 text-sm leading-6 text-zinc-600">
-                                Feedback is submitted through individual IRDI review invitations and requires email verification.
-                                IRDI does not independently verify property ownership.
+                                {{ __('Feedback is submitted through individual IRDI review invitations and requires email verification. IRDI does not independently verify property ownership.') }}
                             </p>
 
                         </div>
 
                         <flux:badge color="green">
                             {{ $propertyReviewCount }}
-                            {{ Str::plural('Review', $propertyReviewCount) }}
+                            {{ $propertyReviewCount === 1 ? __('Review') : __('Reviews') }}
                         </flux:badge>
 
                     </div>
@@ -302,7 +297,7 @@ class extends Component
                         <div class="mt-6 rounded-lg bg-zinc-50 p-5">
 
                             <p class="text-sm text-zinc-600">
-                                This member has not received any property owner feedback yet.
+                                {{ __('This member has not received any property owner feedback yet.') }}
                             </p>
 
                         </div>
@@ -314,7 +309,7 @@ class extends Component
                             <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
 
                                 <p class="text-sm font-medium text-zinc-500">
-                                    Property Owner Rating
+                                    {{ __('Property Owner Rating') }}
                                 </p>
 
                                 @if ($propertyReviewRating !== null)
@@ -327,19 +322,20 @@ class extends Component
                                     </p>
 
                                     <p class="mt-2 text-sm text-zinc-500">
-                                        Based on {{ $propertyReviewCount }}
-                                        {{ Str::plural('review', $propertyReviewCount) }}.
+                                        {{ $propertyReviewCount === 1
+                                            ? __('Based on :count review.', ['count' => $propertyReviewCount])
+                                            : __('Based on :count reviews.', ['count' => $propertyReviewCount]) }}
                                     </p>
 
                                 @else
 
                                     <p class="mt-2 text-lg font-semibold text-irdi-green">
                                         {{ $propertyReviewCount }}
-                                        {{ Str::plural('Property Owner Review', $propertyReviewCount) }}
+                                        {{ $propertyReviewCount === 1 ? __('Property Owner Review') : __('Property Owner Reviews') }}
                                     </p>
 
                                     <p class="mt-2 text-sm leading-6 text-zinc-500">
-                                        More feedback is needed before a public rating is displayed.
+                                        {{ __('More feedback is needed before a public rating is displayed.') }}
                                     </p>
 
                                 @endif
@@ -349,21 +345,17 @@ class extends Component
                             <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-5">
 
                                 <p class="text-sm font-medium text-zinc-500">
-                                    Would Allow This Member to Return
+                                    {{ __('Would Allow This Member to Return') }}
                                 </p>
 
                                 <p class="mt-2 text-3xl font-bold text-irdi-green">
-                                    {{ $wouldAllowReturnCount }}
-                                    <span class="text-base font-medium text-zinc-500">
-                                        of {{ $propertyReviewCount }}
-                                    </span>
+                                    {{ __(':count of :total', ['count' => $wouldAllowReturnCount, 'total' => $propertyReviewCount]) }}
                                 </p>
 
                                 @if ($propertyReviewCount > 0)
 
                                     <p class="mt-2 text-sm text-zinc-500">
-                                        {{ round(($wouldAllowReturnCount / $propertyReviewCount) * 100) }}%
-                                        of reviewers would allow this member to return.
+                                        {{ __(':percent% of reviewers would allow this member to return.', ['percent' => round(($wouldAllowReturnCount / $propertyReviewCount) * 100)]) }}
                                     </p>
 
                                 @endif
@@ -407,30 +399,25 @@ class extends Component
                                         <div class="min-w-0">
 
                                             @if (
-                                                $profile->user->is_super_admin
-                                                || $profile->user->is_admin
+                                                $profile->user->is_admin
                                                 || $profile->user->is_moderator
                                                 || $profile->user->is_charter_member
                                             )
                                                 <div class="flex flex-wrap items-center gap-2">
 
-                                                    @if ($profile->user->is_super_admin)
-                                                        <flux:badge size="sm" color="amber">
-                                                            Super Administrator
-                                                        </flux:badge>
-                                                    @elseif ($profile->user->is_admin)
+                                                    @if ($profile->user->is_admin)
                                                         <flux:badge
                                                             size="sm"
                                                             color="red"
                                                         >
-                                                            Administrator
+                                                            {{ __('Administrator') }}
                                                         </flux:badge>
                                                     @elseif ($profile->user->is_moderator)
                                                         <flux:badge
                                                             size="sm"
                                                             color="blue"
                                                         >
-                                                            Moderator
+                                                            {{ __('Moderator') }}
                                                         </flux:badge>
                                                     @endif
 
@@ -439,7 +426,7 @@ class extends Component
                                                             size="sm"
                                                             color="amber"
                                                         >
-                                                            Charter Member
+                                                            {{ __('Charter Member') }}
                                                         </flux:badge>
                                                     @endif
 
@@ -456,7 +443,7 @@ class extends Component
 
                                             @if ($profile->user->member_since)
                                                 <p class="mt-2 text-sm text-zinc-500">
-                                                    Member Since {{ $profile->user->member_since->format('F Y') }}
+                                                    {{ __('Member Since :date', ['date' => $profile->user->member_since->translatedFormat('F Y')]) }}
                                                 </p>
                                             @endif
 
@@ -469,7 +456,7 @@ class extends Component
                                         {!! $qrCode !!}
 
                                         <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-irdi-green">
-                                            Verify Membership
+                                            {{ __('Verify Membership') }}
                                         </p>
 
                                     </div>
@@ -491,7 +478,7 @@ class extends Component
                         <div class="mx-auto mt-4 max-w-2xl text-center">
 
                             <p class="text-sm text-zinc-500">
-                                Only you can see this card.
+                                {{ __('Only you can see this card.') }}
                             </p>
 
                             <div
@@ -510,7 +497,7 @@ class extends Component
                                     variant="outline"
                                     icon="pencil-square"
                                 >
-                                    Edit Profile
+                                    {{ __('Edit Profile') }}
                                 </flux:button>
 
                                 <button
@@ -524,7 +511,7 @@ class extends Component
                                             copied = false;
                                         }, 2000);
                                     "
-                                    x-text="copied ? 'Copied!' : 'Copy Embed Code'"
+                                    x-text="copied ? @js(__('Copied!')) : @js(__('Copy Embed Code'))"
                                 >
                                 </button>
 

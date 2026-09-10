@@ -1,6 +1,6 @@
 <x-layouts.public
-    title="Responsible Metal Detecting | IRDI"
-    description="IRDI promotes responsible metal detecting, ethical stewardship, respect for landowners, and preservation of our shared history through education, best practices, and an international community of responsible detectorists."
+    :title="__('home.meta.title')"
+    :description="__('home.meta.description')"
 >
     {{-- Hero --}}
     <section class="relative overflow-hidden bg-irdi-green">
@@ -25,16 +25,15 @@
             <div class="mx-auto max-w-3xl text-center">
 
                 <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
-                    International Responsible Detectorist Institute
+                    {{ __('home.hero.organization') }}
                 </p>
 
                 <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    Raising the Standard for Responsible Metal Detecting
+                    {{ __('home.hero.heading') }}
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    Promoting responsible metal detecting, ethical stewardship,
-                    and respect for our shared history.
+                    {{ __('home.hero.description') }}
                 </p>
 
                 <div class="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -44,7 +43,7 @@
                         variant="primary"
                         class="bg-irdi-gold! text-white! hover:bg-amber-700!"
                     >
-                        Become a Member
+                        {{ __('home.hero.become_member') }}
                     </flux:button>
 
                     <flux:button
@@ -52,7 +51,7 @@
                         variant="outline"
                         class="border-white/40! bg-transparent! text-white! hover:bg-white/10! hover:text-white!"
                     >
-                        Member Directory
+                        {{ __('home.hero.member_directory') }}
                     </flux:button>
 
                 </div>
@@ -61,13 +60,13 @@
                     <flux:icon.users class="size-7 text-irdi-gold" />
 
                     <div class="flex items-baseline gap-2">
-                    <span class="text-3xl font-bold tracking-tight">
-                        {{ number_format($memberCount) }}
-                    </span>
+                        <span class="text-3xl font-bold tracking-tight">
+                            {{ number_format($memberCount) }}
+                        </span>
 
                         <span class="text-sm text-zinc-200 sm:text-base">
-                        Active IRDI {{ Str::plural('Member', $memberCount) }} Worldwide
-                    </span>
+                            {{ trans_choice('home.hero.active_members_worldwide', $memberCount) }}
+                        </span>
                     </div>
                 </div>
 
@@ -83,12 +82,11 @@
             {{-- Section heading --}}
             <div class="mx-auto max-w-3xl text-center">
                 <h2 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Our Guiding Principles
+                    {{ __('home.principles.heading') }}
                 </h2>
 
                 <p class="mt-4 text-lg text-zinc-600">
-                    Responsible detecting begins with respect—for history,
-                    landowners, and the future of the hobby.
+                    {{ __('home.principles.description') }}
                 </p>
             </div>
 
@@ -102,22 +100,19 @@
                     </div>
 
                     <h3 class="text-xl font-semibold text-irdi-green lg:min-h-14">
-                        Protect Our Shared History
+                        {{ __('home.principles.history.heading') }}
                     </h3>
                     <div class="mt-3 h-1 w-full rounded-full bg-irdi-gold"></div>
 
                     <p class="mt-4 leading-7 text-zinc-600">
-                        Every artifact tells a story. IRDI encourages responsible
-                        recovery and thoughtful stewardship so that today’s
-                        discoveries can continue to educate and inspire future
-                        generations.
+                        {{ __('home.principles.history.description') }}
                     </p>
 
                     <div class="mt-auto pt-6">
                         <div class="relative overflow-hidden rounded-lg">
                             <img
                                 src="{{ asset('images/historic-preservation.png') }}"
-                                alt="Historic artifact being carefully recovered during metal detecting"
+                                alt="{{ __('home.principles.history.image_alt') }}"
                                 class="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.05]"
                             >
 
@@ -134,22 +129,19 @@
                     </div>
 
                     <h3 class="text-xl font-semibold text-irdi-green lg:min-h-14">
-                        Respect Landowners
+                        {{ __('home.principles.landowners.heading') }}
                     </h3>
                     <div class="mt-3 h-1 w-full rounded-full bg-irdi-gold"></div>
 
                     <p class="mt-4 leading-7 text-zinc-600">
-                        Responsible detectorists earn trust through honesty,
-                        courtesy, and respect for private property. We believe
-                        every hunt begins with permission and ends with leaving
-                        the land exactly as it should be—or better.
+                        {{ __('home.principles.landowners.description') }}
                     </p>
 
                     <div class="mt-auto pt-6">
                         <div class="relative overflow-hidden rounded-lg">
                             <img
                                 src="{{ asset('images/landowner-trust.png') }}"
-                                alt="Handshake representing trust and respect between a detectorist and landowner"
+                                alt="{{ __('home.principles.landowners.image_alt') }}"
                                 class="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.05]"
                             >
 
@@ -165,22 +157,19 @@
                     </div>
 
                     <h3 class="text-xl font-semibold text-irdi-green lg:min-h-14">
-                        Lead by Example
+                        {{ __('home.principles.example.heading') }}
                     </h3>
                     <div class="mt-3 h-1 w-full rounded-full bg-irdi-gold"></div>
 
                     <p class="mt-4 leading-7 text-zinc-600">
-                        IRDI Members demonstrate that responsible metal detecting
-                        is about more than finding artifacts. It is about
-                        integrity, education, and helping build a positive future
-                        for the hobby through ethical practices.
+                        {{ __('home.principles.example.description') }}
                     </p>
 
                     <div class="mt-auto pt-6">
                         <div class="relative overflow-hidden rounded-lg">
                             <img
                                 src="{{ asset('images/global-standards.png') }}"
-                                alt="Globe and books representing education and responsible detecting standards worldwide"
+                                alt="{{ __('home.principles.example.image_alt') }}"
                                 class="h-48 w-full object-cover transition duration-300 group-hover:scale-[1.05]"
                             >
 

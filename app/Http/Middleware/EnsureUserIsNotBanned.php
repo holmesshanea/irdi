@@ -22,7 +22,7 @@ class EnsureUserIsNotBanned
             return redirect()
                 ->route('login')
                 ->withErrors([
-                    'email' => 'This IRDI account has been banned. If you believe this is an error, please contact IRDI.',
+                    'email' => __('This IRDI account has been banned. If you believe this is an error, please contact IRDI.'),
                 ]);
         }
 

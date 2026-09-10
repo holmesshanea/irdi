@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>New IRDI Contact Message</title>
+    <title>{{ __('New IRDI Contact Message') }}</title>
 </head>
 
 <body style="margin: 0; padding: 0; background-color: #f4f4f5; font-family: Arial, Helvetica, sans-serif; color: #27272a;">
@@ -50,11 +50,11 @@
                     <td style="padding: 32px;">
 
                         <h1 style="margin: 0 0 16px; font-size: 22px; color: #174121;">
-                            New Contact Message
+                            {{ __('New Contact Message') }}
                         </h1>
 
                         <p style="margin: 0 0 24px; line-height: 1.6; color: #52525b;">
-                            A new message has been submitted through the IRDI website contact form.
+                            {{ __('A new message has been submitted through the IRDI website contact form.') }}
                         </p>
 
                         {{-- Contact information --}}
@@ -69,17 +69,17 @@
                                 <td style="padding: 20px;">
 
                                     <p style="margin: 0 0 12px;">
-                                        <strong>Name:</strong>
+                                        <strong>{{ __('Name:') }}</strong>
                                         {{ $name }}
                                     </p>
 
                                     <p style="margin: 0 0 12px;">
-                                        <strong>Email:</strong>
+                                        <strong>{{ __('Email:') }}</strong>
                                         {{ $email }}
                                     </p>
 
                                     <p style="margin: 0;">
-                                        <strong>Subject:</strong>
+                                        <strong>{{ __('Subject:') }}</strong>
                                         {{ $contactSubject }}
                                     </p>
 
@@ -88,7 +88,7 @@
                         </table>
 
                         <h2 style="margin: 30px 0 12px; font-size: 18px; color: #174121;">
-                            Message
+                            {{ __('Message') }}
                         </h2>
 
                         <div style="line-height: 1.7; color: #3f3f46;">
@@ -98,7 +98,7 @@
                         <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e4e4e7;">
 
                         <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #71717a;">
-                            You can reply directly to this email to respond to
+                            {{ __('You can reply directly to this email to respond to') }}
                             <strong>{{ $name }}</strong>.
                         </p>
 
