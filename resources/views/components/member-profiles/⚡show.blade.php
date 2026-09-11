@@ -38,8 +38,8 @@ class extends Component
 
         $this->profile = $profile;
 
-        $this->qrCode = Quar::size(160)
-            ->generate(url('/directory/' . $profile->username));
+        $this->qrCode = Quar::size(116)
+            ->generate(route('member-profiles.show', $profile));
 
         $this->embedCode = '<iframe src="' .
             route('member-profiles.card', $profile) .
@@ -372,110 +372,12 @@ class extends Component
 
                     <div id="member-card" class="mt-10">
 
-                        <div class="mx-auto max-w-2xl overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+                        @include('partials.member-profiles.membership-card', [
+                            'profile' => $profile,
+                            'qrCode' => $qrCode,
+                        ])
 
-                            <div class="border-t-4 border-irdi-gold p-6">
-
-                                <div class="flex items-start justify-between gap-6">
-
-                                    <div class="flex min-w-0 items-center gap-4">
-
-                                        @if ($profile->profile_image)
-
-                                            <img
-                                                src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
-                                                alt="{{ $profile->profile_name }}"
-                                                class="h-20 w-20 shrink-0 rounded-full object-cover"
-                                            >
-
-                                        @else
-
-                                            <div class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-zinc-100 text-2xl font-semibold text-irdi-green">
-                                                {{ strtoupper(substr($profile->profile_name, 0, 1)) }}
-                                            </div>
-
-                                        @endif
-
-                                        <div class="min-w-0">
-
-                                            @if (
-                                                $profile->user->is_admin
-                                                || $profile->user->is_moderator
-                                                || $profile->user->is_charter_member
-                                            )
-                                                <div class="flex flex-wrap items-center gap-2">
-
-                                                    @if ($profile->user->is_admin)
-                                                        <flux:badge
-                                                            size="sm"
-                                                            color="red"
-                                                        >
-                                                            {{ __('Administrator') }}
-                                                        </flux:badge>
-                                                    @elseif ($profile->user->is_moderator)
-                                                        <flux:badge
-                                                            size="sm"
-                                                            color="blue"
-                                                        >
-                                                            {{ __('Moderator') }}
-                                                        </flux:badge>
-                                                    @endif
-
-                                                    @if ($profile->user->is_charter_member)
-                                                        <flux:badge
-                                                            size="sm"
-                                                            color="amber"
-                                                        >
-                                                            {{ __('Charter Member') }}
-                                                        </flux:badge>
-                                                    @endif
-
-                                                </div>
-                                            @endif
-
-                                            <h2 class="mt-2 text-xl font-bold text-irdi-green">
-                                                {{ $profile->profile_name }}
-                                            </h2>
-
-                                            <p class="mt-1 text-sm text-zinc-500">
-                                                {{ '@' . $profile->username }}
-                                            </p>
-
-                                            @if ($profile->user->member_since)
-                                                <p class="mt-2 text-sm text-zinc-500">
-                                                    {{ __('Member Since :date', ['date' => $profile->user->member_since->translatedFormat('F Y')]) }}
-                                                </p>
-                                            @endif
-
-                                        </div>
-
-                                    </div>
-
-                                    <div class="shrink-0 text-center">
-
-                                        {!! $qrCode !!}
-
-                                        <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-irdi-green">
-                                            {{ __('Verify Membership') }}
-                                        </p>
-
-                                    </div>
-
-                                </div>
-
-                                <div class="mt-5 border-t border-zinc-200 pt-4">
-
-                                    <p class="text-xs font-medium text-zinc-500">
-                                        International Responsible Detectorist Institute
-                                    </p>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="mx-auto mt-4 max-w-2xl text-center">
+                        <div class="mx-auto mt-4 max-w-xl text-center">
 
                             <p class="text-sm text-zinc-500">
                                 {{ __('Only you can see this card.') }}
