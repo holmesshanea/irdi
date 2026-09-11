@@ -97,9 +97,9 @@ class extends Component
         $email = $this->invitation->reviewer_email;
 
         Mail::to($email)->send(
-            new PropertyReviewVerificationCodeMail(
+            (new PropertyReviewVerificationCodeMail(
                 code: $code,
-            )
+            ))->locale(app()->getLocale())
         );
 
         $this->verificationCode = '';
@@ -132,7 +132,7 @@ class extends Component
         ) {
             $this->addError(
                 'verificationCode',
-                'This verification code has expired. Please request a new code.'
+                __('This verification code has expired. Please request a new code.')
             );
 
             return;
@@ -147,7 +147,7 @@ class extends Component
         ) {
             $this->addError(
                 'verificationCode',
-                'The verification code is incorrect.'
+                __('The verification code is incorrect.')
             );
 
             return;
@@ -188,7 +188,7 @@ class extends Component
             if ($invitation->isUsed()) {
                 $this->addError(
                     'reviewSubmission',
-                    'This review invitation has already been used.'
+                    __('This review invitation has already been used.')
                 );
 
                 return;
@@ -197,7 +197,7 @@ class extends Component
             if ($invitation->isExpired()) {
                 $this->addError(
                     'reviewSubmission',
-                    'This review invitation has expired.'
+                    __('This review invitation has expired.')
                 );
 
                 return;
@@ -215,7 +215,7 @@ class extends Component
             if ($alreadyReviewed) {
                 $this->addError(
                     'reviewSubmission',
-                    'This email address has already submitted feedback for this IRDI member.'
+                    __('This email address has already submitted feedback for this IRDI member.')
                 );
 
                 return;
@@ -252,7 +252,7 @@ class extends Component
         <div class="text-center">
 
             <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                Property Owner Feedback
+                {{ __('Property Owner Feedback') }}
             </h1>
 
             <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
@@ -266,15 +266,15 @@ class extends Component
                 <div class="rounded-lg border border-green-200 bg-green-50 p-6 text-center">
 
                     <h2 class="text-lg font-semibold text-green-900">
-                        Thank You for Your Feedback
+                        {{ __('Thank You for Your Feedback') }}
                     </h2>
 
                     <p class="mt-2 text-sm leading-6 text-green-800">
-                        Your feedback has been submitted successfully.
+                        {{ __('Your feedback has been submitted successfully.') }}
                     </p>
 
                     <p class="mt-2 text-sm text-green-700">
-                        This invitation has now been permanently used and cannot be submitted again.
+                        {{ __('This invitation has now been permanently used and cannot be submitted again.') }}
                     </p>
 
                 </div>
@@ -284,11 +284,11 @@ class extends Component
                 <div class="rounded-lg bg-zinc-100 p-5 text-center">
 
                     <h2 class="text-lg font-semibold text-zinc-900">
-                        This invitation has already been used.
+                        {{ __('This invitation has already been used.') }}
                     </h2>
 
                     <p class="mt-2 text-sm text-zinc-600">
-                        Each IRDI property owner feedback invitation can only be used once.
+                        {{ __('Each IRDI property owner feedback invitation can only be used once.') }}
                     </p>
 
                 </div>
@@ -298,11 +298,11 @@ class extends Component
                 <div class="rounded-lg bg-amber-50 p-5 text-center">
 
                     <h2 class="text-lg font-semibold text-amber-900">
-                        This invitation has expired.
+                        {{ __('This invitation has expired.') }}
                     </h2>
 
                     <p class="mt-2 text-sm text-amber-800">
-                        Please ask the IRDI member to create a new property owner feedback invitation.
+                        {{ __('Please ask the IRDI member to create a new property owner feedback invitation.') }}
                     </p>
 
                 </div>
@@ -322,17 +322,15 @@ class extends Component
                     @endif
 
                     <h2 class="mt-4 text-2xl font-semibold text-irdi-green">
-                        Rate your experience with
-                        {{ $invitation->memberProfile->profile_name }}
+                        {{ __('Rate your experience with :name', ['name' => $invitation->memberProfile->profile_name]) }}
                     </h2>
 
                     <p class="mt-3 text-zinc-600">
-                        You do not need an IRDI account to leave feedback.
+                        {{ __('You do not need an IRDI account to leave feedback.') }}
                     </p>
 
                     <p class="mt-2 text-sm text-zinc-500">
-                        This invitation is private, can only be used once, and expires
-                        {{ $invitation->expires_at->diffForHumans() }}.
+                        {{ __('This invitation is private, can only be used once, and expires :time.', ['time' => $invitation->expires_at->diffForHumans()]) }}
                     </p>
 
                 </div>
@@ -342,11 +340,11 @@ class extends Component
                     <div class="mt-8 rounded-lg border border-green-200 bg-green-50 p-5">
 
                         <h3 class="font-semibold text-green-900">
-                            Email Verified
+                            {{ __('Email Verified') }}
                         </h3>
 
                         <p class="mt-2 text-sm text-green-800">
-                            Your email address has been verified. You may now leave feedback about your experience.
+                            {{ __('Your email address has been verified. You may now leave feedback about your experience.') }}
                         </p>
 
                     </div>
@@ -359,23 +357,23 @@ class extends Component
                         <div>
 
                             <label class="block text-sm font-semibold text-irdi-green">
-                                Respect for Property
+                                {{ __('Respect for Property') }}
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                How well did the IRDI member respect your property and any boundaries or conditions you established?
+                                {{ __('How well did the IRDI member respect your property and any boundaries or conditions you established?') }}
                             </p>
 
                             <flux:select
                                 wire:model="respectForProperty"
                                 class="mt-3"
-                                placeholder="Select a rating"
+                                placeholder="{{ __('Select a rating') }}"
                             >
-                                <flux:select.option value="5">5 — Excellent</flux:select.option>
-                                <flux:select.option value="4">4 — Very Good</flux:select.option>
-                                <flux:select.option value="3">3 — Good</flux:select.option>
-                                <flux:select.option value="2">2 — Fair</flux:select.option>
-                                <flux:select.option value="1">1 — Poor</flux:select.option>
+                                <flux:select.option value="5">{{ __('5 — Excellent') }}</flux:select.option>
+                                <flux:select.option value="4">{{ __('4 — Very Good') }}</flux:select.option>
+                                <flux:select.option value="3">{{ __('3 — Good') }}</flux:select.option>
+                                <flux:select.option value="2">{{ __('2 — Fair') }}</flux:select.option>
+                                <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
                             </flux:select>
 
                             @error('respectForProperty')
@@ -389,23 +387,23 @@ class extends Component
                         <div>
 
                             <label class="block text-sm font-semibold text-irdi-green">
-                                Communication & Courtesy
+                                {{ __('Communication & Courtesy') }}
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                How would you rate the IRDI member's communication, professionalism, and courtesy?
+                                {{ __('How would you rate the IRDI member\'s communication, professionalism, and courtesy?') }}
                             </p>
 
                             <flux:select
                                 wire:model="communicationCourtesy"
                                 class="mt-3"
-                                placeholder="Select a rating"
+                                placeholder="{{ __('Select a rating') }}"
                             >
-                                <flux:select.option value="5">5 — Excellent</flux:select.option>
-                                <flux:select.option value="4">4 — Very Good</flux:select.option>
-                                <flux:select.option value="3">3 — Good</flux:select.option>
-                                <flux:select.option value="2">2 — Fair</flux:select.option>
-                                <flux:select.option value="1">1 — Poor</flux:select.option>
+                                <flux:select.option value="5">{{ __('5 — Excellent') }}</flux:select.option>
+                                <flux:select.option value="4">{{ __('4 — Very Good') }}</flux:select.option>
+                                <flux:select.option value="3">{{ __('3 — Good') }}</flux:select.option>
+                                <flux:select.option value="2">{{ __('2 — Fair') }}</flux:select.option>
+                                <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
                             </flux:select>
 
                             @error('communicationCourtesy')
@@ -419,23 +417,23 @@ class extends Component
                         <div>
 
                             <label class="block text-sm font-semibold text-irdi-green">
-                                Care of the Property
+                                {{ __('Care of the Property') }}
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                How well did the IRDI member care for the land, including filling holes and leaving the property in good condition?
+                                {{ __('How well did the IRDI member care for the land, including filling holes and leaving the property in good condition?') }}
                             </p>
 
                             <flux:select
                                 wire:model="careOfProperty"
                                 class="mt-3"
-                                placeholder="Select a rating"
+                                placeholder="{{ __('Select a rating') }}"
                             >
-                                <flux:select.option value="5">5 — Excellent</flux:select.option>
-                                <flux:select.option value="4">4 — Very Good</flux:select.option>
-                                <flux:select.option value="3">3 — Good</flux:select.option>
-                                <flux:select.option value="2">2 — Fair</flux:select.option>
-                                <flux:select.option value="1">1 — Poor</flux:select.option>
+                                <flux:select.option value="5">{{ __('5 — Excellent') }}</flux:select.option>
+                                <flux:select.option value="4">{{ __('4 — Very Good') }}</flux:select.option>
+                                <flux:select.option value="3">{{ __('3 — Good') }}</flux:select.option>
+                                <flux:select.option value="2">{{ __('2 — Fair') }}</flux:select.option>
+                                <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
                             </flux:select>
 
                             @error('careOfProperty')
@@ -449,24 +447,24 @@ class extends Component
                         <div>
 
                             <label class="block text-sm font-semibold text-irdi-green">
-                                Would you allow this IRDI member to return?
+                                {{ __('Would you allow this IRDI member to return?') }}
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                Based on this experience, would you give this IRDI member permission to detect on your property again?
+                                {{ __('Based on this experience, would you give this IRDI member permission to detect on your property again?') }}
                             </p>
 
                             <flux:select
                                 wire:model="wouldAllowReturn"
                                 class="mt-3"
-                                placeholder="Select an answer"
+                                placeholder="{{ __('Select an answer') }}"
                             >
                                 <flux:select.option value="yes">
-                                    Yes
+                                    {{ __('Yes') }}
                                 </flux:select.option>
 
                                 <flux:select.option value="no">
-                                    No
+                                    {{ __('No') }}
                                 </flux:select.option>
                             </flux:select>
 
@@ -482,13 +480,13 @@ class extends Component
 
                             <flux:textarea
                                 wire:model="comments"
-                                label="Comments About Your Experience"
-                                description="Optional. Please keep your comments focused on your experience with this IRDI member."
+                                label="{{ __('Comments About Your Experience') }}"
+                                description="{{ __('Optional. Please keep your comments focused on your experience with this IRDI member.') }}"
                                 rows="5"
                             />
 
                             <p class="mt-2 text-right text-sm text-zinc-500">
-                                {{ strlen($comments) }} / 2,000 characters
+                                {{ __(':count / 2,000 characters', ['count' => strlen($comments)]) }}
                             </p>
 
                         </div>
@@ -496,8 +494,7 @@ class extends Component
                         <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
 
                             <p class="text-sm leading-6 text-zinc-600">
-                                Your email address is used to verify this submission and help prevent duplicate or fraudulent feedback.
-                                It will not be displayed publicly.
+                                {{ __('Your email address is used to verify this submission and help prevent duplicate or fraudulent feedback. It will not be displayed publicly.') }}
                             </p>
 
                         </div>
@@ -519,11 +516,11 @@ class extends Component
                             wire:target="submitReview"
                         >
                             <span wire:loading.remove wire:target="submitReview">
-                                Submit Feedback
+                                {{ __('Submit Feedback') }}
                             </span>
 
                             <span wire:loading wire:target="submitReview">
-                                Submitting...
+                                {{ __('Submitting...') }}
                             </span>
                         </flux:button>
 
@@ -534,17 +531,16 @@ class extends Component
                     <div class="mt-8 border-t border-zinc-200 pt-8">
 
                         <h3 class="text-lg font-semibold text-irdi-green">
-                            Verify Your Email
+                            {{ __('Verify Your Email') }}
                         </h3>
 
                         <p class="mt-2 text-sm leading-6 text-zinc-600">
-                            This invitation was sent to
-                            <strong>{{ $this->maskedEmail() }}</strong>.
-                            Send a six-digit verification code to confirm that you have access to this email address.
+                            {{ __('This invitation was sent to') }}
+                            <strong>{{ $this->maskedEmail() }}</strong>{{ __('. Send a six-digit verification code to confirm that you have access to this email address.') }}
                         </p>
 
                         <p class="mt-2 text-sm text-zinc-500">
-                            Your email address will remain private and will not be displayed publicly.
+                            {{ __('Your email address will remain private and will not be displayed publicly.') }}
                         </p>
 
                         <div class="mt-6">
@@ -557,11 +553,11 @@ class extends Component
                                 wire:target="sendVerificationCode"
                             >
                                 <span wire:loading.remove wire:target="sendVerificationCode">
-                                    Send Verification Code
+                                    {{ __('Send Verification Code') }}
                                 </span>
 
                                 <span wire:loading wire:target="sendVerificationCode">
-                                    Sending...
+                                    {{ __('Sending...') }}
                                 </span>
                             </flux:button>
 
@@ -574,16 +570,16 @@ class extends Component
                     <div class="mt-8 rounded-lg border border-green-200 bg-green-50 p-5">
 
                         <h3 class="font-semibold text-green-900">
-                            Verification Code Sent
+                            {{ __('Verification Code Sent') }}
                         </h3>
 
                         <p class="mt-2 text-sm leading-6 text-green-800">
-                            We sent a six-digit verification code to
+                            {{ __('We sent a six-digit verification code to') }}
                             <strong>{{ $this->maskedEmail() }}</strong>.
                         </p>
 
                         <p class="mt-2 text-sm text-green-700">
-                            The code expires in 10 minutes.
+                            {{ __('The code expires in 10 minutes.') }}
                         </p>
 
                     </div>
@@ -598,9 +594,9 @@ class extends Component
                             type="text"
                             inputmode="numeric"
                             maxlength="6"
-                            label="Verification Code"
+                            label="{{ __('Verification Code') }}"
                             placeholder="123456"
-                            description="Enter the six-digit code sent to your email address."
+                            description="{{ __('Enter the six-digit code sent to your email address.') }}"
                             required
                         />
 
@@ -611,11 +607,11 @@ class extends Component
                             wire:target="verifyCode"
                         >
                             <span wire:loading.remove wire:target="verifyCode">
-                                Verify Code
+                                {{ __('Verify Code') }}
                             </span>
 
                             <span wire:loading wire:target="verifyCode">
-                                Verifying...
+                                {{ __('Verifying...') }}
                             </span>
                         </flux:button>
 

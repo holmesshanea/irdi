@@ -11,17 +11,6 @@ class extends Component
     public string $profileName = '';
     public string $username = '';
 
-    protected array $messages = [
-        'profileName.required' => 'Please enter your name.',
-        'profileName.min' => 'Your name must be at least 5 characters.',
-        'profileName.max' => 'Your name may not be longer than 255 characters.',
-        'username.required' => 'Please choose a username.',
-        'username.min' => 'Your username must be at least 5 characters.',
-        'username.max' => 'Your username may not be longer than 50 characters.',
-        'username.alpha_dash' => 'Your username may only contain letters, numbers, dashes, and underscores.',
-        'username.unique' => 'That username is already taken. Please choose another one.',
-    ];
-
     public function mount(): void
     {
         $user = auth()->user();
@@ -29,7 +18,7 @@ class extends Component
         if ($user->membership_status !== 'active') {
             session()->flash(
                 'status',
-                'You must have an active IRDI membership before creating a profile.'
+                __('You must have an active IRDI membership before creating a profile.')
             );
 
             $this->redirectRoute('account');
@@ -40,7 +29,7 @@ class extends Component
         if ($user->memberProfile()->exists()) {
             session()->flash(
                 'status',
-                'You have already created your IRDI member profile.'
+                __('You have already created your IRDI member profile.')
             );
 
             $this->redirectRoute('account');
@@ -63,7 +52,7 @@ class extends Component
         if (auth()->user()->membership_status !== 'active') {
             session()->flash(
                 'status',
-                'You must have an active IRDI membership before creating a profile.'
+                __('You must have an active IRDI membership before creating a profile.')
             );
 
             $this->redirectRoute('account');
@@ -74,7 +63,7 @@ class extends Component
         if (auth()->user()->memberProfile()->exists()) {
             session()->flash(
                 'status',
-                'You have already created your IRDI member profile.'
+                __('You have already created your IRDI member profile.')
             );
 
             $this->redirectRoute('account');
@@ -92,6 +81,15 @@ class extends Component
                 'alpha_dash',
                 'unique:member_profiles,username',
             ],
+        ], [
+            'profileName.required' => __('Please enter your name.'),
+            'profileName.min' => __('Your name must be at least 5 characters.'),
+            'profileName.max' => __('Your name may not be longer than 255 characters.'),
+            'username.required' => __('Please choose a username.'),
+            'username.min' => __('Your username must be at least 5 characters.'),
+            'username.max' => __('Your username may not be longer than 50 characters.'),
+            'username.alpha_dash' => __('Your username may only contain letters, numbers, dashes, and underscores.'),
+            'username.unique' => __('That username is already taken. Please choose another one.'),
         ]);
 
         $profile = MemberProfile::create([
@@ -103,7 +101,7 @@ class extends Component
 
         session()->flash(
             'status',
-            'Your IRDI member profile has been created. You can now complete your profile details.'
+            __('Your IRDI member profile has been created. You can now complete your profile details.')
         );
 
         $this->redirectRoute('account.profiles.edit', [
@@ -121,14 +119,13 @@ class extends Component
             <div class="mx-auto max-w-3xl text-center">
 
                 <h1 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                    Create Your IRDI Member Profile
+                    {{ __('Create Your IRDI Member Profile') }}
                 </h1>
 
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg leading-8 text-zinc-600">
-                    Create your public IRDI member profile and choose the username
-                    that will identify you in the Member Directory.
+                    {{ __('Create your public IRDI member profile and choose the username that will identify you in the Member Directory.') }}
                 </p>
 
             </div>
@@ -146,29 +143,27 @@ class extends Component
                     <flux:card class="p-6">
 
                         <h2 class="text-xl font-semibold text-irdi-green">
-                            Profile Information
+                            {{ __('Profile Information') }}
                         </h2>
 
                         <p class="mt-4 text-zinc-600">
-                            Enter the basic information for your member profile.
-                            You can add your profile image, location, bio, website,
-                            and directory visibility after creating it.
+                            {{ __('Enter the basic information for your member profile. You can add your profile image, location, bio, website, and directory visibility after creating it.') }}
                         </p>
 
                         <div class="mt-6">
                             <flux:input
                                 wire:model="profileName"
-                                label="Name"
-                                placeholder="Enter your name"
+                                label="{{ __('Name') }}"
+                                placeholder="{{ __('Enter your name') }}"
                             />
                         </div>
 
                         <div class="mt-6">
                             <flux:input
                                 wire:model.live="username"
-                                label="Username"
-                                placeholder="relic-man"
-                                description="This becomes your unique public @username and is used in your IRDI profile URL."
+                                label="{{ __('Username') }}"
+                                placeholder="{{ __('relic-man') }}"
+                                description="{{ __('This becomes your unique public @username and is used in your IRDI profile URL.') }}"
                             />
                         </div>
 
@@ -181,7 +176,7 @@ class extends Component
                             wire:loading.attr="disabled"
                             wire:target="saveProfile"
                         >
-                            Create Profile
+                            {{ __('Create Profile') }}
                         </flux:button>
                     </div>
 

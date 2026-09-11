@@ -65,7 +65,7 @@ class extends Component
                     <div class="min-w-0">
 
                         <p class="text-xs font-semibold uppercase tracking-widest text-irdi-green">
-                            IRDI Member
+                            {{ __('IRDI Member') }}
                         </p>
 
                         <h2 class="mt-2 text-xl font-bold text-irdi-green">
@@ -78,7 +78,7 @@ class extends Component
 
                         @if ($profile->user->member_since)
                             <p class="mt-2 text-sm text-zinc-500">
-                                Member Since {{ $profile->user->member_since->format('F Y') }}
+                                {{ __('Member Since :date', ['date' => $profile->user->member_since->translatedFormat('F Y')]) }}
                             </p>
                         @endif
 
@@ -91,7 +91,7 @@ class extends Component
                     {!! $qrCode !!}
 
                     <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-irdi-green">
-                        Verify Membership
+                        {{ __('Verify Membership') }}
                     </p>
 
                 </div>

@@ -30,7 +30,7 @@ class extends Component
                 href="{{ route('account') }}"
                 class="text-sm font-medium text-irdi-green hover:underline"
             >
-                ← Back to Account
+                {{ __('← Back to Account') }}
             </a>
         </div>
 
@@ -42,11 +42,11 @@ class extends Component
 
         <div class="mb-10">
             <h1 class="text-3xl font-bold tracking-tight text-zinc-900">
-                My Reviews
+                {{ __('My Reviews') }}
             </h1>
 
             <p class="mt-3 max-w-2xl text-zinc-600">
-                View property owner review invitations and reviews connected to your IRDI member profile.
+                {{ __('View property owner review invitations and reviews connected to your IRDI member profile.') }}
             </p>
         </div>
 
@@ -65,18 +65,15 @@ class extends Component
                     <div class="min-w-0">
 
                         <h2 class="font-semibold text-red-900">
-                            Your IRDI membership is suspended
+                            {{ __('Your IRDI membership is suspended') }}
                         </h2>
 
                         <p class="mt-2 text-sm leading-6 text-red-800">
-                            You can continue to view your existing property owner reviews and invitation history,
-                            and you may cancel an outstanding invitation. Creating or resending review invitations
-                            is unavailable while your membership is suspended.
+                            {{ __('You can continue to view your existing property owner reviews and invitation history, and you may cancel an outstanding invitation. Creating or resending review invitations is unavailable while your membership is suspended.') }}
                         </p>
 
                         <p class="mt-4 text-sm leading-6 text-red-800">
-                            If you have questions about your membership suspension or believe it should be reviewed,
-                            please contact IRDI.
+                            {{ __('If you have questions about your membership suspension or believe it should be reviewed, please contact IRDI.') }}
                         </p>
 
                         <div class="mt-4">
@@ -86,7 +83,7 @@ class extends Component
                                 size="sm"
                                 wire:navigate
                             >
-                                Contact IRDI
+                                {{ __('Contact IRDI') }}
                             </flux:button>
                         </div>
 
@@ -102,11 +99,11 @@ class extends Component
 
             <div class="rounded-xl border border-zinc-200 bg-white p-8">
                 <h2 class="text-lg font-semibold text-zinc-900">
-                    No Member Profile
+                    {{ __('No Member Profile') }}
                 </h2>
 
                 <p class="mt-2 text-sm text-zinc-600">
-                    Create your IRDI member profile before requesting property owner reviews.
+                    {{ __('Create your IRDI member profile before requesting property owner reviews.') }}
                 </p>
             </div>
 
@@ -184,7 +181,7 @@ class extends Component
 
                         <div class="rounded-lg bg-zinc-50 p-6 text-center">
                             <p class="text-sm text-zinc-600">
-                                You have not created any property owner review invitations yet.
+                                {{ __('You have not created any property owner review invitations yet.') }}
                             </p>
                         </div>
 
@@ -209,12 +206,12 @@ class extends Component
                                             </p>
 
                                             <p class="mt-1 text-sm text-zinc-500">
-                                                Sent {{ $invitation->created_at->format('F j, Y') }}
+                                                {{ __('Sent :date', ['date' => $invitation->created_at->translatedFormat('F j, Y')]) }}
                                             </p>
 
                                             @if ($invitation->isCancelled())
                                                 <p class="mt-1 text-xs text-zinc-500">
-                                                    Cancelled {{ $invitation->cancelled_at->format('F j, Y') }}
+                                                    {{ __('Cancelled :date', ['date' => $invitation->cancelled_at->translatedFormat('F j, Y')]) }}
                                                 </p>
                                             @endif
 
@@ -225,25 +222,25 @@ class extends Component
                                             @if ($invitation->isUsed())
 
                                                 <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                                                    Completed
+                                                    {{ __('Completed') }}
                                                 </span>
 
                                             @elseif ($invitation->isCancelled())
 
                                                 <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
-                                                    Cancelled
+                                                    {{ __('Cancelled') }}
                                                 </span>
 
                                             @elseif ($invitation->isExpired())
 
                                                 <span class="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                                                    Expired
+                                                    {{ __('Expired') }}
                                                 </span>
 
                                             @else
 
                                                 <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                                                    Pending
+                                                    {{ __('Pending') }}
                                                 </span>
 
                                             @endif
@@ -267,7 +264,7 @@ class extends Component
                                                             size="sm"
                                                             icon="arrow-path"
                                                         >
-                                                            Resend
+                                                            {{ __('Resend') }}
                                                         </flux:button>
                                                     </form>
 
@@ -276,7 +273,7 @@ class extends Component
                                                 <form
                                                     action="{{ route('account.review-invitations.cancel', $invitation) }}"
                                                     method="POST"
-                                                    onsubmit="return confirm('Cancel this property owner review invitation?');"
+                                                    onsubmit="return confirm(@js(__('Cancel this property owner review invitation?')));"
                                                 >
                                                     @csrf
 
@@ -286,7 +283,7 @@ class extends Component
                                                         size="sm"
                                                         icon="x-mark"
                                                     >
-                                                        Cancel
+                                                        {{ __('Cancel') }}
                                                     </flux:button>
                                                 </form>
 
@@ -303,7 +300,7 @@ class extends Component
                                             @if ($invitation->review->hidden_at)
 
                                                 <p class="text-sm text-zinc-500">
-                                                    This review is currently unavailable.
+                                                    {{ __('This review is currently unavailable.') }}
                                                 </p>
 
                                             @else
@@ -312,11 +309,11 @@ class extends Component
 
                                                     <div>
                                                         <p class="text-sm font-medium text-zinc-900">
-                                                            Review received
+                                                            {{ __('Review received') }}
                                                         </p>
 
                                                         <p class="mt-1 text-sm text-zinc-600">
-                                                            Submitted {{ $invitation->review->created_at->format('F j, Y') }}
+                                                            {{ __('Submitted :date', ['date' => $invitation->review->created_at->translatedFormat('F j, Y')]) }}
                                                         </p>
                                                     </div>
 
@@ -325,7 +322,7 @@ class extends Component
                                                         <div class="rounded-lg bg-zinc-50 p-4">
 
                                                             <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                Respect for Property
+                                                                {{ __('Respect for Property') }}
                                                             </p>
 
                                                             <p class="mt-2 text-lg font-semibold text-zinc-900">
@@ -337,7 +334,7 @@ class extends Component
                                                         <div class="rounded-lg bg-zinc-50 p-4">
 
                                                             <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                Communication & Courtesy
+                                                                {{ __('Communication & Courtesy') }}
                                                             </p>
 
                                                             <p class="mt-2 text-lg font-semibold text-zinc-900">
@@ -349,7 +346,7 @@ class extends Component
                                                         <div class="rounded-lg bg-zinc-50 p-4">
 
                                                             <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                Care of Property
+                                                                {{ __('Care of Property') }}
                                                             </p>
 
                                                             <p class="mt-2 text-lg font-semibold text-zinc-900">
@@ -361,7 +358,7 @@ class extends Component
                                                         <div class="rounded-lg bg-zinc-50 p-4">
 
                                                             <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                Would Allow Return
+                                                                {{ __('Would Allow Return') }}
                                                             </p>
 
                                                             <p class="mt-2 text-lg font-semibold text-zinc-900">
@@ -377,7 +374,7 @@ class extends Component
                                                         <div>
 
                                                             <p class="text-sm font-medium text-zinc-900">
-                                                                Property Owner Comments
+                                                                {{ __('Property Owner Comments') }}
                                                             </p>
 
                                                             <p class="mt-2 whitespace-pre-line text-sm leading-6 text-zinc-600">

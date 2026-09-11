@@ -34,7 +34,7 @@ new class extends Component
         if ($this->website !== '') {
             session()->flash(
                 'success',
-                'Thank you! Your message has been received.'
+                __('Thank you! Your message has been received.')
             );
 
             $this->reset(
@@ -77,7 +77,7 @@ new class extends Component
 
             $this->addError(
                 'form',
-                "Too many messages have been sent. Please try again in {$seconds} seconds."
+                __('Too many messages have been sent. Please try again in :seconds seconds.', ['seconds' => $seconds])
             );
 
             return;
@@ -85,7 +85,7 @@ new class extends Component
 
         session()->flash(
             'success',
-            'Thank you! Your message has been received.'
+            __('Thank you! Your message has been received.')
         );
 
         $this->reset(
@@ -108,7 +108,7 @@ new class extends Component
             class="mb-6"
         >
             <flux:callout.heading>
-                Message Sent
+                {{ __('Message Sent') }}
             </flux:callout.heading>
 
             <flux:callout.text>
@@ -126,7 +126,7 @@ new class extends Component
             class="mb-6"
         >
             <flux:callout.heading>
-                Unable to Send Message
+                {{ __('Unable to Send Message') }}
             </flux:callout.heading>
 
             <flux:callout.text>
@@ -143,7 +143,7 @@ new class extends Component
             aria-hidden="true"
         >
             <label for="website">
-                Website
+                {{ __('Website') }}
             </label>
 
             <input
@@ -157,29 +157,29 @@ new class extends Component
 
         <flux:input
             wire:model="name"
-            label="Name"
-            placeholder="Your name"
+            label="{{ __('Name') }}"
+            placeholder="{{ __('Your name') }}"
             autocomplete="name"
         />
 
         <flux:input
             wire:model="email"
             type="email"
-            label="Email"
+            label="{{ __('Email') }}"
             placeholder="you@example.com"
             autocomplete="email"
         />
 
         <flux:input
             wire:model="subject"
-            label="Subject"
-            placeholder="How can we help?"
+            label="{{ __('Subject') }}"
+            placeholder="{{ __('How can we help?') }}"
         />
 
         <flux:textarea
             wire:model="message"
-            label="Message"
-            placeholder="Write your message..."
+            label="{{ __('Message') }}"
+            placeholder="{{ __('Write your message...') }}"
             rows="6"
         />
 
@@ -189,11 +189,11 @@ new class extends Component
             class="w-full sm:w-auto"
         >
     <span wire:loading.remove wire:target="submit">
-        Send Message
+        {{ __('Send Message') }}
     </span>
 
             <span wire:loading wire:target="submit">
-        Sending...
+        {{ __('Sending...') }}
     </span>
         </flux:button>
 
