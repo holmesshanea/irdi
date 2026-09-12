@@ -100,6 +100,12 @@
         ], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) !!}
     </script>
 
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @livewireStyles
@@ -872,6 +878,7 @@
                     class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
                     aria-label="Legal"
                 >
+
                     <a
                         href="{{ route('privacy-policy') }}"
                         class="text-zinc-500 transition hover:text-irdi-green"
@@ -885,6 +892,24 @@
                     >
                         {{ __('common.terms') }}
                     </a>
+
+                    <a
+                        href="{{ route('cookie-policy') }}"
+                        class="text-zinc-500 transition hover:text-irdi-green"
+                    >
+                        Cookie Policy
+                    </a>
+
+                    <button
+                        type="button"
+                        x-data
+                        x-on:click="window.dispatchEvent(new CustomEvent('irdi-cookie-preferences'))"
+                        class="text-zinc-500 transition hover:text-irdi-green"
+                    >
+                        Cookie Preferences
+                    </button>
+
+
                 </nav>
 
             </div>
@@ -894,6 +919,8 @@
     </div>
 
 </footer>
+
+<x-cookie-consent />
 
 @persist('toast')
 <flux:toast invert />

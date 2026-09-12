@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Storage;
 |--------------------------------------------------------------------------
 */
 
+Route::view('/cookie-policy', 'pages.cookie-policy')
+    ->name('cookie-policy');
+
 Route::post('/language/{locale}', LanguageController::class)
     ->name('language.switch');
 
@@ -78,6 +81,11 @@ Route::get('/sitemap.xml', function () {
         ],
         [
             'url' => route('terms'),
+            'priority' => '0.3',
+        ],
+
+        [
+            'url' => route('cookie-policy'),
             'priority' => '0.3',
         ],
     ];
