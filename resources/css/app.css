@@ -13,3 +13,71 @@
     --color-irdi-green: #174121;
     --color-irdi-gold: #C28B08;
 }
+
+
+/* IRDI accessibility preferences */
+
+//* High contrast mode */
+.irdi-high-contrast body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+}
+
+.irdi-high-contrast .text-zinc-400,
+.irdi-high-contrast .text-zinc-500,
+.irdi-high-contrast .text-zinc-600,
+.irdi-high-contrast .text-zinc-700 {
+    color: #000000 !important;
+}
+
+.irdi-high-contrast .bg-zinc-50,
+.irdi-high-contrast .bg-zinc-100 {
+    background-color: #ffffff !important;
+}
+
+.irdi-high-contrast .border-zinc-100,
+.irdi-high-contrast .border-zinc-200,
+.irdi-high-contrast .border-zinc-300 {
+    border-color: #27272a !important;
+}
+
+.irdi-high-contrast input,
+.irdi-high-contrast textarea,
+.irdi-high-contrast select {
+    border-color: #000000 !important;
+}
+
+.irdi-high-contrast a:focus-visible,
+.irdi-high-contrast button:focus-visible,
+.irdi-high-contrast input:focus-visible,
+.irdi-high-contrast select:focus-visible,
+.irdi-high-contrast textarea:focus-visible {
+    outline: 3px solid #000000 !important;
+    outline-offset: 3px !important;
+}
+
+
+/* Highlight links mode */
+.irdi-highlight-links a[href] {
+    text-decoration-line: underline !important;
+    text-decoration-style: solid !important;
+    text-decoration-thickness: 3px !important;
+    text-decoration-color: #C28B08 !important;
+    text-underline-offset: 4px !important;
+}
+
+.irdi-highlight-links a[href]:focus-visible {
+    outline: 3px solid #C28B08 !important;
+    outline-offset: 3px !important;
+}
+
+
+/* Reduce motion mode */
+.irdi-reduce-motion *,
+.irdi-reduce-motion *::before,
+.irdi-reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+}

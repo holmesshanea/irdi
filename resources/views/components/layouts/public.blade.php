@@ -880,6 +880,13 @@
                 >
 
                     <a
+                        href="{{ route('accessibility') }}"
+                        class="text-zinc-500 transition hover:text-irdi-green"
+                    >
+                        Accessibility
+                    </a>
+
+                    <a
                         href="{{ route('privacy-policy') }}"
                         class="text-zinc-500 transition hover:text-irdi-green"
                     >
@@ -920,6 +927,7 @@
 
 </footer>
 
+<x-accessibility-menu />
 <x-cookie-consent />
 
 @persist('toast')
