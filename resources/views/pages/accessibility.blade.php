@@ -1,119 +1,93 @@
 <x-layouts.public
-    title="Accessibility | IRDI"
-    description="Learn about IRDI's commitment to providing an accessible and inclusive website experience."
+    :title="__('accessibility.meta_title')"
+    :description="__('accessibility.meta_description')"
 >
     <div class="mx-auto max-w-4xl">
         <div class="space-y-8">
 
             <div>
                 <flux:heading size="xl">
-                    Accessibility Statement
+                    {{ __('accessibility.statement_title') }}
                 </flux:heading>
 
                 <flux:text class="mt-2 text-zinc-600">
-                    Last updated: September 12, 2026
+                    {{ __('accessibility.last_updated') }}
                 </flux:text>
             </div>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Our Commitment
+                    {{ __('accessibility.commitment_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    The International Responsible Detectorist Institute (IRDI)
-                    is committed to providing a website that is accessible to
-                    the widest possible audience, including people with
-                    disabilities.
+                    {{ __('accessibility.commitment_body_1') }}
                 </flux:text>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    We strive to provide an inclusive online experience and
-                    continue to improve the accessibility and usability of our
-                    website as its content and features evolve.
+                    {{ __('accessibility.commitment_body_2') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Accessibility Features
+                    {{ __('accessibility.features_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    IRDI provides accessibility preferences that allow visitors
-                    to adjust the presentation of the website according to
-                    their needs.
+                    {{ __('accessibility.features_intro') }}
                 </flux:text>
 
                 <ul class="list-disc space-y-2 pl-6 text-zinc-700">
-                    <li>Increase or decrease text size</li>
-                    <li>Increase visual contrast</li>
-                    <li>Reduce animations and motion</li>
-                    <li>Highlight links for easier identification</li>
-                    <li>Reset accessibility preferences at any time</li>
+                    <li>{{ __('accessibility.feature_text_size') }}</li>
+                    <li>{{ __('accessibility.feature_contrast') }}</li>
+                    <li>{{ __('accessibility.feature_motion') }}</li>
+                    <li>{{ __('accessibility.feature_links') }}</li>
+                    <li>{{ __('accessibility.feature_reset') }}</li>
                 </ul>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Accessibility preferences are stored in your browser so
-                    your selections can remain available when you return to
-                    the website.
+                    {{ __('accessibility.preferences_storage') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Accessible Website Design
+                    {{ __('accessibility.design_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    In addition to visitor-controlled accessibility
-                    preferences, IRDI works to make accessibility part of the
-                    website itself. This includes efforts to provide clear
-                    navigation, readable content, keyboard-accessible
-                    controls, visible focus indicators, meaningful image
-                    descriptions, accessible forms, and sufficient color
-                    contrast.
+                    {{ __('accessibility.design_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Ongoing Improvements
+                    {{ __('accessibility.ongoing_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Accessibility is an ongoing effort. As IRDI adds or changes
-                    website content and functionality, we will continue to
-                    review accessibility and make improvements where
-                    appropriate.
+                    {{ __('accessibility.ongoing_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Third-Party Content
+                    {{ __('accessibility.third_party_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Some pages may contain links to or content provided by
-                    third-party websites or services. IRDI does not control
-                    the accessibility of third-party websites, but we
-                    encourage providers to make their content and services
-                    accessible.
+                    {{ __('accessibility.third_party_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Need Assistance?
+                    {{ __('accessibility.assistance_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    If you experience difficulty accessing any part of the
-                    IRDI website, encounter an accessibility barrier, or have
-                    suggestions for improving accessibility, please contact
-                    us. We welcome feedback and will make reasonable efforts
-                    to provide the information or assistance you need.
+                    {{ __('accessibility.assistance_body') }}
                 </flux:text>
 
                 <div>
@@ -121,7 +95,7 @@
                         href="{{ route('contact') }}"
                         variant="outline"
                     >
-                        Contact IRDI
+                        {{ __('accessibility.contact_irdi') }}
                     </flux:button>
                 </div>
             </section>

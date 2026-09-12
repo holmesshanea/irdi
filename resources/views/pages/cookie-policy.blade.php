@@ -1,128 +1,104 @@
 <x-layouts.public
-    title="Cookie Policy | IRDI"
-    description="Learn how IRDI uses cookies and similar technologies to provide essential functionality and improve the website."
+    :title="__('cookies.meta_title')"
+    :description="__('cookies.meta_description')"
 >
     <div class="mx-auto max-w-4xl">
         <div class="space-y-8">
             <div>
                 <flux:heading size="xl">
-                    Cookie Policy
+                    {{ __('cookies.policy_title') }}
                 </flux:heading>
 
                 <flux:text class="mt-2 text-zinc-600">
-                    Last updated: September 12, 2026
+                    {{ __('cookies.last_updated') }}
                 </flux:text>
             </div>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    What Are Cookies?
+                    {{ __('cookies.what_are_cookies') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Cookies are small text files stored on your device when you
-                    visit a website. They can be used to remember preferences,
-                    maintain secure sessions, and support website functionality.
+                    {{ __('cookies.what_are_cookies_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    How IRDI Uses Cookies
+                    {{ __('cookies.how_irdi_uses') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    The International Responsible Detectorist Institute uses
-                    cookies and similar browser storage technologies to provide
-                    essential website functionality and, where permitted, to
-                    better understand how visitors use the website.
+                    {{ __('cookies.how_irdi_uses_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-4">
                 <flux:heading size="lg">
-                    Necessary Cookies
+                    {{ __('cookies.necessary_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Necessary cookies are required for the website to function
-                    properly. These may support features such as secure
-                    authentication, account sessions, form security, and other
-                    essential website functions.
+                    {{ __('cookies.necessary_body_1') }}
                 </flux:text>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Because these cookies are necessary for the operation and
-                    security of the website, they cannot be disabled through
-                    IRDI's cookie preferences.
+                    {{ __('cookies.necessary_body_2') }}
                 </flux:text>
             </section>
 
             <section class="space-y-4">
                 <flux:heading size="lg">
-                    Analytics Cookies
+                    {{ __('cookies.analytics_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    IRDI may use analytics technologies to better understand how
-                    visitors use the website, such as which pages are visited
-                    and how visitors navigate the site.
+                    {{ __('cookies.analytics_body_1') }}
                 </flux:text>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Analytics cookies are optional and are only intended to be
-                    used when you have given permission through the cookie
-                    preferences system.
+                    {{ __('cookies.analytics_body_2') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Managing Your Cookie Preferences
+                    {{ __('cookies.managing_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    You can accept or reject optional cookies when the cookie
-                    notice first appears. You can also change your choice at
-                    any time by selecting Cookie Preferences in the footer of
-                    the website.
+                    {{ __('cookies.managing_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Browser Controls
+                    {{ __('cookies.browser_controls_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    Most web browsers also allow you to view, block, or delete
-                    cookies through your browser settings. Disabling necessary
-                    cookies may prevent some parts of the IRDI website from
-                    working correctly.
+                    {{ __('cookies.browser_controls_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Changes to This Policy
+                    {{ __('cookies.changes_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    IRDI may update this Cookie Policy as website features,
-                    services, or technologies change. Any updates will be posted
-                    on this page.
+                    {{ __('cookies.changes_body') }}
                 </flux:text>
             </section>
 
             <section class="space-y-3">
                 <flux:heading size="lg">
-                    Contact
+                    {{ __('cookies.contact_title') }}
                 </flux:heading>
 
                 <flux:text class="leading-7 text-zinc-700">
-                    If you have questions about this Cookie Policy or how IRDI
-                    uses cookies, please contact us through the website's
-                    contact page.
+                    {{ __('cookies.contact_body') }}
                 </flux:text>
 
                 <div>
@@ -130,7 +106,7 @@
                         href="{{ route('contact') }}"
                         variant="outline"
                     >
-                        Contact IRDI
+                        {{ __('cookies.contact_irdi') }}
                     </flux:button>
                 </div>
             </section>

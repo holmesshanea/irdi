@@ -26,5 +26,9 @@ return [
     'privacy_policy' => 'Privacy Policy',
     'terms' => 'Terms',
     'all_rights_reserved' => 'All rights reserved.',
+    'accessibility' => 'Accessibility',
+    'cookie_policy' => 'Cookie Policy',
+    'cookie_preferences' => 'Cookie Preferences',
+    'legal_navigation' => 'Legal',
     'tagline' => 'Promoting ethical metal detecting, responsible stewardship, and respect for our shared history.',
 ];

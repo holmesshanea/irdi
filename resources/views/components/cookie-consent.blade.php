@@ -70,7 +70,7 @@
         x-transition.opacity
         class="fixed inset-x-0 bottom-0 z-[100] border-t border-zinc-700 bg-zinc-950 text-white shadow-2xl"
         role="region"
-        aria-label="Cookie consent"
+        aria-label="{{ __('cookies.consent_aria') }}"
     >
         <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
 
@@ -80,9 +80,7 @@
             >
                 <div class="max-w-3xl">
                     <p class="text-sm leading-6 text-zinc-200">
-                        We use cookies to provide essential site functionality
-                        and, with your permission, to help us understand how
-                        visitors use IRDI.
+                        {{ __('cookies.banner_message') }}
                     </p>
                 </div>
 
@@ -93,7 +91,7 @@
                         class="text-white"
                         x-on:click="preferencesOpen = true"
                     >
-                        Preferences
+                        {{ __('cookies.preferences') }}
                     </flux:button>
 
                     <flux:button
@@ -101,7 +99,7 @@
                         variant="outline"
                         x-on:click="rejectOptional()"
                     >
-                        Reject Optional
+                        {{ __('cookies.reject_optional') }}
                     </flux:button>
 
                     <flux:button
@@ -109,7 +107,7 @@
                         variant="primary"
                         x-on:click="acceptAll()"
                     >
-                        Accept All
+                        {{ __('cookies.accept_all') }}
                     </flux:button>
                 </div>
             </div>
@@ -122,13 +120,11 @@
             >
                 <div class="mb-5">
                     <h2 class="text-lg font-semibold">
-                        Cookie Preferences
+                        {{ __('cookies.preferences_title') }}
                     </h2>
 
                     <p class="mt-1 text-sm leading-6 text-zinc-300">
-                        Choose which optional cookies IRDI may use.
-                        Necessary cookies are required for the website to work
-                        and cannot be disabled.
+                        {{ __('cookies.preferences_intro') }}
                     </p>
                 </div>
 
@@ -137,17 +133,16 @@
                         <div class="flex items-start justify-between gap-6">
                             <div>
                                 <p class="font-medium">
-                                    Necessary Cookies
+                                    {{ __('cookies.necessary_title') }}
                                 </p>
 
                                 <p class="mt-1 text-sm text-zinc-300">
-                                    Used for security, authentication, sessions,
-                                    and other essential website functions.
+                                    {{ __('cookies.necessary_description') }}
                                 </p>
                             </div>
 
                             <span class="text-sm font-medium text-emerald-400">
-                                Always Active
+                                {{ __('cookies.always_active') }}
                             </span>
                         </div>
                     </div>
@@ -156,12 +151,11 @@
                         <div class="flex items-start justify-between gap-6">
                             <div>
                                 <p class="font-medium">
-                                    Analytics Cookies
+                                    {{ __('cookies.analytics_title') }}
                                 </p>
 
                                 <p class="mt-1 text-sm text-zinc-300">
-                                    Help us understand how visitors use IRDI so
-                                    we can improve the website.
+                                    {{ __('cookies.analytics_description') }}
                                 </p>
                             </div>
 
@@ -183,7 +177,7 @@
                                 ></span>
 
                                 <span class="sr-only">
-                                    Allow analytics cookies
+                                    {{ __('cookies.allow_analytics') }}
                                 </span>
                             </label>
                         </div>
@@ -197,7 +191,7 @@
                         class="text-white"
                         x-on:click="preferencesOpen = false"
                     >
-                        Back
+                        {{ __('cookies.back') }}
                     </flux:button>
 
                     <flux:button
@@ -205,7 +199,7 @@
                         variant="primary"
                         x-on:click="save()"
                     >
-                        Save Preferences
+                        {{ __('cookies.save_preferences') }}
                     </flux:button>
                 </div>
             </div>

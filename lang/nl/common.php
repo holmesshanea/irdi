@@ -26,5 +26,9 @@ return [
     'privacy_policy' => 'Privacybeleid',
     'terms' => 'Voorwaarden',
     'all_rights_reserved' => 'Alle rechten voorbehouden.',
+    'accessibility' => 'Toegankelijkheid',
+    'cookie_policy' => 'Cookiebeleid',
+    'cookie_preferences' => 'Cookievoorkeuren',
+    'legal_navigation' => 'Juridisch',
     'tagline' => 'Het bevorderen van ethisch metaaldetecteren, verantwoord beheer en respect voor onze gedeelde geschiedenis.',
 ];

@@ -26,5 +26,9 @@ return [
     'privacy_policy' => 'Politique de confidentialité',
     'terms' => 'Conditions',
     'all_rights_reserved' => 'Tous droits réservés.',
+    'accessibility' => 'Accessibilité',
+    'cookie_policy' => 'Politique relative aux cookies',
+    'cookie_preferences' => 'Préférences relatives aux cookies',
+    'legal_navigation' => 'Mentions légales',
     'tagline' => 'Promouvoir une détection de métaux éthique, une gestion responsable et le respect de notre histoire commune.',
 ];

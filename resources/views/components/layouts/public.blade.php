@@ -876,14 +876,14 @@
 
                 <nav
                     class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm"
-                    aria-label="Legal"
+                    aria-label="{{ __('common.legal_navigation') }}"
                 >
 
                     <a
                         href="{{ route('accessibility') }}"
                         class="text-zinc-500 transition hover:text-irdi-green"
                     >
-                        Accessibility
+                        {{ __('common.accessibility') }}
                     </a>
 
                     <a
@@ -904,7 +904,7 @@
                         href="{{ route('cookie-policy') }}"
                         class="text-zinc-500 transition hover:text-irdi-green"
                     >
-                        Cookie Policy
+                        {{ __('common.cookie_policy') }}
                     </a>
 
                     <button
@@ -913,7 +913,7 @@
                         x-on:click="window.dispatchEvent(new CustomEvent('irdi-cookie-preferences'))"
                         class="text-zinc-500 transition hover:text-irdi-green"
                     >
-                        Cookie Preferences
+                        {{ __('common.cookie_preferences') }}
                     </button>
 
 

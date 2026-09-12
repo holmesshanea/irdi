@@ -26,5 +26,9 @@ return [
     'privacy_policy' => 'Informativa sulla privacy',
     'terms' => 'Termini',
     'all_rights_reserved' => 'Tutti i diritti riservati.',
+    'accessibility' => 'Accessibilità',
+    'cookie_policy' => 'Informativa sui cookie',
+    'cookie_preferences' => 'Preferenze cookie',
+    'legal_navigation' => 'Informazioni legali',
     'tagline' => 'Promuoviamo il metal detecting etico, la tutela responsabile e il rispetto della nostra storia condivisa.',
 ];

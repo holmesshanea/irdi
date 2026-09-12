@@ -92,16 +92,16 @@
         x-transition
         class="mb-3 w-80 rounded-xl border border-zinc-200 bg-white p-5 shadow-2xl"
         role="dialog"
-        aria-label="Accessibility preferences"
+        aria-label="{{ __('accessibility.preferences_aria') }}"
     >
         <div class="mb-5 flex items-center justify-between gap-4">
             <div>
                 <h2 class="text-lg font-semibold text-zinc-900">
-                    Accessibility
+                    {{ __('accessibility.menu_title') }}
                 </h2>
 
                 <p class="mt-1 text-sm text-zinc-500">
-                    Adjust how IRDI is displayed.
+                    {{ __('accessibility.menu_intro') }}
                 </p>
             </div>
 
@@ -109,7 +109,7 @@
                 type="button"
                 x-on:click="open = false"
                 class="rounded-md p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
-                aria-label="Close accessibility menu"
+                aria-label="{{ __('accessibility.close_menu') }}"
             >
                 <flux:icon.x-mark class="size-5" />
             </button>
@@ -121,7 +121,7 @@
             <div>
                 <div class="mb-2 flex items-center justify-between gap-4">
                     <span class="text-sm font-medium text-zinc-900">
-                        Text Size
+                        {{ __('accessibility.text_size') }}
                     </span>
 
                     <span
@@ -155,11 +155,11 @@
             <label class="flex cursor-pointer items-start justify-between gap-5">
                 <div>
                     <span class="text-sm font-medium text-zinc-900">
-                        High Contrast
+                        {{ __('accessibility.high_contrast') }}
                     </span>
 
                     <p class="mt-1 text-sm text-zinc-500">
-                        Increase contrast between text and backgrounds.
+                        {{ __('accessibility.high_contrast_description') }}
                     </p>
                 </div>
 
@@ -175,11 +175,11 @@
             <label class="flex cursor-pointer items-start justify-between gap-5">
                 <div>
                     <span class="text-sm font-medium text-zinc-900">
-                        Reduce Motion
+                        {{ __('accessibility.reduce_motion') }}
                     </span>
 
                     <p class="mt-1 text-sm text-zinc-500">
-                        Minimize animations and transitions.
+                        {{ __('accessibility.reduce_motion_description') }}
                     </p>
                 </div>
 
@@ -195,11 +195,11 @@
             <label class="flex cursor-pointer items-start justify-between gap-5">
                 <div>
                     <span class="text-sm font-medium text-zinc-900">
-                        Highlight Links
+                        {{ __('accessibility.highlight_links') }}
                     </span>
 
                     <p class="mt-1 text-sm text-zinc-500">
-                        Make links easier to identify.
+                        {{ __('accessibility.highlight_links_description') }}
                     </p>
                 </div>
 
@@ -219,7 +219,7 @@
                 class="w-full"
                 x-on:click="reset()"
             >
-                Reset Accessibility
+                {{ __('accessibility.reset_accessibility') }}
             </flux:button>
         </div>
     </div>
@@ -228,7 +228,7 @@
         type="button"
         x-on:click="open = ! open"
         class="flex size-14 items-center justify-center rounded-full bg-irdi-green text-white shadow-xl transition hover:scale-105 hover:bg-irdi-green/90 focus:outline-none focus:ring-4 focus:ring-irdi-gold/40"
-        aria-label="Open accessibility preferences"
+        aria-label="{{ __('accessibility.open_preferences') }}"
         :aria-expanded="open"
     >
         <svg

@@ -26,5 +26,9 @@ return [
     'privacy_policy' => 'Datenschutzerklärung',
     'terms' => 'Bedingungen',
     'all_rights_reserved' => 'Alle Rechte vorbehalten.',
+    'accessibility' => 'Barrierefreiheit',
+    'cookie_policy' => 'Cookie-Richtlinie',
+    'cookie_preferences' => 'Cookie-Einstellungen',
+    'legal_navigation' => 'Rechtliches',
     'tagline' => 'Förderung ethischer Metalldetektion, verantwortungsvoller Bewahrung und des Respekts vor unserer gemeinsamen Geschichte.',
 ];
