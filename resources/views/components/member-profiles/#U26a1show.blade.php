@@ -262,7 +262,7 @@ class extends Component
                                         href="{{ $profile->website }}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="mt-2 inline-flex items-center gap-2 break-all text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                        class="mt-2 inline-flex items-center gap-2 break-all text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold"
                                     >
                                         <flux:icon.globe-alt class="size-4 shrink-0" />
                                         <span>{{ $profile->website }}</span>
@@ -362,6 +362,23 @@ class extends Component
                                 </p>
                             </div>
 
+                        </div>
+                    @endif
+
+                    @if (
+                        auth()->check()
+                        && $profile->user_id === auth()->id()
+                        && auth()->user()->membership_status === 'active'
+                    )
+                        <div class="mt-5 border-t border-zinc-200 pt-5">
+                            <flux:button
+                                :href="route('account.reviews')"
+                                variant="primary"
+                                icon="envelope"
+                                wire:navigate
+                            >
+                                {{ __('Request Property Owner Review') }}
+                            </flux:button>
                         </div>
                     @endif
 

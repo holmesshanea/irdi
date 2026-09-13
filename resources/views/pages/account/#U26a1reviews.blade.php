@@ -141,83 +141,77 @@ class extends Component
 
             @if (auth()->user()->membership_status === 'active')
 
-                <div class="mb-8 rounded-xl border border-irdi-green/20 bg-white p-6 shadow-sm sm:p-8">
+                <div class="mb-8 rounded-xl border border-irdi-green/20 bg-white p-6 shadow-sm">
 
-                    <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+                    <div class="flex items-start gap-3">
 
-                        <div class="max-w-2xl">
+                        <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                            <flux:icon.envelope class="size-5" />
+                        </div>
 
-                            <div class="flex items-center gap-3">
-                                <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-irdi-green/10">
-                                    <flux:icon.envelope class="size-5 text-irdi-green" />
-                                </div>
+                        <div class="min-w-0 flex-1">
 
-                                <h2 class="text-xl font-semibold text-zinc-900">
-                                    {{ __('Request Property Owner Review') }}
-                                </h2>
-                            </div>
+                            <h2 class="text-lg font-semibold text-irdi-green">
+                                {{ __('Request Property Owner Review') }}
+                            </h2>
 
-                            <p class="mt-3 text-sm leading-6 text-zinc-600">
+                            <p class="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
                                 {{ __('IRDI will email the property owner a private, single-use feedback invitation.') }}
                             </p>
 
-                            <p class="mt-1 text-sm text-zinc-500">
-                                {{ $profile->profile_name }} · {{ '@' . $profile->username }}
-                            </p>
+                            <form
+                                action="{{ route('account.review-invitations.store', $profile) }}"
+                                method="POST"
+                                class="mt-5 max-w-xl"
+                            >
+                                @csrf
+
+                                <label
+                                    for="reviews_reviewer_email_{{ $profile->id }}"
+                                    class="block text-sm font-medium text-zinc-700"
+                                >
+                                    {{ __('Property Owner Email') }}
+                                </label>
+
+                                <div class="mt-2 flex flex-col gap-3 sm:flex-row">
+
+                                    <input
+                                        id="reviews_reviewer_email_{{ $profile->id }}"
+                                        name="reviewer_email"
+                                        type="email"
+                                        required
+                                        autocomplete="email"
+                                        value="{{ old('reviewer_email') }}"
+                                        placeholder="{{ __('owner@example.com') }}"
+                                        class="block min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900 focus:border-irdi-green focus:outline-none focus:ring-2 focus:ring-irdi-gold"
+                                    >
+
+                                    <flux:button
+                                        type="submit"
+                                        variant="primary"
+                                        icon="envelope"
+                                        class="shrink-0"
+                                    >
+                                        {{ __('Send Invitation') }}
+                                    </flux:button>
+
+                                </div>
+
+                                @error('reviewer_email')
+                                    <p role="alert" class="mt-2 text-sm text-red-600">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
+                                @error('reviewer_email_' . $profile->id)
+                                    <p role="alert" class="mt-2 text-sm text-red-600">
+                                        {{ $message }}
+                                    </p>
+                                @enderror
+
+                            </form>
 
                         </div>
-
-                        <form
-                            action="{{ route('account.review-invitations.store', $profile) }}"
-                            method="POST"
-                            class="w-full lg:max-w-md"
-                        >
-                            @csrf
-
-                            <label
-                                for="reviews_reviewer_email_{{ $profile->id }}"
-                                class="block text-sm font-medium text-zinc-700"
-                            >
-                                {{ __('Property Owner Email') }}
-                            </label>
-
-                            <div class="mt-2 flex flex-col gap-3 sm:flex-row">
-
-                                <input
-                                    id="reviews_reviewer_email_{{ $profile->id }}"
-                                    name="reviewer_email"
-                                    type="email"
-                                    required
-                                    autocomplete="email"
-                                    value="{{ old('reviewer_email') }}"
-                                    placeholder="{{ __('owner@example.com') }}"
-                                    class="block min-w-0 flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
-                                >
-
-                                <flux:button
-                                    type="submit"
-                                    variant="primary"
-                                    icon="envelope"
-                                    class="shrink-0"
-                                >
-                                    {{ __('Send Invitation') }}
-                                </flux:button>
-
-                            </div>
-
-                            @error('reviewer_email')
-                                <p role="alert" class="mt-2 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
-                            @enderror
-
-                            @error('reviewer_email_' . $profile->id)
-                                <p role="alert" class="mt-2 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
-                            @enderror
-
-                        </form>
 
                     </div>
 
