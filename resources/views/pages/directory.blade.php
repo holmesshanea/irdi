@@ -381,6 +381,9 @@ class extends Component
                 <div
                     wire:loading
                     wire:target="search,country,stateProvince,city,sort,designation,clearFilters"
+                    role="status"
+                    aria-live="polite"
+                    aria-atomic="true"
                     class="text-sm text-zinc-500"
                 >
                     {{ __('Updating results...') }}

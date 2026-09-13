@@ -36,7 +36,12 @@
             <div class="mx-auto max-w-3xl text-center">
 
                 @if (session('status'))
-                    <div class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                        class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800"
+                    >
                         {{ session('status') }}
                     </div>
                 @endif
@@ -434,14 +439,18 @@
                                     <div
                                         class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
                                         x-data="{ open: false }"
+                                        x-on:keydown.escape="if (open) { open = false; $nextTick(() => $refs.reviewTrigger.focus()) }"
                                     >
 
                                         <div class="text-right">
 
                                             <button
                                                 type="button"
-                                                class="text-sm font-medium text-irdi-green hover:underline"
-                                                x-on:click="open = ! open"
+                                                x-ref="reviewTrigger"
+                                                class="rounded-sm text-sm font-medium text-irdi-green hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-irdi-gold focus-visible:ring-offset-2"
+                                                x-on:click="open = ! open; if (open) { $nextTick(() => $refs.emailInput.focus()) }"
+                                                :aria-expanded="open"
+                                                aria-controls="review-request-{{ $profile->id }}"
                                             >
                                                 {{ __('Request Property Owner Review') }}
                                             </button>
@@ -449,6 +458,7 @@
                                         </div>
 
                                         <div
+                                            id="review-request-{{ $profile->id }}"
                                             x-show="open"
                                             x-cloak
                                             class="relative z-50 mt-3 w-full rounded-lg border border-zinc-200 bg-white p-4 shadow-lg lg:w-80"
@@ -473,6 +483,7 @@
 
                                                 <input
                                                     id="reviewer_email_{{ $profile->id }}"
+                                                    x-ref="emailInput"
                                                     name="reviewer_email"
                                                     type="email"
                                                     required
@@ -482,7 +493,7 @@
                                                 >
 
                                                 @error('reviewer_email_' . $profile->id)
-                                                <p class="mt-2 text-sm text-red-600">
+                                                <p role="alert" class="mt-2 text-sm text-red-600">
                                                     {{ $message }}
                                                 </p>
                                                 @enderror
@@ -493,7 +504,7 @@
                                                         type="button"
                                                         variant="ghost"
                                                         size="sm"
-                                                        x-on:click="open = false"
+                                                        x-on:click="open = false; $nextTick(() => $refs.reviewTrigger.focus())"
                                                     >
                                                         {{ __('Cancel') }}
                                                     </flux:button>

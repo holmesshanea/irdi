@@ -22,7 +22,7 @@
                 <flux:card class="mt-10 p-8">
 
                     @if (session('status') === 'verification-link-sent')
-                        <div class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+                        <div role="status" aria-live="polite" aria-atomic="true" class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-800">
                             {{ __('A new verification link has been sent to your email address.') }}
                         </div>
                     @endif

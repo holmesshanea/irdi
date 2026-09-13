@@ -203,7 +203,7 @@ class extends Component
         <div class="mx-auto max-w-3xl">
 
             @if (session('status'))
-                <div class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+                <div role="status" aria-live="polite" aria-atomic="true" class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800">
                     {{ session('status') }}
                 </div>
             @endif
@@ -426,7 +426,7 @@ class extends Component
                                             label="{{ $name }}"
                                         >
                                             <div class="flex items-center gap-2">
-                                                <flux:flag country="{{ $code }}" size="xs" aria-hidden="true" />
+                                                <flux:flag country="{{ $code }}" size="xs" />
                                                 <span>{{ $name }}</span>
                                             </div>
                                         </flux:select.option>

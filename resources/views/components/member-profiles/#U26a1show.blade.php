@@ -112,8 +112,7 @@ class extends Component
 
                         <img
                             src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
-                            alt=""
-                            aria-hidden="true"
+                            alt="{{ $profile->profile_name }}"
                             class="mx-auto h-32 w-32 rounded-full object-cover ring-4 ring-white shadow-sm"
                         >
 
@@ -185,7 +184,6 @@ class extends Component
                                     country="{{ $profile->country_code }}"
                                     size="xs"
                                     class="shrink-0"
-                                    aria-hidden="true"
                                 />
                             @endif
 
@@ -266,9 +264,8 @@ class extends Component
                                         rel="noopener noreferrer"
                                         class="mt-2 inline-flex items-center gap-2 break-all text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold"
                                     >
-                                        <flux:icon.globe-alt class="size-4 shrink-0" aria-hidden="true" />
+                                        <flux:icon.globe-alt class="size-4 shrink-0" />
                                         <span>{{ $profile->website }}</span>
-                                        <span class="sr-only">({{ __('common.opens_in_new_tab') }})</span>
                                     </a>
                                 </div>
                             @endif
@@ -430,6 +427,14 @@ class extends Component
                                     x-text="copied ? @js(__('Copied!')) : @js(__('Copy Embed Code'))"
                                 >
                                 </button>
+
+                                <span
+                                    class="sr-only"
+                                    role="status"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                    x-text="copied ? @js(__('Embed code copied to clipboard.')) : ''"
+                                ></span>
 
                             </div>
 

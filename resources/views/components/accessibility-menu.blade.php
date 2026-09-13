@@ -72,6 +72,31 @@
             }
         },
 
+        openMenu() {
+            this.open = true;
+
+            this.$nextTick(() => {
+                this.$refs.closeButton?.focus();
+            });
+        },
+
+        closeMenu() {
+            this.open = false;
+
+            this.$nextTick(() => {
+                this.$refs.trigger?.focus();
+            });
+        },
+
+        toggleMenu() {
+            if (this.open) {
+                this.closeMenu();
+                return;
+            }
+
+            this.openMenu();
+        },
+
         reset() {
             this.textSize = 100;
             this.highContrast = false;
@@ -84,6 +109,7 @@
         },
     }"
     x-init="init()"
+    x-on:keydown.escape.window="if (open) { closeMenu() }"
     class="fixed bottom-5 left-5 z-[90]"
 >
     <div
@@ -91,12 +117,16 @@
         x-show="open"
         x-transition
         class="mb-3 w-80 rounded-xl border border-zinc-200 bg-white p-5 shadow-2xl"
+        id="accessibility-preferences-dialog"
         role="dialog"
-        aria-label="{{ __('accessibility.preferences_aria') }}"
+        aria-labelledby="accessibility-preferences-title"
     >
         <div class="mb-5 flex items-center justify-between gap-4">
             <div>
-                <h2 class="text-lg font-semibold text-zinc-900">
+                <h2
+                    id="accessibility-preferences-title"
+                    class="text-lg font-semibold text-zinc-900"
+                >
                     {{ __('accessibility.menu_title') }}
                 </h2>
 
@@ -107,8 +137,9 @@
 
             <button
                 type="button"
-                x-on:click="open = false"
-                class="rounded-md p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900"
+                x-ref="closeButton"
+                x-on:click="closeMenu()"
+                class="rounded-md p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-irdi-gold focus-visible:ring-offset-2"
                 aria-label="{{ __('accessibility.close_menu') }}"
             >
                 <flux:icon.x-mark class="size-5" />
@@ -226,9 +257,11 @@
 
     <button
         type="button"
-        x-on:click="open = ! open"
+        x-ref="trigger"
+        x-on:click="toggleMenu()"
         class="flex size-14 items-center justify-center rounded-full bg-irdi-green text-white shadow-xl transition hover:scale-105 hover:bg-irdi-green/90 focus:outline-none focus:ring-4 focus:ring-irdi-gold/40"
         aria-label="{{ __('accessibility.open_preferences') }}"
+        aria-controls="accessibility-preferences-dialog"
         :aria-expanded="open"
     >
         <svg

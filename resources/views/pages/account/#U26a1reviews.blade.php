@@ -35,7 +35,7 @@ class extends Component
         </div>
 
         @if (session('status'))
-            <div class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+            <div role="status" aria-live="polite" aria-atomic="true" class="mb-8 rounded-lg bg-green-50 p-4 text-sm text-green-800">
                 {{ session('status') }}
             </div>
         @endif

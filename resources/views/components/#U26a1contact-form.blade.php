@@ -103,6 +103,9 @@ new class extends Component
 
     @if (session('success'))
         <flux:callout
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
             variant="success"
             icon="check-circle"
             class="mb-6"
@@ -121,6 +124,9 @@ new class extends Component
 
         @error('form')
         <flux:callout
+            role="alert"
+            aria-live="assertive"
+            aria-atomic="true"
             variant="danger"
             icon="x-circle"
             class="mb-6"
@@ -157,7 +163,6 @@ new class extends Component
 
         <flux:input
             wire:model="name"
-            required
             label="{{ __('Name') }}"
             placeholder="{{ __('Your name') }}"
             autocomplete="name"
@@ -165,7 +170,6 @@ new class extends Component
 
         <flux:input
             wire:model="email"
-            required
             type="email"
             label="{{ __('Email') }}"
             placeholder="you@example.com"
@@ -174,14 +178,12 @@ new class extends Component
 
         <flux:input
             wire:model="subject"
-            required
             label="{{ __('Subject') }}"
             placeholder="{{ __('How can we help?') }}"
         />
 
         <flux:textarea
             wire:model="message"
-            required
             label="{{ __('Message') }}"
             placeholder="{{ __('Write your message...') }}"
             rows="6"

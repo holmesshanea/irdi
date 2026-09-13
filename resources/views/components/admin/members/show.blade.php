@@ -671,7 +671,7 @@ class extends Component
     <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
 
         @if (session('status'))
-            <div class="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-800">
+            <div role="status" aria-live="polite" aria-atomic="true" class="mb-6 rounded-xl border border-green-200 bg-green-50 px-5 py-4 text-sm font-medium text-green-800">
                 {{ session('status') }}
             </div>
         @endif
@@ -1010,7 +1010,7 @@ class extends Component
                 </div>
 
                 @error('staffRole')
-                <div class="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                <div role="alert" class="mt-5 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
                     {{ $message }}
                 </div>
                 @enderror

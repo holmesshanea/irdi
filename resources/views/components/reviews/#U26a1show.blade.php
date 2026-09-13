@@ -315,8 +315,7 @@ class extends Component
 
                         <img
                             src="{{ asset('storage/' . $invitation->memberProfile->profile_image) }}"
-                            alt=""
-                            aria-hidden="true"
+                            alt="{{ $invitation->memberProfile->profile_name }}"
                             class="mx-auto h-20 w-20 rounded-full object-cover"
                         >
 
@@ -338,7 +337,12 @@ class extends Component
 
                 @if ($emailVerified)
 
-                    <div class="mt-8 rounded-lg border border-green-200 bg-green-50 p-5">
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                        class="mt-8 rounded-lg border border-green-200 bg-green-50 p-5"
+                    >
 
                         <h3 class="font-semibold text-green-900">
                             {{ __('Email Verified') }}
@@ -378,7 +382,7 @@ class extends Component
                             </flux:select>
 
                             @error('respectForProperty')
-                            <p class="mt-2 text-sm text-red-600">
+                            <p role="alert" class="mt-2 text-sm text-red-600">
                                 {{ $message }}
                             </p>
                             @enderror
@@ -408,7 +412,7 @@ class extends Component
                             </flux:select>
 
                             @error('communicationCourtesy')
-                            <p class="mt-2 text-sm text-red-600">
+                            <p role="alert" class="mt-2 text-sm text-red-600">
                                 {{ $message }}
                             </p>
                             @enderror
@@ -438,7 +442,7 @@ class extends Component
                             </flux:select>
 
                             @error('careOfProperty')
-                            <p class="mt-2 text-sm text-red-600">
+                            <p role="alert" class="mt-2 text-sm text-red-600">
                                 {{ $message }}
                             </p>
                             @enderror
@@ -470,7 +474,7 @@ class extends Component
                             </flux:select>
 
                             @error('wouldAllowReturn')
-                            <p class="mt-2 text-sm text-red-600">
+                            <p role="alert" class="mt-2 text-sm text-red-600">
                                 {{ $message }}
                             </p>
                             @enderror
@@ -501,7 +505,7 @@ class extends Component
                         </div>
 
                         @error('reviewSubmission')
-                        <div class="rounded-lg border border-red-200 bg-red-50 p-4">
+                        <div role="alert" class="rounded-lg border border-red-200 bg-red-50 p-4">
 
                             <p class="text-sm font-medium text-red-800">
                                 {{ $message }}

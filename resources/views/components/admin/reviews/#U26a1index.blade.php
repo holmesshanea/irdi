@@ -318,14 +318,12 @@ class extends Component
 
             <flux:input
                 wire:model.live.debounce.300ms="search"
-                label="Search reviews"
                 placeholder="Search name, username, or reviewer email..."
                 class="w-full sm:max-w-md"
             />
 
             <flux:select
                 wire:model.live="status"
-                label="Review status"
                 class="w-full sm:max-w-xs"
             >
                 <option value="needs-review">Needs Review</option>
@@ -337,7 +335,7 @@ class extends Component
         </div>
 
         @if (session('status'))
-            <div class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-800">
+            <div role="status" aria-live="polite" aria-atomic="true" class="mb-6 rounded-lg bg-green-50 p-4 text-sm text-green-800">
                 {{ session('status') }}
             </div>
         @endif
