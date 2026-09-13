@@ -2,6 +2,12 @@
 
 return [
     'language' => 'Language',
+    'skip_to_content' => 'Skip to main content',
+    'primary_navigation' => 'Primary navigation',
+    'footer_navigation' => 'Footer navigation',
+    'select_language' => 'Select language',
+    'close_navigation_menu' => 'Close navigation menu',
+    'open_navigation_menu' => 'Open navigation menu',
     'home' => 'Home',
     'about' => 'About',
     'membership' => 'Membership',

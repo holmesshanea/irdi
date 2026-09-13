@@ -114,6 +114,13 @@
 
 <body class="min-h-screen bg-white text-zinc-900 antialiased">
 
+<a
+    href="#main-content"
+    class="sr-only fixed left-4 top-4 z-[9999] rounded-lg bg-white px-4 py-3 font-semibold text-irdi-green shadow-lg focus:not-sr-only"
+>
+    {{ __('common.skip_to_content') }}
+</a>
+
 @auth
     @php
         $navUser = auth()->user();
@@ -145,6 +152,7 @@
         class="lg:hidden"
         icon="bars-2"
         inset="left"
+        aria-label="{{ __('common.open_navigation_menu') }}"
     />
 
     <a
@@ -153,7 +161,8 @@
     >
         <img
             src="{{ asset('irdi-logo.png') }}"
-            alt="IRDI logo"
+            alt=""
+            aria-hidden="true"
             class="h-12 w-12 rounded-full object-contain lg:h-20 lg:w-20"
         >
 
@@ -165,7 +174,10 @@
     <flux:spacer />
 
     {{-- Desktop navigation --}}
-    <flux:navbar class="-mb-px max-lg:hidden">
+    <flux:navbar
+        class="-mb-px max-lg:hidden"
+        aria-label="{{ __('common.primary_navigation') }}"
+    >
 
         <flux:navbar.item
             href="{{ route('home') }}"
@@ -210,7 +222,12 @@
         </flux:navbar.item>
 
         <flux:dropdown position="bottom" align="end">
-            <flux:button variant="ghost" icon="language" size="sm">
+            <flux:button
+                variant="ghost"
+                icon="language"
+                size="sm"
+                aria-label="{{ __('common.select_language') }}"
+            >
                 {{ strtoupper(app()->getLocale()) }}
             </flux:button>
 
@@ -420,7 +437,8 @@
         >
             <img
                 src="{{ asset('irdi-logo.png') }}"
-                alt="IRDI logo"
+                alt=""
+            aria-hidden="true"
                 class="h-12 w-12 rounded-full object-contain"
             >
 
@@ -435,7 +453,10 @@
             </div>
         </a>
 
-        <flux:sidebar.collapse class="lg:hidden" />
+        <flux:sidebar.collapse
+            class="lg:hidden"
+            aria-label="{{ __('common.close_navigation_menu') }}"
+        />
 
     </flux:sidebar.header>
 
@@ -458,7 +479,7 @@
         </div>
     @endauth
 
-    <flux:sidebar.nav>
+    <flux:sidebar.nav aria-label="{{ __('common.primary_navigation') }}">
 
         <flux:sidebar.item
             href="{{ route('home') }}"
@@ -509,7 +530,12 @@
         </div>
 
         <flux:dropdown position="bottom" align="start">
-            <flux:button variant="ghost" icon="language" class="w-full justify-start">
+            <flux:button
+                variant="ghost"
+                icon="language"
+                class="w-full justify-start"
+                aria-label="{{ __('common.select_language') }}"
+            >
                 {{ config('locales.supported.'.app()->getLocale(), 'English') }}
             </flux:button>
 
@@ -687,7 +713,12 @@
 </flux:sidebar>
 
 {{-- Main content --}}
-<flux:main container class="py-12">
+<flux:main
+    id="main-content"
+    tabindex="-1"
+    container
+    class="py-12"
+>
     {{ $slot }}
 </flux:main>
 
@@ -738,7 +769,10 @@
                     {{ __('common.explore') }}
                 </p>
 
-                <nav class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                <nav
+                    class="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 text-sm"
+                    aria-label="{{ __('common.footer_navigation') }}"
+                >
 
                     <a
                         href="{{ route('home') }}"
@@ -794,72 +828,56 @@
                 <div class="mt-4 flex items-center gap-4">
 
                     {{-- Facebook --}}
-                    <a
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Facebook"
-                        class="text-zinc-500 transition hover:text-irdi-green"
+                    <span
+                        aria-hidden="true"
+                        class="text-zinc-400"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
                             class="size-5 fill-current"
                         >
                             <path d="M13.5 22v-9h3l.5-3h-3.5V8.1c0-.9.3-1.6 1.8-1.6H17V3.8c-.3 0-1.4-.1-2.6-.1-2.6 0-4.4 1.6-4.4 4.5V10H7v3h3v9h3.5Z"/>
                         </svg>
-                    </a>
+                    </span>
 
                     {{-- Instagram --}}
-                    <a
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Instagram"
-                        class="text-zinc-500 transition hover:text-irdi-green"
+                    <span
+                        aria-hidden="true"
+                        class="text-zinc-400"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
                             class="size-5 fill-current"
                         >
                             <path d="M7.8 2h8.4A5.8 5.8 0 0 1 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8A5.8 5.8 0 0 1 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2Zm0 2A3.8 3.8 0 0 0 4 7.8v8.4A3.8 3.8 0 0 0 7.8 20h8.4a3.8 3.8 0 0 0 3.8-3.8V7.8A3.8 3.8 0 0 0 16.2 4H7.8Zm8.7 1.5a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Z"/>
                         </svg>
-                    </a>
+                    </span>
 
                     {{-- YouTube --}}
-                    <a
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="YouTube"
-                        class="text-zinc-500 transition hover:text-irdi-green"
+                    <span
+                        aria-hidden="true"
+                        class="text-zinc-400"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
                             class="size-5 fill-current"
                         >
                             <path d="M21.6 7.2a2.9 2.9 0 0 0-2-2C17.8 4.7 12 4.7 12 4.7s-5.8 0-7.6.5a2.9 2.9 0 0 0-2 2A30.4 30.4 0 0 0 2 12a30.4 30.4 0 0 0 .4 4.8 2.9 2.9 0 0 0 2 2c1.8.5 7.6.5 7.6.5s5.8 0 7.6-.5a2.9 2.9 0 0 0 2-2A30.4 30.4 0 0 0 22 12a30.4 30.4 0 0 0-.4-4.8ZM10 15.2V8.8l5.3 3.2L10 15.2Z"/>
                         </svg>
-                    </a>
+                    </span>
 
                     {{-- X --}}
-                    <a
-                        href="#"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="X"
-                        class="text-zinc-500 transition hover:text-irdi-green"
+                    <span
+                        aria-hidden="true"
+                        class="text-zinc-400"
                     >
                         <svg
                             viewBox="0 0 24 24"
-                            aria-hidden="true"
                             class="size-5 fill-current"
                         >
                             <path d="M18.2 2H22l-8.3 9.5L23.5 22h-7.7l-6-7.8L3 22H-.8l8.8-10.1L-1.4 2h7.9l5.4 7.2L18.2 2Zm-1.3 18h2.1L5.3 3.9H3.1L16.9 20Z"/>
                         </svg>
-                    </a>
+                    </span>
 
                 </div>
             </div>

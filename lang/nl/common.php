@@ -2,6 +2,12 @@
 
 return [
     'language' => 'Taal',
+    'skip_to_content' => 'Ga naar hoofdinhoud',
+    'primary_navigation' => 'Hoofdnavigatie',
+    'footer_navigation' => 'Voettekstnavigatie',
+    'select_language' => 'Taal selecteren',
+    'close_navigation_menu' => 'Navigatiemenu sluiten',
+    'open_navigation_menu' => 'Navigatiemenu openen',
     'home' => 'Home',
     'about' => 'Over ons',
     'membership' => 'Lidmaatschap',
