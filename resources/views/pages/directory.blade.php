@@ -53,6 +53,15 @@ class extends Component
             ->when($this->city, function ($query) {
                 $query->where('city', $this->city);
             })
+            ->when($this->designation === 'member', function ($query) {
+                $query->whereHas('user', function ($query) {
+                    $query
+                        ->where('is_charter_member', false)
+                        ->where('is_admin', false)
+                        ->where('is_super_admin', false)
+                        ->where('is_moderator', false);
+                });
+            })
             ->when($this->designation === 'charter', function ($query) {
                 $query->whereHas('user', function ($query) {
                     $query->where('is_charter_member', true);
@@ -333,6 +342,10 @@ class extends Component
                 >
                     <flux:select.option value="all">
                         {{ __('All Members') }}
+                    </flux:select.option>
+
+                    <flux:select.option value="member">
+                        {{ __('Member (Detectorist)') }}
                     </flux:select.option>
 
                     <flux:select.option value="charter">
