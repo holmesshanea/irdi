@@ -10,6 +10,7 @@
 
             <flux:heading
                 size="xl"
+            level="1"
                 level="1"
                 class="mt-4 text-irdi-green"
 >

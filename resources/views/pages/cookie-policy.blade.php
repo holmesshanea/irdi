@@ -5,7 +5,7 @@
     <div class="mx-auto max-w-4xl">
         <div class="space-y-8">
             <div>
-                <flux:heading size="xl">
+                <flux:heading size="xl" level="1">
                     {{ __('cookies.policy_title') }}
                 </flux:heading>
 
@@ -15,7 +15,7 @@
             </div>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.what_are_cookies') }}
                 </flux:heading>
 
@@ -25,7 +25,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.how_irdi_uses') }}
                 </flux:heading>
 
@@ -35,7 +35,7 @@
             </section>
 
             <section class="space-y-4">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.necessary_title') }}
                 </flux:heading>
 
@@ -49,7 +49,7 @@
             </section>
 
             <section class="space-y-4">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.analytics_title') }}
                 </flux:heading>
 
@@ -63,7 +63,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.managing_title') }}
                 </flux:heading>
 
@@ -73,7 +73,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.browser_controls_title') }}
                 </flux:heading>
 
@@ -83,7 +83,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.changes_title') }}
                 </flux:heading>
 
@@ -93,7 +93,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('cookies.contact_title') }}
                 </flux:heading>
 

@@ -354,7 +354,7 @@ class extends Component
             >
 
                 <div>
-                    <flux:heading size="lg">
+                    <flux:heading size="lg" level="2">
                         {{ __('Directory Results') }}
                     </flux:heading>
 
@@ -406,7 +406,7 @@ class extends Component
 
                                 <div class="min-w-0">
 
-                                    <flux:heading size="lg">
+                                    <flux:heading size="lg" level="3">
                                         {{ $profile->profile_name }}
                                     </flux:heading>
 
@@ -498,7 +498,7 @@ class extends Component
 
                     <div class="col-span-full rounded-xl border border-zinc-200 bg-white px-6 py-12 text-center">
 
-                        <flux:heading size="lg">
+                        <flux:heading size="lg" level="3">
                             {{ __('No matching members found') }}
                         </flux:heading>
 

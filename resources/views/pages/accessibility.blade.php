@@ -6,7 +6,7 @@
         <div class="space-y-8">
 
             <div>
-                <flux:heading size="xl">
+                <flux:heading size="xl" level="1">
                     {{ __('accessibility.statement_title') }}
                 </flux:heading>
 
@@ -16,7 +16,7 @@
             </div>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('accessibility.commitment_title') }}
                 </flux:heading>
 
@@ -30,7 +30,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('accessibility.features_title') }}
                 </flux:heading>
 
@@ -52,7 +52,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('accessibility.design_title') }}
                 </flux:heading>
 
@@ -62,7 +62,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('accessibility.ongoing_title') }}
                 </flux:heading>
 
@@ -72,7 +72,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('accessibility.third_party_title') }}
                 </flux:heading>
 
@@ -82,7 +82,7 @@
             </section>
 
             <section class="space-y-3">
-                <flux:heading size="lg">
+                <flux:heading size="lg" level="2">
                     {{ __('accessibility.assistance_title') }}
                 </flux:heading>
 

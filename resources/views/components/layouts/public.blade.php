@@ -312,9 +312,9 @@
                                 {{ __('common.signed_in_as') }}
                             </flux:text>
 
-                            <flux:heading class="mt-1! truncate">
+                            <flux:text class="mt-1! truncate font-semibold text-zinc-900">
                                 {{ $navUser->email }}
-                            </flux:heading>
+                            </flux:text>
                         </div>
 
                         <flux:navmenu.separator />
