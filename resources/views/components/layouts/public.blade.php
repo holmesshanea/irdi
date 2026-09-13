@@ -154,7 +154,7 @@
         <img
             src="{{ asset('irdi-logo.png') }}"
             alt="IRDI logo"
-            class="h-9 w-9 rounded-full object-contain lg:h-14 lg:w-14"
+            class="h-12 w-12 rounded-full object-contain lg:h-20 lg:w-20"
         >
 
         <span class="text-lg font-bold text-irdi-green lg:text-xl">
