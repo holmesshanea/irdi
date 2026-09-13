@@ -350,7 +350,7 @@ class extends Component
                                         <p class="text-4xl font-bold tracking-tight text-irdi-green">
                                             {{ number_format($this->countriesRepresentedCount) }}
                                         </p>
-                                        <p class="mt-1 text-sm font-medium text-zinc-500">
+                                        <p class="mt-1 max-w-28 text-sm font-medium leading-5 text-zinc-500 sm:max-w-none">
                                             {{ trans_choice('statistics.countries.center_label', $this->countriesRepresentedCount) }}
                                         </p>
                                     </div>
