@@ -14,6 +14,7 @@ return [
     'about' => 'About',
     'membership' => 'Membership',
     'directory' => 'Directory',
+    'statistics' => 'Statistics',
     'faq' => 'FAQ',
     'contact' => 'Contact',
     'login' => 'Log In',

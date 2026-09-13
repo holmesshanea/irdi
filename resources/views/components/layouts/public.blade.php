@@ -208,6 +208,13 @@
         </flux:navbar.item>
 
         <flux:navbar.item
+            href="{{ route('statistics') }}"
+            :current="request()->routeIs('statistics')"
+        >
+            {{ __('common.statistics') }}
+        </flux:navbar.item>
+
+        <flux:navbar.item
             href="{{ route('faq') }}"
             :current="request()->routeIs('faq')"
         >
@@ -510,6 +517,13 @@
         </flux:sidebar.item>
 
         <flux:sidebar.item
+            href="{{ route('statistics') }}"
+            :current="request()->routeIs('statistics')"
+        >
+            {{ __('common.statistics') }}
+        </flux:sidebar.item>
+
+        <flux:sidebar.item
             href="{{ route('faq') }}"
             :current="request()->routeIs('faq')"
         >
@@ -800,6 +814,13 @@
                         class="text-zinc-600 transition hover:text-irdi-green"
                     >
                         {{ __('common.directory') }}
+                    </a>
+
+                    <a
+                        href="{{ route('statistics') }}"
+                        class="text-zinc-600 transition hover:text-irdi-green"
+                    >
+                        {{ __('common.statistics') }}
                     </a>
 
                     <a

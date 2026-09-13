@@ -14,6 +14,7 @@ return [
     'about' => 'Over ons',
     'membership' => 'Lidmaatschap',
     'directory' => 'Ledenlijst',
+    'statistics' => 'Statistieken',
     'faq' => 'Veelgestelde vragen',
     'contact' => 'Contact',
     'login' => 'Inloggen',

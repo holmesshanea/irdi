@@ -34,6 +34,9 @@ Route::view('/membership', 'pages.membership')
 Route::livewire('/directory', 'pages::directory')
     ->name('directory');
 
+Route::livewire('/statistics', 'pages::statistics')
+    ->name('statistics');
+
 Route::view('/faq', 'pages.faq')
     ->name('faq');
 
@@ -69,6 +72,10 @@ Route::get('/sitemap.xml', function () {
         [
             'url' => route('directory'),
             'priority' => '0.9',
+        ],
+        [
+            'url' => route('statistics'),
+            'priority' => '0.8',
         ],
         [
             'url' => route('faq'),

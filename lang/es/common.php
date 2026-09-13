@@ -14,6 +14,7 @@ return [
     'about' => 'Acerca de',
     'membership' => 'Membresía',
     'directory' => 'Directorio',
+    'statistics' => 'Estadísticas',
     'faq' => 'Preguntas frecuentes',
     'contact' => 'Contacto',
     'login' => 'Iniciar sesión',
