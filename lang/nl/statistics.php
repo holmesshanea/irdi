@@ -31,4 +31,12 @@ return [
         'empty_heading' => 'Landstatistieken komen binnenkort',
         'empty_description' => 'Statistieken op landniveau verschijnen hier zodra actieve leden hun land aan hun profiel toevoegen.',
     ],
+    'growth' => [
+        'heading' => 'Groei van het ledenbestand',
+        'description' => 'Volg de groei van de IRDI-gemeenschap vanaf de maand waarin leden voor het eerst lid werden.',
+        'members_label' => 'Leden',
+        'note' => 'Deze cumulatieve geschiedenis is gebaseerd op de oorspronkelijke lid-sinds-datum van elk account. De huidige handhavingsstatus verandert niet met terugwerkende kracht wanneer een lid oorspronkelijk bij IRDI is gekomen.',
+        'empty_heading' => 'Ledengroei komt binnenkort',
+        'empty_description' => 'De groeigrafiek verschijnt hier zodra IRDI lidmaatschapsgeschiedenis heeft om weer te geven.',
+    ],
 ];

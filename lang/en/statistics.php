@@ -31,4 +31,12 @@ return [
         'empty_heading' => 'Country statistics are coming soon',
         'empty_description' => 'Country-level statistics will appear here as active members add their country to their profile.',
     ],
+    'growth' => [
+        'heading' => 'Membership Growth',
+        'description' => 'Follow the growth of the IRDI community from the month members first joined.',
+        'members_label' => 'Members',
+        'note' => 'This cumulative history is based on each account’s original member-since date. Current enforcement status does not rewrite when a member originally joined IRDI.',
+        'empty_heading' => 'Membership growth is coming soon',
+        'empty_description' => 'The growth chart will appear here once IRDI has membership history to display.',
+    ],
 ];

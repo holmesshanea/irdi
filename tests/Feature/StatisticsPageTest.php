@@ -72,3 +72,30 @@ test('statistics page counts active members countries charter members and public
             ->count())->toBe(1)
         ->and(MemberProfile::query()->publicDirectory()->count())->toBe(1);
 });
+
+test('membership growth preserves historical joins regardless of current membership status', function () {
+    User::factory()->create([
+        'membership_status' => 'active',
+        'member_since' => now()->copy()->subMonths(2)->startOfMonth()->addDay()->toDateString(),
+    ]);
+
+    User::factory()->create([
+        'membership_status' => 'suspended',
+        'member_since' => now()->copy()->startOfMonth()->addDay()->toDateString(),
+    ]);
+
+    $response = $this->get(route('statistics'));
+
+    $response
+        ->assertOk()
+        ->assertSeeText('Membership Growth')
+        ->assertSeeText('Current enforcement status does not rewrite when a member originally joined IRDI');
+
+    $component = \Livewire\Livewire::test('pages::statistics');
+    $growth = $component->get('membershipGrowthData');
+
+    expect($growth)->toHaveCount(3)
+        ->and($growth[0]['members'])->toBe(1)
+        ->and($growth[1]['members'])->toBe(1)
+        ->and($growth[2]['members'])->toBe(2);
+});

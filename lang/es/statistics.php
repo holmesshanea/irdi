@@ -31,4 +31,12 @@ return [
         'empty_heading' => 'Las estadísticas por país estarán disponibles pronto',
         'empty_description' => 'Las estadísticas a nivel de país aparecerán aquí a medida que los miembros activos añadan su país a su perfil.',
     ],
+    'growth' => [
+        'heading' => 'Crecimiento de la membresía',
+        'description' => 'Sigue el crecimiento de la comunidad IRDI desde el mes en que los miembros se unieron por primera vez.',
+        'members_label' => 'Miembros',
+        'note' => 'Este historial acumulado se basa en la fecha original de incorporación de cada cuenta. El estado actual de cumplimiento no modifica retroactivamente cuándo un miembro se unió originalmente a IRDI.',
+        'empty_heading' => 'El crecimiento de la membresía estará disponible pronto',
+        'empty_description' => 'El gráfico de crecimiento aparecerá aquí cuando IRDI tenga historial de membresía que mostrar.',
+    ],
 ];

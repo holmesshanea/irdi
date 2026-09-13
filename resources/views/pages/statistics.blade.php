@@ -3,6 +3,7 @@
 use App\Models\MemberProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Carbon;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -17,6 +18,9 @@ class extends Component
     public array $countryData = [];
 
     public int $membersWithCountryCount = 0;
+
+    /** @var array<int, array{month: string, members: int}> */
+    public array $membershipGrowthData = [];
 
     public function mount(): void
     {
@@ -52,6 +56,54 @@ class extends Component
             })
             ->values()
             ->all();
+
+        $this->membershipGrowthData = $this->buildMembershipGrowthData();
+    }
+
+    /**
+     * Build a cumulative month-by-month history from the date each account
+     * first became an IRDI member. Current membership status is intentionally
+     * not used here so later enforcement actions do not rewrite past joins.
+     *
+     * @return array<int, array{month: string, members: int}>
+     */
+    private function buildMembershipGrowthData(): array
+    {
+        $memberMonths = User::query()
+            ->whereNotNull('member_since')
+            ->orderBy('member_since')
+            ->pluck('member_since')
+            ->map(fn ($date): Carbon => Carbon::parse((string) $date)->startOfMonth());
+
+        if ($memberMonths->isEmpty()) {
+            return [];
+        }
+
+        $joinsByMonth = $memberMonths->countBy(
+            fn (Carbon $date): string => $date->format('Y-m')
+        );
+
+        $firstMemberMonth = $memberMonths->first();
+
+        if (! $firstMemberMonth instanceof Carbon) {
+            return [];
+        }
+
+        $start = $firstMemberMonth->copy()->startOfMonth();
+        $end = now()->startOfMonth();
+        $cumulative = 0;
+        $data = [];
+
+        for ($month = $start->copy(); $month->lte($end); $month->addMonth()) {
+            $cumulative += (int) ($joinsByMonth[$month->format('Y-m')] ?? 0);
+
+            $data[] = [
+                'month' => $month->copy()->locale(app()->getLocale())->translatedFormat('M Y'),
+                'members' => $cumulative,
+            ];
+        }
+
+        return $data;
     }
 
     public function getActiveMemberCountProperty(): int
@@ -330,6 +382,76 @@ class extends Component
                     </h3>
                     <p class="mt-2 text-sm leading-6 text-zinc-600">
                         {{ __('statistics.countries.empty_description') }}
+                    </p>
+                </flux:card>
+            @endif
+        </div>
+    </section>
+
+    {{-- Membership growth --}}
+    <section class="bg-zinc-50">
+        <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+            <div class="mx-auto max-w-3xl text-center">
+                <h2 class="text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+                    {{ __('statistics.growth.heading') }}
+                </h2>
+
+                <p class="mt-4 text-lg leading-8 text-zinc-600">
+                    {{ __('statistics.growth.description') }}
+                </p>
+            </div>
+
+            @if ($membershipGrowthData !== [])
+                <flux:card class="mt-12 p-6 sm:p-8">
+                    <flux:chart wire:model="membershipGrowthData">
+                        <flux:chart.viewport class="h-72 sm:h-80">
+                            <flux:chart.svg>
+                                <flux:chart.area
+                                    field="members"
+                                    class="text-irdi-gold/20"
+                                />
+
+                                <flux:chart.line
+                                    field="members"
+                                    class="text-irdi-green"
+                                />
+
+                                <flux:chart.axis axis="x" field="month" tick-count="8">
+                                    <flux:chart.axis.tick />
+                                    <flux:chart.axis.line />
+                                </flux:chart.axis>
+
+                                <flux:chart.axis axis="y" tick-start="0" :format="['useGrouping' => true, 'maximumFractionDigits' => 0]">
+                                    <flux:chart.axis.grid />
+                                    <flux:chart.axis.tick />
+                                </flux:chart.axis>
+
+                                <flux:chart.cursor />
+                            </flux:chart.svg>
+                        </flux:chart.viewport>
+
+                        <flux:chart.tooltip>
+                            <flux:chart.tooltip.heading field="month" />
+                            <flux:chart.tooltip.value
+                                field="members"
+                                label="{{ __('statistics.growth.members_label') }}"
+                                :format="['useGrouping' => true, 'maximumFractionDigits' => 0]"
+                            />
+                        </flux:chart.tooltip>
+                    </flux:chart>
+                </flux:card>
+
+                <p class="mx-auto mt-6 max-w-3xl text-center text-sm leading-6 text-zinc-500">
+                    {{ __('statistics.growth.note') }}
+                </p>
+            @else
+                <flux:card class="mx-auto mt-12 max-w-2xl p-8 text-center">
+                    <flux:icon.chart-bar class="mx-auto size-10 text-irdi-gold" />
+                    <h3 class="mt-4 text-lg font-semibold text-irdi-green">
+                        {{ __('statistics.growth.empty_heading') }}
+                    </h3>
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">
+                        {{ __('statistics.growth.empty_description') }}
                     </p>
                 </flux:card>
             @endif
