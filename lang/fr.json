@@ -892,5 +892,6 @@
     "of :total": "sur :total",
     "owner@example.com": "owner@example.com",
     "relic-man": "relic-man",
-    "← Back to Account": "← Retour au compte"
+    "← Back to Account": "← Retour au compte",
+    "statistics.countries.other": "Autres"
 }

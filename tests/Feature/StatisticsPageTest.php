@@ -3,6 +3,7 @@
 use App\Models\MemberProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -91,11 +92,48 @@ test('membership growth preserves historical joins regardless of current members
         ->assertSeeText('Membership Growth')
         ->assertSeeText('Current enforcement status does not rewrite when a member originally joined IRDI');
 
-    $component = \Livewire\Livewire::test('pages::statistics');
+    $component = Livewire::test('pages::statistics');
     $growth = $component->get('membershipGrowthData');
 
     expect($growth)->toHaveCount(3)
         ->and($growth[0]['members'])->toBe(1)
         ->and($growth[1]['members'])->toBe(1)
         ->and($growth[2]['members'])->toBe(2);
+});
+
+test('country chart groups smaller countries into other while keeping the complete ranking', function () {
+    $countries = [
+        ['United States', 'US', 8],
+        ['Canada', 'CA', 7],
+        ['United Kingdom', 'GB', 6],
+        ['Australia', 'AU', 5],
+        ['Germany', 'DE', 4],
+        ['France', 'FR', 3],
+        ['Italy', 'IT', 2],
+        ['Netherlands', 'NL', 1],
+        ['Spain', 'ES', 1],
+    ];
+
+    foreach ($countries as [$country, $countryCode, $memberCount]) {
+        for ($i = 0; $i < $memberCount; $i++) {
+            $user = User::factory()->create(['membership_status' => 'active']);
+
+            MemberProfile::factory()->for($user)->create([
+                'country' => $country,
+                'country_code' => $countryCode,
+                'directory_visible' => false,
+            ]);
+        }
+    }
+
+    $component = Livewire::test('pages::statistics');
+    $chartData = $component->get('chartCountryData');
+    $countryData = $component->get('countryData');
+
+    expect($chartData)->toHaveCount(8)
+        ->and($chartData[7]['id'])->toBe('other')
+        ->and($chartData[7]['label'])->toBe('Other')
+        ->and($chartData[7]['value'])->toBe(2)
+        ->and($countryData)->toHaveCount(9)
+        ->and(collect($countryData)->pluck('label'))->toContain('Netherlands', 'Spain');
 });

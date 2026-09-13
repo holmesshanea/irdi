@@ -892,5 +892,6 @@
     "of :total": "van :total",
     "owner@example.com": "owner@example.com",
     "relic-man": "relic-man",
-    "← Back to Account": "← Terug naar account"
+    "← Back to Account": "← Terug naar account",
+    "statistics.countries.other": "Overig"
 }

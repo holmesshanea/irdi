@@ -14,8 +14,13 @@ new
 #[Title('IRDI Statistics | Global Responsible Detectorist Community')]
 class extends Component
 {
+    private const CHART_COUNTRY_LIMIT = 7;
+
     /** @var array<int, array{id: string, label: string, value: int, percentage: float, country_code: string}> */
     public array $countryData = [];
+
+    /** @var array<int, array{id: string, label: string, value: int, percentage: float, country_code: string|null}> */
+    public array $chartCountryData = [];
 
     public int $membersWithCountryCount = 0;
 
@@ -57,7 +62,37 @@ class extends Component
             ->values()
             ->all();
 
+        $this->chartCountryData = $this->buildChartCountryData();
         $this->membershipGrowthData = $this->buildMembershipGrowthData();
+    }
+
+    /**
+     * Keep the donut readable as IRDI expands internationally. The complete
+     * country ranking remains available beside the chart.
+     *
+     * @return array<int, array{id: string, label: string, value: int, percentage: float, country_code: string|null}>
+     */
+    private function buildChartCountryData(): array
+    {
+        if (count($this->countryData) <= self::CHART_COUNTRY_LIMIT) {
+            return $this->countryData;
+        }
+
+        $topCountries = array_slice($this->countryData, 0, self::CHART_COUNTRY_LIMIT);
+        $otherCountries = array_slice($this->countryData, self::CHART_COUNTRY_LIMIT);
+        $otherMemberCount = array_sum(array_column($otherCountries, 'value'));
+
+        $topCountries[] = [
+            'id' => 'other',
+            'label' => __('statistics.countries.other'),
+            'value' => $otherMemberCount,
+            'percentage' => $this->membersWithCountryCount > 0
+                ? round(($otherMemberCount / $this->membersWithCountryCount) * 100, 1)
+                : 0.0,
+            'country_code' => null,
+        ];
+
+        return $topCountries;
     }
 
     /**
@@ -298,7 +333,7 @@ class extends Component
             @if ($this->membersWithCountryCount > 0)
                 <div class="mt-12 grid gap-8 lg:grid-cols-2 lg:items-start">
                     <flux:card class="p-6 sm:p-8">
-                        <flux:chart wire:model="countryData">
+                        <flux:chart wire:model="chartCountryData">
                             <flux:chart.viewport class="relative mx-auto aspect-square w-full max-w-md">
                                 <flux:chart.svg>
                                     <flux:chart.pie
