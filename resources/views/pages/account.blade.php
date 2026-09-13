@@ -476,6 +476,7 @@
                                                     name="reviewer_email"
                                                     type="email"
                                                     required
+                                                    autocomplete="email"
                                                     placeholder="{{ __('owner@example.com') }}"
                                                     class="mt-3 block w-full rounded-lg border border-zinc-300 px-3 py-2 text-sm text-zinc-900"
                                                 >

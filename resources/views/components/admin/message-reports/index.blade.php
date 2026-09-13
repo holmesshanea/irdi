@@ -167,7 +167,7 @@ class extends Component
                             </p>
                         </div>
 
-                        <flux:select wire:model.live="status" class="sm:w-44">
+                        <flux:select wire:model.live="status" label="Report status" class="sm:w-44">
                             <flux:select.option value="pending">
                                 Pending
                             </flux:select.option>

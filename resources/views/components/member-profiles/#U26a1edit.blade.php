@@ -404,17 +404,20 @@ class extends Component
 
                             <flux:input
                                 wire:model.live="city"
+                                required
                                 label="{{ __('City') }}"
                             />
 
                             <flux:input
                                 wire:model.live="stateProvince"
+                                required
                                 label="{{ __('State / Province') }}"
                             />
 
                             <div class="sm:col-span-2">
                                 <flux:select
                                     wire:model.live="countryCode"
+                                    required
                                     variant="listbox"
                                     searchable
                                     label="{{ __('Country') }}"

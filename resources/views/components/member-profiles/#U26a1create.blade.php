@@ -153,6 +153,7 @@ class extends Component
                         <div class="mt-6">
                             <flux:input
                                 wire:model="profileName"
+                                required
                                 label="{{ __('Name') }}"
                                 placeholder="{{ __('Enter your name') }}"
                             />
@@ -161,6 +162,7 @@ class extends Component
                         <div class="mt-6">
                             <flux:input
                                 wire:model.live="username"
+                                required
                                 label="{{ __('Username') }}"
                                 placeholder="{{ __('relic-man') }}"
                                 description="{{ __('This becomes your unique public @username and is used in your IRDI profile URL.') }}"

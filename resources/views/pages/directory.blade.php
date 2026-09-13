@@ -246,6 +246,7 @@ class extends Component
                     <flux:input
                         wire:model.live.debounce.300ms="search"
                         type="search"
+                        label="{{ __('Search members') }}"
                         placeholder="{{ __('Search by name or username...') }}"
                         icon="magnifying-glass"
                     />
@@ -255,6 +256,7 @@ class extends Component
                     wire:model.live="country"
                     variant="listbox"
                     searchable
+                    label="{{ __('Country') }}"
                     placeholder="{{ __('All Countries') }}"
                 >
                     <flux:select.option value="" label="{{ __('All Countries') }}">
@@ -274,7 +276,10 @@ class extends Component
                     @endforeach
                 </flux:select>
 
-                <flux:select wire:model.live="stateProvince">
+                <flux:select
+                    wire:model.live="stateProvince"
+                    label="{{ __('State / Province') }}"
+                >
                     <flux:select.option value="">
                         {{ __('All States / Provinces') }}
                     </flux:select.option>
@@ -286,7 +291,10 @@ class extends Component
                     @endforeach
                 </flux:select>
 
-                <flux:select wire:model.live="city">
+                <flux:select
+                    wire:model.live="city"
+                    label="{{ __('City') }}"
+                >
                     <flux:select.option value="">
                         {{ __('All Cities') }}
                     </flux:select.option>
@@ -298,7 +306,10 @@ class extends Component
                     @endforeach
                 </flux:select>
 
-                <flux:select wire:model.live="sort">
+                <flux:select
+                    wire:model.live="sort"
+                    label="{{ __('Sort') }}"
+                >
                     <flux:select.option value="name_asc">
                         {{ __('Name A–Z') }}
                     </flux:select.option>
@@ -316,7 +327,10 @@ class extends Component
                     </flux:select.option>
                 </flux:select>
 
-                <flux:select wire:model.live="designation">
+                <flux:select
+                    wire:model.live="designation"
+                    label="{{ __('Member type') }}"
+                >
                     <flux:select.option value="all">
                         {{ __('All Members') }}
                     </flux:select.option>

@@ -366,6 +366,8 @@ class extends Component
 
                             <flux:select
                                 wire:model="respectForProperty"
+                                aria-label="{{ __('Respect for Property') }}"
+                                required
                                 class="mt-3"
                                 placeholder="{{ __('Select a rating') }}"
                             >
@@ -396,6 +398,8 @@ class extends Component
 
                             <flux:select
                                 wire:model="communicationCourtesy"
+                                aria-label="{{ __('Communication & Courtesy') }}"
+                                required
                                 class="mt-3"
                                 placeholder="{{ __('Select a rating') }}"
                             >
@@ -426,6 +430,8 @@ class extends Component
 
                             <flux:select
                                 wire:model="careOfProperty"
+                                aria-label="{{ __('Care of the Property') }}"
+                                required
                                 class="mt-3"
                                 placeholder="{{ __('Select a rating') }}"
                             >
@@ -456,6 +462,8 @@ class extends Component
 
                             <flux:select
                                 wire:model="wouldAllowReturn"
+                                aria-label="{{ __('Would you allow this IRDI member to return?') }}"
+                                required
                                 class="mt-3"
                                 placeholder="{{ __('Select an answer') }}"
                             >

@@ -318,12 +318,14 @@ class extends Component
 
             <flux:input
                 wire:model.live.debounce.300ms="search"
+                label="Search reviews"
                 placeholder="Search name, username, or reviewer email..."
                 class="w-full sm:max-w-md"
             />
 
             <flux:select
                 wire:model.live="status"
+                label="Review status"
                 class="w-full sm:max-w-xs"
             >
                 <option value="needs-review">Needs Review</option>
