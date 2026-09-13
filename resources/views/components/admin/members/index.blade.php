@@ -223,26 +223,27 @@ class extends Component
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-zinc-200">
+                    <caption class="sr-only">IRDI member management</caption>
 
                     <thead class="bg-zinc-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                             Member
                         </th>
 
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                             Membership
                         </th>
 
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                             Messaging
                         </th>
 
-                        <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                             Reports
                         </th>
 
-                        <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-600">
                             Action
                         </th>
                     </tr>

@@ -1524,26 +1524,27 @@ class extends Component
 
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-zinc-200">
+                    <caption class="sr-only">Message reports for this member</caption>
 
                             <thead class="bg-zinc-50">
                             <tr>
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                                <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                                     Report
                                 </th>
 
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                                <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                                     Reporter
                                 </th>
 
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                                <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                                     Status
                                 </th>
 
-                                <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                                <th scope="col" class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-zinc-600">
                                     Date
                                 </th>
 
-                                <th class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-600">
+                                <th scope="col" class="px-5 py-3 text-right text-xs font-semibold uppercase tracking-wide text-zinc-600">
                                     Action
                                 </th>
                             </tr>
