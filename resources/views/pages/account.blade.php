@@ -46,7 +46,7 @@
                     </div>
                 @endif
 
-                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold-light">
                     International Responsible Detectorist Institute
                 </p>
 

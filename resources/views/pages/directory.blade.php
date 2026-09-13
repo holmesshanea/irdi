@@ -220,7 +220,7 @@ class extends Component
 
             <div class="mx-auto max-w-3xl text-center">
 
-                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold-light">
                     International Responsible Detectorist Institute
                 </p>
 

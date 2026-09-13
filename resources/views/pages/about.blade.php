@@ -25,7 +25,7 @@
 
             <div class="mx-auto max-w-3xl text-center">
 
-                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold-light">
                     International Responsible Detectorist Institute
                 </p>
 
@@ -96,7 +96,7 @@
                 {{-- Principle 1 --}}
                 <div class="grid gap-4 py-8 sm:grid-cols-[80px_1fr]">
 
-                    <div class="text-3xl font-bold text-irdi-gold">
+                    <div class="text-3xl font-bold text-irdi-gold-light">
                         01
                     </div>
 
@@ -115,7 +115,7 @@
                 {{-- Principle 2 --}}
                 <div class="grid gap-4 py-8 sm:grid-cols-[80px_1fr]">
 
-                    <div class="text-3xl font-bold text-irdi-gold">
+                    <div class="text-3xl font-bold text-irdi-gold-light">
                         02
                     </div>
 
@@ -134,7 +134,7 @@
                 {{-- Principle 3 --}}
                 <div class="grid gap-4 py-8 sm:grid-cols-[80px_1fr]">
 
-                    <div class="text-3xl font-bold text-irdi-gold">
+                    <div class="text-3xl font-bold text-irdi-gold-light">
                         03
                     </div>
 

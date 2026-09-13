@@ -12,12 +12,16 @@
 
     --color-irdi-green: #174121;
     --color-irdi-gold: #C28B08;
+
+    /* Accessible text variants of the IRDI gold brand color. */
+    --color-irdi-gold-text: #936B00;
+    --color-irdi-gold-light: #F3D46A;
 }
 
 
 /* IRDI accessibility preferences */
 
-//* High contrast mode */
+/* High contrast mode */
 .irdi-high-contrast body {
     background-color: #ffffff !important;
     color: #000000 !important;

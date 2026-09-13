@@ -14,7 +14,7 @@
 
             <div class="min-w-0">
 
-                <p class="text-[11px] font-bold uppercase tracking-[0.18em] text-irdi-gold">
+                <p class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-irdi-gold-text">
                     {{ __('Official IRDI Member') }}
                 </p>
 
@@ -75,7 +75,7 @@
                     {!! $qrCode !!}
                 </a>
 
-                <p class="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-irdi-green">
+                <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-[0.14em] text-irdi-green">
                     {{ __('Scan to Verify') }}
                 </p>
 
@@ -88,7 +88,7 @@
                 href="{{ route('member-profiles.show', $profile) }}"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="flex items-center justify-between gap-4 text-[10px] font-medium uppercase tracking-wide text-white/90 hover:text-white"
+                class="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-[0.625rem] font-medium uppercase tracking-wide text-white/90 hover:text-white"
             >
                 <span>{{ __('International Responsible Detectorist Institute') }}</span>
                 <span class="normal-case tracking-normal text-white/75">

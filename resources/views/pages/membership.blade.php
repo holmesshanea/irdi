@@ -25,7 +25,7 @@
 
             <div class="mx-auto max-w-3xl text-center">
 
-                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold-light">
                     International Responsible Detectorist Institute
                 </p>
 
@@ -42,7 +42,7 @@
 
                         <flux:button
                             href="{{ route('register') }}"
-                            class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                            class="bg-irdi-gold text-zinc-950 hover:bg-amber-500"
                         >
                             {{ __('Create an Account') }}
                         </flux:button>
@@ -65,7 +65,7 @@
 
                             <flux:button
                                 href="{{ route('account') }}"
-                                class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                                class="bg-irdi-gold text-zinc-950 hover:bg-amber-500"
                             >
                                 {{ __('View My Account') }}
                             </flux:button>
@@ -74,7 +74,7 @@
 
                             <flux:button
                                 href="{{ route('membership.join') }}"
-                                class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                                class="bg-irdi-gold text-zinc-950 hover:bg-amber-500"
                             >
                                 {{ __('Become an IRDI Member') }}
                             </flux:button>
@@ -324,7 +324,7 @@
 
                         <flux:button
                             href="{{ route('register') }}"
-                            class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                            class="bg-irdi-gold text-zinc-950 hover:bg-amber-500"
                         >
                             {{ __('Create an Account') }}
                         </flux:button>
@@ -347,7 +347,7 @@
 
                             <flux:button
                                 href="{{ route('account') }}"
-                                class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                                class="bg-irdi-gold text-zinc-950 hover:bg-amber-500"
                             >
                                 {{ __('View My Account') }}
                             </flux:button>
@@ -356,7 +356,7 @@
 
                             <flux:button
                                 href="{{ route('membership.join') }}"
-                                class="bg-irdi-gold text-white hover:bg-irdi-gold/90"
+                                class="bg-irdi-gold text-zinc-950 hover:bg-amber-500"
                             >
                                 {{ __('Become an IRDI Member') }}
                             </flux:button>

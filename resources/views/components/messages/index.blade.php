@@ -450,7 +450,7 @@ class extends Component
 
                                                     @if ($otherProfile)
 
-                                                        <span class="text-sm text-zinc-400">
+                                                        <span class="text-sm text-zinc-500">
                                                             {{ '@' . $otherProfile->username }}
                                                         </span>
 

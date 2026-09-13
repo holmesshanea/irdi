@@ -4,7 +4,7 @@
 
         <div class="mx-auto max-w-2xl">
 
-            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-irdi-gold">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-irdi-gold-text">
                 {{ __('Error 429') }}
             </p>
 

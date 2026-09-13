@@ -275,7 +275,7 @@ class extends Component
                                             </span>
                                     </div>
                                 @else
-                                    <div class="mt-2 text-sm text-zinc-400">
+                                    <div class="mt-2 text-sm text-zinc-500">
                                         No member profile
                                     </div>
                                 @endif

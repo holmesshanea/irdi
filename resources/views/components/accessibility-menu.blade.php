@@ -116,7 +116,7 @@
         x-cloak
         x-show="open"
         x-transition
-        class="mb-3 w-80 rounded-xl border border-zinc-200 bg-white p-5 shadow-2xl"
+        class="mb-3 w-80 max-w-[calc(100vw-2.5rem)] rounded-xl border border-zinc-200 bg-white p-5 shadow-2xl"
         id="accessibility-preferences-dialog"
         role="dialog"
         aria-labelledby="accessibility-preferences-title"

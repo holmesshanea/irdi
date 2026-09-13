@@ -447,7 +447,7 @@ class extends Component
                                         {{ str($log->action)->replace('_', ' ')->title() }}
                                     </flux:badge>
 
-                                    <span class="text-xs text-zinc-400">
+                                    <span class="text-xs text-zinc-500">
                                         #{{ $log->id }}
                                     </span>
                                 </div>

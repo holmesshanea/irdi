@@ -262,7 +262,7 @@ class extends Component
                                         href="{{ $profile->website }}"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="mt-2 inline-flex items-center gap-2 break-all text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold"
+                                        class="mt-2 inline-flex items-center gap-2 break-all text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
                                     >
                                         <flux:icon.globe-alt class="size-4 shrink-0" />
                                         <span>{{ $profile->website }}</span>
@@ -427,14 +427,6 @@ class extends Component
                                     x-text="copied ? @js(__('Copied!')) : @js(__('Copy Embed Code'))"
                                 >
                                 </button>
-
-                                <span
-                                    class="sr-only"
-                                    role="status"
-                                    aria-live="polite"
-                                    aria-atomic="true"
-                                    x-text="copied ? @js(__('Embed code copied to clipboard.')) : ''"
-                                ></span>
 
                             </div>
 

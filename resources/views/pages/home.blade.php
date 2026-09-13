@@ -24,7 +24,7 @@
 
             <div class="mx-auto max-w-3xl text-center">
 
-                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold-light">
                     {{ __('home.hero.organization') }}
                 </p>
 
@@ -41,7 +41,7 @@
                     <flux:button
                         href="{{ route('membership') }}"
                         variant="primary"
-                        class="bg-irdi-gold! text-white! hover:bg-amber-700!"
+                        class="bg-irdi-gold! text-zinc-950! hover:bg-amber-500!"
                     >
                         {{ __('home.hero.become_member') }}
                     </flux:button>
