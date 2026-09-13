@@ -541,7 +541,8 @@
 
                                                     <img
                                                         src="{{ $profileImageUrl }}"
-                                                        alt="{{ $profile->profile_name }}"
+                                                        alt=""
+                                                        aria-hidden="true"
                                                         class="h-full w-full object-cover"
                                                     >
 
@@ -605,6 +606,7 @@
                                                             country="{{ $profile->country_code }}"
                                                             size="xs"
                                                             class="shrink-0"
+                                                            aria-hidden="true"
                                                         />
                                                     @endif
 

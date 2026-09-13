@@ -404,20 +404,17 @@ class extends Component
 
                             <flux:input
                                 wire:model.live="city"
-                                required
                                 label="{{ __('City') }}"
                             />
 
                             <flux:input
                                 wire:model.live="stateProvince"
-                                required
                                 label="{{ __('State / Province') }}"
                             />
 
                             <div class="sm:col-span-2">
                                 <flux:select
                                     wire:model.live="countryCode"
-                                    required
                                     variant="listbox"
                                     searchable
                                     label="{{ __('Country') }}"
@@ -429,7 +426,7 @@ class extends Component
                                             label="{{ $name }}"
                                         >
                                             <div class="flex items-center gap-2">
-                                                <flux:flag country="{{ $code }}" size="xs" />
+                                                <flux:flag country="{{ $code }}" size="xs" aria-hidden="true" />
                                                 <span>{{ $name }}</span>
                                             </div>
                                         </flux:select.option>

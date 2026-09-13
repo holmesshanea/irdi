@@ -54,7 +54,8 @@
 
                             <img
                                 src="{{ asset('storage/' . $invitation->memberProfile->profile_image) }}"
-                                alt="{{ $invitation->memberProfile->profile_name }}"
+                                alt=""
+                                aria-hidden="true"
                                 class="mx-auto h-20 w-20 rounded-full object-cover"
                             >
 

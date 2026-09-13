@@ -6,7 +6,8 @@
             <div>
                 <img
                     src="{{ asset('irdi-logo.png') }}"
-                    alt="{{ __('IRDI logo') }}"
+                    alt=""
+                    aria-hidden="true"
                     class="h-[76px] w-[76px] object-contain"
                 >
             </div>
@@ -68,7 +69,7 @@
                     href="{{ route('member-profiles.show', $profile) }}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="{{ __('Open verified IRDI member profile') }}"
+                    aria-label="{{ __('Open verified IRDI member profile') }} ({{ __('common.opens_in_new_tab') }})"
                     class="inline-block rounded-xl border border-irdi-gold/60 bg-white p-1.5"
                 >
                     {!! $qrCode !!}
@@ -93,6 +94,7 @@
                 <span class="normal-case tracking-normal text-white/75">
                     {{ __('Verify at irdi.online') }}
                 </span>
+                <span class="sr-only">({{ __('common.opens_in_new_tab') }})</span>
             </a>
         </div>
 

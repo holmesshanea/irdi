@@ -394,6 +394,7 @@ class extends Component
 
                     <a
                         href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}"
+                        aria-label="{{ __('common.view_profile_for', ['name' => $profile->profile_name]) }}"
                         class="block rounded-xl focus:outline-none focus:ring-2 focus:ring-irdi-gold focus:ring-offset-2"
                     >
                         <flux:card class="h-full transition hover:-translate-y-1 hover:shadow-lg">
@@ -406,7 +407,8 @@ class extends Component
 
                                         <img
                                             src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
-                                            alt="{{ $profile->profile_name }}"
+                                            alt=""
+                                            aria-hidden="true"
                                             class="h-full w-full object-cover"
                                         >
 
@@ -476,6 +478,7 @@ class extends Component
                                                     country="{{ $profile->country_code }}"
                                                     size="xs"
                                                     class="shrink-0"
+                                                    aria-hidden="true"
                                                 />
                                             @endif
 

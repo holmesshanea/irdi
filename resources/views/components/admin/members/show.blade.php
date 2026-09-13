@@ -971,8 +971,10 @@ class extends Component
                                 :href="route('member-profiles.show', $user->memberProfile)"
                                 variant="outline"
                                 target="_blank"
+                                rel="noopener noreferrer"
                             >
                                 View Public Profile
+                                <span class="sr-only">({{ __('common.opens_in_new_tab') }})</span>
                             </flux:button>
                         @else
                             <p class="text-sm text-zinc-500">

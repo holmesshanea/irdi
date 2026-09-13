@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'view_profile_for' => 'Visualizza il profilo di :name',
+    'opens_in_new_tab' => 'si apre in una nuova scheda',
     'language' => 'Lingua',
     'skip_to_content' => 'Vai al contenuto principale',
     'primary_navigation' => 'Navigazione principale',

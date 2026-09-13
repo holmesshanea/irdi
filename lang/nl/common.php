@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'view_profile_for' => 'Profiel van :name bekijken',
+    'opens_in_new_tab' => 'opent in een nieuw tabblad',
     'language' => 'Taal',
     'skip_to_content' => 'Ga naar hoofdinhoud',
     'primary_navigation' => 'Hoofdnavigatie',
