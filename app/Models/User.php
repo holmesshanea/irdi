@@ -206,6 +206,64 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     }
 
     /**
+     * Determine whether the member has an active formal membership warning.
+     */
+    public function hasActiveMembershipWarning(): bool
+    {
+        return $this->hasActiveMembershipEnforcement('warning');
+    }
+
+    /**
+     * Determine whether the member is currently on probation.
+     */
+    public function isOnProbation(): bool
+    {
+        return $this->hasActiveMembershipEnforcement('probation');
+    }
+
+    /**
+     * Determine whether the member is currently under administrative review.
+     */
+    public function isUnderAdministrativeReview(): bool
+    {
+        return $this->hasActiveMembershipEnforcement('administrative_hold');
+    }
+
+    /**
+     * Determine whether the member is currently in good standing.
+     */
+    public function isInGoodStanding(): bool
+    {
+        if ($this->membership_status !== 'active') {
+            return false;
+        }
+
+        if ($this->ethics_agreed_at === null || $this->best_practices_agreed_at === null) {
+            return false;
+        }
+
+        return ! $this->isOnProbation()
+            && ! $this->isUnderAdministrativeReview();
+    }
+
+    /**
+     * Determine whether the member has an active enforcement action of the given type.
+     */
+    private function hasActiveMembershipEnforcement(string $action): bool
+    {
+        return $this->membershipEnforcements()
+            ->where('action', $action)
+            ->where('status', 'active')
+            ->whereNull('resolved_at')
+            ->where(function ($query): void {
+                $query
+                    ->whereNull('starts_at')
+                    ->orWhere('starts_at', '<=', now());
+            })
+            ->exists();
+    }
+
+    /**
      * Membership enforcement actions performed by this administrator.
      *
      * @return HasMany<MembershipEnforcement, $this>

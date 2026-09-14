@@ -237,3 +237,87 @@ test('super administrator can enforce against administrator', function () {
 
     expect($administrator->fresh()->membership_status)->toBe('suspended');
 });
+
+test('moderator cannot suspend ordinary member', function () {
+    $moderator = activeStaffUser([
+        'is_moderator' => true,
+    ]);
+
+    $member = activeStaffUser();
+
+    $this->actingAs($moderator);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'suspensionReason',
+            'Moderators must not be allowed to suspend members.'
+        )
+        ->call('suspendMembership')
+        ->assertStatus(403);
+
+    expect($member->fresh()->membership_status)->toBe('active');
+});
+
+test('administrator cannot ban ordinary member', function () {
+    $administrator = activeStaffUser([
+        'is_admin' => true,
+    ]);
+
+    $member = activeStaffUser();
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'banReason',
+            'Administrators must not be allowed to ban members.'
+        )
+        ->call('banMember')
+        ->assertStatus(403);
+
+    expect($member->fresh()->membership_status)->toBe('active');
+});
+
+test('administrator cannot unban member', function () {
+    $administrator = activeStaffUser([
+        'is_admin' => true,
+    ]);
+
+    $member = activeStaffUser([
+        'membership_status' => 'banned',
+    ]);
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'unbanReason',
+            'Administrators must not be allowed to unban members.'
+        )
+        ->call('unbanMember')
+        ->assertStatus(403);
+
+    expect($member->fresh()->membership_status)->toBe('banned');
+});
+
+test('super administrator can ban ordinary member', function () {
+    $superAdmin = activeStaffUser([
+        'is_super_admin' => true,
+        'is_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $member = activeStaffUser();
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'banReason',
+            'Super Administrator ban authority is permitted.'
+        )
+        ->call('banMember')
+        ->assertHasNoErrors();
+
+    expect($member->fresh()->membership_status)->toBe('banned');
+});

@@ -277,6 +277,11 @@
 
                 </section>
 
+                <livewire:account.membership-warnings />
+                <livewire:account.membership-probation />
+                <livewire:account.membership-suspension />
+                <livewire:account.membership-ban />
+
                 {{-- Account Settings --}}
                 <section class="mt-10">
 
