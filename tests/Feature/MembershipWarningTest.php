@@ -3,6 +3,8 @@
 use App\Models\MembershipEnforcement;
 use App\Models\User;
 use App\Notifications\MembershipWarningIssuedNotification;
+use App\Notifications\MembershipWarningResolvedNotification;
+use App\Notifications\MembershipWarningWithdrawnNotification;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
@@ -169,6 +171,7 @@ test('super administrator can issue formal warning to administrator', function (
 });
 
 test('administrator can resolve active formal warning', function () {
+    Notification::fake();
     $administrator = membershipWarningUser([
         'is_admin' => true,
     ]);
@@ -197,9 +200,15 @@ test('administrator can resolve active formal warning', function () {
         ->and($warning->resolved_by)->toBe($administrator->id)
         ->and($member->fresh()->hasActiveMembershipWarning())->toBeFalse()
         ->and($member->fresh()->isInGoodStanding())->toBeTrue();
+
+    Notification::assertSentTo(
+        $member,
+        MembershipWarningResolvedNotification::class,
+    );
 });
 
 test('administrator can withdraw active formal warning', function () {
+    Notification::fake();
     $administrator = membershipWarningUser([
         'is_admin' => true,
     ]);
@@ -228,6 +237,11 @@ test('administrator can withdraw active formal warning', function () {
         ->and($warning->resolved_by)->toBe($administrator->id)
         ->and($member->fresh()->hasActiveMembershipWarning())->toBeFalse()
         ->and($member->fresh()->isInGoodStanding())->toBeTrue();
+
+    Notification::assertSentTo(
+        $member,
+        MembershipWarningWithdrawnNotification::class,
+    );
 });
 
 test('warning cannot be resolved through a different member component', function () {

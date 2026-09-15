@@ -5,6 +5,8 @@ use App\Models\MembershipEnforcement;
 use App\Models\MessageReport;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipWarningWithdrawnNotification;
+use App\Notifications\MembershipWarningResolvedNotification;
 use App\Notifications\MembershipBannedNotification;
 use App\Notifications\MembershipAdministrativeReviewClosedNotification;
 use App\Notifications\MembershipAdministrativeReviewStartedNotification;
@@ -287,6 +289,10 @@ class extends Component
             );
         });
 
+        $this->user->notify(
+            new MembershipWarningResolvedNotification()
+        );
+
         $this->loadUser();
 
         session()->flash('status', 'Formal warning has been resolved.');
@@ -329,6 +335,10 @@ class extends Component
                 ],
             );
         });
+
+        $this->user->notify(
+            new MembershipWarningWithdrawnNotification()
+        );
 
         $this->loadUser();
 

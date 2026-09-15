@@ -25,7 +25,6 @@ class MembershipAdministrativeReviewClosedNotification extends Notification impl
     public function toMail(object $notifiable): MailMessage
     {
         /** @var User $notifiable */
-        $notifiable = $notifiable;
 
         return (new MailMessage)
             ->subject('IRDI Membership Administrative Review Closed')
