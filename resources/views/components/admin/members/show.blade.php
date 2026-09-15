@@ -5,6 +5,8 @@ use App\Models\MembershipEnforcement;
 use App\Models\MessageReport;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipBannedNotification;
+use App\Notifications\MembershipAdministrativeReviewClosedNotification;
 use App\Notifications\MembershipAdministrativeReviewStartedNotification;
 use App\Notifications\MembershipSuspensionContinuedNotification;
 use App\Notifications\MembershipProbationNotification;
@@ -713,6 +715,10 @@ class extends Component
             );
         });
 
+        $this->user->notify(
+            new MembershipAdministrativeReviewClosedNotification()
+        );
+
         $this->administrativeHoldResolutionReason = '';
 
         $this->loadUser();
@@ -1164,7 +1170,7 @@ class extends Component
             ->whereNull('resolved_at')
             ->firstOrFail();
 
-        DB::transaction(function () use ($hold): void {
+        $enforcement = DB::transaction(function () use ($hold): MembershipEnforcement {
             $hold->update([
                 'status' => 'resolved',
                 'resolved_at' => now(),
@@ -1277,7 +1283,16 @@ class extends Component
                     'administrative_hold_id' => $hold->id,
                 ],
             );
+            return $enforcement;
         });
+
+        $this->user->notify(
+            new MembershipBannedNotification(
+                reason: $enforcement->reason,
+                permanentlyIneligible: $enforcement->permanently_ineligible,
+                reinstatementEligibleAt: $enforcement->reinstatement_eligible_at?->format('F j, Y'),
+            )
+        );
 
         $this->banReason = '';
 

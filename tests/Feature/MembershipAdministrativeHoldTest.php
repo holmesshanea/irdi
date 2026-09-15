@@ -3,7 +3,11 @@
 use App\Models\BanIdentifier;
 use App\Models\MembershipEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipAdministrativeReviewClosedNotification;
+use App\Notifications\MembershipAdministrativeReviewStartedNotification;
+use App\Notifications\MembershipBannedNotification;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 function administrativeHoldUser(array $attributes = []): User
@@ -17,6 +21,9 @@ function administrativeHoldUser(array $attributes = []): User
 }
 
 test('administrator can place ordinary member under administrative review', function () {
+
+    Notification::fake();
+
     $admin = administrativeHoldUser([
         'is_admin' => true,
     ]);
@@ -56,6 +63,11 @@ test('administrator can place ordinary member under administrative review', func
         ->and($member->membership_status)->toBe('active')
         ->and($member->isUnderAdministrativeReview())->toBeTrue()
         ->and($member->isInGoodStanding())->toBeFalse();
+
+    Notification::assertSentTo(
+        $member,
+        MembershipAdministrativeReviewStartedNotification::class,
+    );
 });
 
 test('moderator cannot place member under administrative review', function () {
@@ -163,6 +175,7 @@ test('member cannot receive duplicate active administrative hold', function () {
 });
 
 test('administrator can close administrative review with no action', function () {
+    Notification::fake();
     $admin = administrativeHoldUser([
         'is_admin' => true,
     ]);
@@ -207,6 +220,10 @@ test('administrator can close administrative review with no action', function ()
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $hold->id,
     ]);
+    Notification::assertSentTo(
+        $member,
+        MembershipAdministrativeReviewClosedNotification::class,
+    );
 });
 
 test('closing administrative review with no action requires documented reason', function () {
@@ -728,6 +745,7 @@ test('administrative hold suspension closes an active probation if both states c
 });
 
 test('super administrator can resolve administrative hold with membership ban', function () {
+    Notification::fake();
     $superAdmin = administrativeHoldUser([
         'is_super_admin' => true,
     ]);
@@ -815,6 +833,10 @@ test('super administrator can resolve administrative hold with membership ban', 
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $ban->id,
     ]);
+    Notification::assertSentTo(
+        $member,
+        MembershipBannedNotification::class,
+    );
 });
 
 test('administrative hold ban outcome requires valid ban reason', function () {
