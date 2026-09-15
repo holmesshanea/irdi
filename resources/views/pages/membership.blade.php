@@ -1,6 +1,6 @@
 <x-layouts.public
     title="{{ __('Join IRDI | Free Responsible Metal Detecting Membership') }}"
-    description="{{ __('Join IRDI for free and become part of an international community committed to responsible metal detecting, ethical stewardship, landowner respect, and protecting our shared history.') }}"
+    description="{{ __('Join IRDI for free, commit to responsible metal detecting standards, and participate in a membership system built around public verification, good standing, property owner feedback, and accountability.') }}"
 >
 
     {{-- Membership Hero --}}
@@ -34,7 +34,7 @@
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    {{ __('Join a growing international community committed to responsible metal detecting, ethical stewardship, respect for landowners, and protecting our shared history.') }}
+                    {{ __('Make a public commitment to responsible metal detecting and become part of a membership system built around shared standards, current standing, property owner feedback, and accountability.') }}
                 </p>
 
                 @guest
@@ -106,7 +106,7 @@
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg leading-8 text-zinc-600">
-                    {{ __('IRDI membership is built around a simple commitment to responsible metal detecting, ethical stewardship, and respect for our shared history.') }}
+                    {{ __("Joining IRDI begins with a clear commitment to responsible metal detecting. Members verify their email address and agree to IRDI's Code of Ethics and Best Practices before membership is activated.") }}
                 </p>
 
             </div>
@@ -184,7 +184,7 @@
                     </h3>
 
                     <p class="mt-3 leading-7 text-zinc-600">
-                        {{ __('Confirm that you have read and agree to both standards to activate your IRDI membership.') }}
+                        {{ __('Confirm that you have read and agree to both standards to activate your membership and begin as a Member in Good Standing.') }}
                     </p>
 
                 </div>
@@ -194,8 +194,75 @@
         </div>
     </section>
 
-    {{-- Membership Benefits --}}
+    {{-- Membership & Good Standing --}}
     <section class="bg-white">
+        <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+
+            <div class="mx-auto max-w-3xl text-center">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold-text">
+                    {{ __('Trust & Accountability') }}
+                </p>
+
+                <h2 class="mt-3 text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+                    {{ __('Membership Is a Commitment. Good Standing Is Maintained.') }}
+                </h2>
+
+                <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
+
+                <p class="mt-6 text-lg leading-8 text-zinc-600">
+                    {{ __('Becoming an IRDI member means agreeing to our standards. Remaining a Member in Good Standing means continuing to meet IRDI’s membership and accountability requirements.') }}
+                </p>
+            </div>
+
+            <div class="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3">
+                <flux:card class="p-7 transition hover:-translate-y-1 hover:shadow-lg">
+                    <div class="flex size-10 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                        <flux:icon.document-check class="size-5" />
+                    </div>
+                    <h3 class="mt-5 text-lg font-semibold text-irdi-green">
+                        {{ __('Commit to the Standards') }}
+                    </h3>
+                    <p class="mt-3 leading-7 text-zinc-600">
+                        {{ __('Members agree to IRDI’s Code of Ethics and Best Practices as the standards that guide responsible participation.') }}
+                    </p>
+                </flux:card>
+
+                <flux:card class="p-7 transition hover:-translate-y-1 hover:shadow-lg">
+                    <div class="flex size-10 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                        <flux:icon.shield-check class="size-5" />
+                    </div>
+                    <h3 class="mt-5 text-lg font-semibold text-irdi-green">
+                        {{ __('Maintain Good Standing') }}
+                    </h3>
+                    <p class="mt-3 leading-7 text-zinc-600">
+                        {{ __('Good Standing reflects a member’s current status with IRDI and continued compliance with IRDI’s membership and accountability requirements.') }}
+                    </p>
+                </flux:card>
+
+                <flux:card class="p-7 transition hover:-translate-y-1 hover:shadow-lg">
+                    <div class="flex size-10 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                        <flux:icon.chat-bubble-left-right class="size-5" />
+                    </div>
+                    <h3 class="mt-5 text-lg font-semibold text-irdi-green">
+                        {{ __('Participate in Accountability') }}
+                    </h3>
+                    <p class="mt-3 leading-7 text-zinc-600">
+                        {{ __('IRDI may consider property owner feedback, reported concerns, and other relevant information through its moderation and accountability processes.') }}
+                    </p>
+                </flux:card>
+            </div>
+
+            <div class="mx-auto mt-8 max-w-5xl rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                <p class="text-sm leading-6 text-zinc-600">
+                    {{ __('Good Standing is a statement of a member’s current IRDI status. It is not a background check, endorsement, or guarantee of future conduct. Membership standing may change when IRDI’s accountability process requires action.') }}
+                </p>
+            </div>
+
+        </div>
+    </section>
+
+    {{-- Membership Benefits --}}
+    <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
 
             <div class="mx-auto max-w-3xl text-center">
@@ -207,7 +274,7 @@
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg leading-8 text-zinc-600">
-                    {{ __('IRDI membership gives you a way to publicly demonstrate your support for responsible detecting while connecting you with resources and a growing international community.') }}
+                    {{ __('IRDI membership provides public verification of your current membership and standing, tools for sharing your commitment, access to member resources, and participation in a growing international community.') }}
                 </p>
 
             </div>
@@ -223,7 +290,7 @@
                     <div class="mt-3 h-1 w-full bg-irdi-gold"></div>
 
                     <p class="mt-5 leading-7 text-zinc-600">
-                        {{ __('Receive an IRDI member profile displaying your Member Since date and other membership details, giving you a lasting record of your commitment to IRDI and responsible detecting.') }}
+                        {{ __('Receive a public IRDI member profile that can display your current Good Standing status, Member Since date, membership details, and available property owner feedback.') }}
                     </p>
 
                 </flux:card>
@@ -237,7 +304,7 @@
                     <div class="mt-3 h-1 w-full bg-irdi-gold"></div>
 
                     <p class="mt-5 leading-7 text-zinc-600">
-                        {{ __('Members may choose to appear in the public IRDI Member Directory, making it easy for others to confirm membership and connect with participating members.') }}
+                        {{ __('Members may choose to appear in the public IRDI Member Directory, allowing landowners and others to verify their current membership and standing and open their public profile.') }}
                     </p>
 
                 </flux:card>
@@ -251,7 +318,7 @@
                     <div class="mt-3 h-1 w-full bg-irdi-gold"></div>
 
                     <p class="mt-5 leading-7 text-zinc-600">
-                        {{ __('Share your IRDI membership with landowners, clubs, organizations, and the public as a visible demonstration of your support for responsible metal detecting.') }}
+                        {{ __('Share your IRDI profile with landowners, clubs, organizations, and the public so they can view your current membership standing and your commitment to responsible metal detecting.') }}
                     </p>
 
                 </flux:card>
@@ -265,7 +332,7 @@
                     <div class="mt-3 h-1 w-full bg-irdi-gold"></div>
 
                     <p class="mt-5 leading-7 text-zinc-600">
-                        {{ __('Receive a unique link to your IRDI profile along with a scannable QR Code that allows others to quickly view and verify your IRDI membership profile.') }}
+                        {{ __('Receive a unique profile link and scannable QR code that directs others to your live IRDI profile, where they can verify your current membership and standing.') }}
                     </p>
 
                 </flux:card>
@@ -316,7 +383,7 @@
                 <div class="mx-auto mt-4 h-1 w-20 bg-irdi-gold"></div>
 
                 <p class="mt-6 text-lg leading-8 text-zinc-200">
-                    {{ __('Create your free membership and make your commitment to responsible metal detecting, ethical stewardship, and protecting our shared history.') }}
+                    {{ __('Create your free membership, commit to IRDI’s standards, and begin building a public record of responsible participation and accountability.') }}
                 </p>
 
                 @guest

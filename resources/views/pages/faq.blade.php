@@ -1,6 +1,6 @@
 <x-layouts.public
     title="{{ __('Responsible Metal Detecting FAQ | IRDI') }}"
-    description="{{ __('Find answers about IRDI membership, responsible metal detecting, the Code of Ethics, member profiles, the Member Directory, property owner reviews, and IRDI accounts.') }}"
+    description="{{ __('Find answers about IRDI membership, good standing, public member verification, property owner feedback, accountability, member profiles, and IRDI accounts.') }}"
 >
 
     {{-- FAQ Hero --}}
@@ -34,7 +34,7 @@
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    {{ __('Answers to common questions about IRDI membership, member profiles, the Member Directory, property owner reviews, and managing your account.') }}
+                    {{ __('Answers to common questions about IRDI membership, good standing, public verification, property owner feedback, accountability, member profiles, and managing your account.') }}
                 </p>
 
             </div>
@@ -65,11 +65,11 @@
                         <flux:accordion.item heading="{{ __('What is IRDI?') }}">
                             <div class="space-y-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                                 <p>
-                                    {{ __('IRDI stands for the International Responsible Detectorist Institute. It is an international membership organization dedicated to promoting ethical metal detecting, protecting our shared history, and encouraging responsible detecting through education, best practices, and respect for landowners.') }}
+                                    {{ __('IRDI stands for the International Responsible Detectorist Institute. It is an international membership organization dedicated to promoting ethical metal detecting, protecting our shared history, respecting landowners, and strengthening trust through shared standards, public membership verification, property owner feedback, and ongoing accountability.') }}
                                 </p>
 
                                 <p>
-                                    {{ __('IRDI encourages detectorists to protect history, respect private property, and lead by example within the metal detecting community.') }}
+                                    {{ __('IRDI encourages detectorists to protect history, respect private property, uphold responsible detecting standards throughout their membership, and lead by example within the metal detecting community.') }}
                                 </p>
                             </div>
                         </flux:accordion.item>
@@ -77,21 +77,21 @@
 
                         <flux:accordion.item heading="{{ __('Who can join IRDI?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('IRDI membership is intended for metal detectorists who support responsible detecting, ethical stewardship, respect for landowners, and the protection of our shared history.') }}
+                                {{ __('IRDI membership is intended for detectorists, organizations, and vendors that support responsible detecting, ethical stewardship, respect for landowners, and the protection of our shared history.') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('Is IRDI membership free?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('Yes. IRDI membership is free. Becoming a member is a commitment to follow IRDI\'s Code of Ethics and Best Practices and to represent the hobby responsibly.') }}
+                                {{ __("Yes. IRDI membership is free. Becoming a member is a commitment to follow IRDI's Code of Ethics and Best Practices and to represent the hobby responsibly.") }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('Does IRDI membership certify or guarantee a detectorist?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('No. IRDI membership shows that a member has agreed to support IRDI\'s Code of Ethics and Best Practices. Membership should not be considered a license, professional certification, background check, or guarantee of an individual\'s conduct.') }}
+                                {{ __("No. IRDI membership and good-standing status reflect a member's current status with IRDI. They should not be considered a license, professional certification, background check, endorsement, or guarantee of an individual's past or future conduct.") }}
                             </p>
                         </flux:accordion.item>
 
@@ -150,6 +150,60 @@
                         <flux:accordion.item heading="{{ __('What does my Member Since date mean?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                                 {{ __('Your Member Since date records when your IRDI membership became active. It may be displayed on your account, public member profile, and IRDI Member Card.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                    </flux:accordion>
+
+                </section>
+
+
+                {{-- Good Standing and Accountability --}}
+                <section class="mb-14">
+
+                    <div class="mb-3 rounded-xl bg-irdi-green/10 px-5 py-4">
+                        <flux:heading size="xl" level="2" class="text-irdi-green">
+                            {{ __('Good Standing & Accountability') }}
+                        </flux:heading>
+
+                        <div class="mt-2 h-1 w-12 rounded-full bg-irdi-gold"></div>
+                    </div>
+
+                    <flux:accordion>
+
+                        <flux:accordion.item heading="{{ __('What does Member in Good Standing mean?') }}">
+                            <div class="space-y-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                <p>
+                                    {{ __('Member in Good Standing means the member currently meets IRDI’s membership and accountability requirements and is not currently suspended or banned.') }}
+                                </p>
+
+                                <p>
+                                    {{ __('Good standing is a current membership-status indicator. It is not a background check, endorsement, certification, or guarantee of past or future conduct.') }}
+                                </p>
+                            </div>
+                        </flux:accordion.item>
+
+                        <flux:accordion.item heading="{{ __('Can a member’s Good Standing status change?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('Yes. Membership standing can change when IRDI takes membership action under its accountability process. Public verification should therefore be based on the member’s current live profile rather than a saved Member Card or screenshot.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                        <flux:accordion.item heading="{{ __('How does IRDI handle concerns about a member?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('IRDI may review concerns involving member conduct or use of IRDI services. Depending on the circumstances and available information, IRDI may take proportionate administrative action, which can include a warning, probation, suspension, restoration, or a ban.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                        <flux:accordion.item heading="{{ __('Are disciplinary details shown publicly?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('No. Public profiles are intended to show a member’s current IRDI standing and appropriate public trust information, not private reports, confidential concerns, staff notes, or detailed disciplinary records.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                        <flux:accordion.item heading="{{ __('Does Good Standing mean IRDI has background checked or personally vetted the member?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('No. Good Standing reflects the member’s current status within IRDI’s membership and accountability system. IRDI does not present Good Standing as a criminal background check, personal endorsement, or guarantee of trustworthiness or future behavior.') }}
                             </p>
                         </flux:accordion.item>
 
@@ -245,7 +299,7 @@
 
                         <flux:accordion.item heading="{{ __('What is the IRDI Member Directory?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('The Member Directory is a public directory of active IRDI Members who have chosen to make their Member Profile visible. It allows visitors to find members and view their public IRDI profiles.') }}
+                                {{ __('The Member Directory is a public verification tool for current IRDI members in good standing who have chosen to make their Member Profile visible. Visitors can use it to confirm current membership and standing and open a member’s public profile for additional information.') }}
                             </p>
                         </flux:accordion.item>
 
@@ -273,7 +327,7 @@
 
                         <flux:accordion.item heading="{{ __('How can someone verify that I am an active IRDI Member?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('If you have chosen to make your profile public, someone can search the IRDI Member Directory or visit your public Member Profile. Your IRDI Member Card and its QR code can also direct someone to your profile.') }}
+                                {{ __('If you have chosen to make your profile public, someone can search the IRDI Member Directory or visit your public Member Profile to confirm your current membership and standing. Your Member Card and QR code can direct someone to that live profile, which is the authoritative source for your current public IRDI status.') }}
                             </p>
                         </flux:accordion.item>
 
@@ -304,14 +358,14 @@
 
                         <flux:accordion.item heading="{{ __('What is the IRDI Member Card?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('Your IRDI Member Card is a digital card connected to your Member Profile. It displays identifying member information and provides another way to demonstrate your active IRDI membership.') }}
+                                {{ __('Your IRDI Member Card is a digital card connected to your Member Profile. It displays identifying member information and provides a convenient way to direct someone to your live public IRDI profile. The card itself is not permanent proof of current membership or standing.') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('What does the QR code on my Member Card do?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('The QR code links to your IRDI Member Profile. Someone can scan the code with a compatible phone or device to visit your profile and view your public member information.') }}
+                                {{ __('The QR code links to your live IRDI Member Profile. Someone can scan it to view your current public membership and standing information. Because a member’s status can change, the live profile—not a saved image or copy of the card—is the authoritative source for current IRDI verification.') }}
                             </p>
                         </flux:accordion.item>
 
@@ -332,7 +386,7 @@
 
                     <div class="mb-3 rounded-xl bg-irdi-green/10 px-5 py-4">
                         <flux:heading size="xl" level="2" class="text-irdi-green">
-                            {{ __('Property Owner Reviews') }}
+                            {{ __('Property Owner Feedback') }}
                         </flux:heading>
 
                         <div class="mt-2 h-1 w-12 rounded-full bg-irdi-gold"></div>
@@ -340,9 +394,9 @@
 
                     <flux:accordion>
 
-                        <flux:accordion.item heading="{{ __('What are Property Owner Reviews?') }}">
+                        <flux:accordion.item heading="{{ __('What is Property Owner Feedback?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('Property Owner Reviews allow a property owner to provide feedback about their experience with an IRDI Member after allowing that member to detect on their property.') }}
+                                {{ __('Property Owner Feedback allows a property owner to provide feedback about their experience with an IRDI member after allowing that member to detect on their property. It adds real-world context to the member’s public trust record while remaining subject to IRDI review and visibility rules.') }}
                             </p>
                         </flux:accordion.item>
 
@@ -363,14 +417,14 @@
 
                         <flux:accordion.item heading="{{ __('What does a Property Owner Review ask about?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __("Property Owner Reviews focus on the member's respect for the property, communication and courtesy, care of the property, and whether the property owner would allow the detectorist to return. The property owner may also provide written comments.") }}
+                                {{ __("The current Property Owner Feedback questionnaire asks about the overall experience, the member's respect for the property, communication and courtesy, whether the property was left in satisfactory condition, and whether the property owner would allow the member to return. The property owner may also provide written comments and can confidentially tell IRDI about a concern.") }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('Can anyone leave a review on my profile?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('No. Property Owner Reviews are submitted through unique review invitations associated with an IRDI Member Profile rather than through an unrestricted public review form.') }}
+                                {{ __('No. Property Owner Feedback is submitted through unique review invitations associated with an IRDI Member Profile rather than through an unrestricted public review form. Reviewers must also verify their email address before submitting feedback.') }}
                             </p>
                         </flux:accordion.item>
 
@@ -391,7 +445,49 @@
 
                         <flux:accordion.item heading="{{ __('What review information appears on my public profile?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('IRDI may summarize your visible Property Owner Reviews on your public Member Profile, including the number of reviews, an overall review rating, and information about whether property owners would allow you to return.') }}
+                                {{ __('IRDI may summarize visible Property Owner Feedback on your public Member Profile, including the number of visible reviews, an overall rating when enough reviews are available, and information about whether property owners would allow you to return. Confidential concerns and staff moderation information are not displayed publicly.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                    </flux:accordion>
+
+                </section>
+
+
+                {{-- Property Owner Feedback: Verification and Privacy --}}
+                <section class="mb-14">
+
+                    <div class="mb-3 rounded-xl bg-irdi-green/10 px-5 py-4">
+                        <flux:heading size="xl" level="2" class="text-irdi-green">
+                            {{ __('Feedback Verification & Privacy') }}
+                        </flux:heading>
+
+                        <div class="mt-2 h-1 w-12 rounded-full bg-irdi-gold"></div>
+                    </div>
+
+                    <flux:accordion>
+
+                        <flux:accordion.item heading="{{ __('Does IRDI verify property owners who submit feedback?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('IRDI requires a reviewer to verify access to the email address used for the review. IRDI does not independently verify property ownership or guarantee the accuracy of the contents of a review.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                        <flux:accordion.item heading="{{ __('When is a public Property Owner Rating displayed?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('A public Property Owner Rating is displayed after a member has at least three visible Property Owner Reviews. Before that threshold is reached, the public profile may show the number of visible reviews without displaying an average rating.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                        <flux:accordion.item heading="{{ __('What is the confidential concern option?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('A property owner submitting feedback can privately indicate that they have a concern they want IRDI to know about and can provide additional details. This information is intended for authorized IRDI staff review and is not shown on the member’s public profile or member-facing review pages.') }}
+                            </p>
+                        </flux:accordion.item>
+
+                        <flux:accordion.item heading="{{ __('Can IRDI hide or moderate Property Owner Feedback?') }}">
+                            <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+                                {{ __('Yes. Authorized IRDI staff can review Property Owner Feedback and may hide or restore a review when appropriate. Public profile statistics are based only on reviews that are currently visible.') }}
                             </p>
                         </flux:accordion.item>
 
@@ -415,28 +511,28 @@
 
                         <flux:accordion.item heading="{{ __('Can someone contact me through my IRDI Member Profile?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('If you choose to allow contact through your Member Profile, visitors can use the Contact Me option on your public profile to send you a message.') }}
+                                {{ __('If you choose to allow member messages, eligible signed-in IRDI members can use the Message Member option on your public profile to send you a message through IRDI.') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('Do I have to allow people to contact me?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('No. Allowing contact through your public Member Profile is optional. If you do not allow contact, the Contact Me option will not be displayed on your profile.') }}
+                                {{ __('No. Allowing messages from other IRDI members is optional. If you turn this setting off, the Message Member option will not be displayed on your profile.') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('Is my email address displayed publicly when someone contacts me?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('The Contact Me feature allows visitors to send a message through IRDI without requiring your account email address to be displayed publicly on your Member Profile.') }}
+                                {{ __('The IRDI member messaging system allows eligible members to contact you without displaying your account email address publicly on your Member Profile.') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('What information is visible on my public profile?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('Your public Member Profile may display information such as your profile name, username, profile image, general location, biography, website, Member Since date, Member Card information, and available Property Owner Review information.') }}
+                                {{ __('Your public Member Profile may display information such as your profile name, username, profile image, general location, biography, website, Member Since date, current membership standing, and available Property Owner Feedback. Confidential concerns, private moderation information, and your account email address are not displayed publicly.') }}
                             </p>
                         </flux:accordion.item>
 
