@@ -5,6 +5,7 @@ use App\Models\MembershipEnforcement;
 use App\Models\MessageReport;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipAdministrativeReviewStartedNotification;
 use App\Notifications\MembershipSuspensionContinuedNotification;
 use App\Notifications\MembershipProbationNotification;
 use App\Notifications\MembershipRestoredNotification;
@@ -635,6 +636,12 @@ class extends Component
 
             return $enforcement;
         });
+
+        $this->user->notify(
+            new MembershipAdministrativeReviewStartedNotification(
+                reason: $enforcement->reason,
+            )
+        );
 
         $this->administrativeHoldReason = '';
         $this->administrativeHoldDetails = '';
