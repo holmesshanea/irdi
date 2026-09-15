@@ -38,4 +38,6 @@ return [
     'highlight_links_description' => 'Macht Links leichter erkennbar.',
     'reset_accessibility' => 'Barrierefreiheit zurücksetzen',
     'open_preferences' => 'Einstellungen zur Barrierefreiheit öffnen',
+    'status_information_title' => 'Status- und Verifizierungsinformationen',
+    'status_information_body' => 'IRDI ist bestrebt, Mitgliedsstatus, Verifizierungsinformationen, Rückmeldungen, Hinweise und Kontostatus so darzustellen, dass wichtige Informationen nicht ausschließlich durch Farbe vermittelt werden. Textbeschriftungen und zusätzlicher Kontext unterstützen die Verständlichkeit.',
 ];

@@ -9,6 +9,7 @@ return [
     'overview' => [
         'heading' => 'Notre communauté grandissante',
         'description' => 'Un aperçu des membres actifs d’IRDI et des détectoristes responsables qui contribuent à établir une norme mondiale.',
+        'standing_note' => 'Ces statistiques décrivent l’adhésion et la participation à l’IRDI. Membre en règle est un statut organisationnel actuel ; ces chiffres ne constituent ni un score de confiance, ni une vérification des antécédents, ni une approbation, ni une garantie de conduite.',
     ],
     'cards' => [
         'active_members' => 'Membres actifs',

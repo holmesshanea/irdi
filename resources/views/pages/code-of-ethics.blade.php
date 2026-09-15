@@ -34,7 +34,7 @@
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    {{ __('The ethical principles that guide responsible IRDI members.') }}
+                    {{ __('The ethical principles IRDI members commit to uphold throughout their membership.') }}
                 </p>
 
             </div>
@@ -199,7 +199,7 @@
                             </p>
 
                             <p class="mt-3 leading-7">
-                                {{ __('As an IRDI member, I will strive to uphold these principles and help strengthen the future of responsible metal detecting.') }}
+                                {{ __('As an IRDI member, I understand that these principles are an ongoing membership commitment. I will strive to uphold them throughout my membership and help strengthen the future of responsible metal detecting.') }}
                             </p>
                         </div>
 

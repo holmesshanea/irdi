@@ -29,7 +29,7 @@ return [
     'preferences' => 'Voorkeuren',
     'reject_optional' => 'Optionele weigeren',
     'accept_all' => 'Alles accepteren',
-    'preferences_title' => 'Cookievoorkeuren',
+    'preferences_title' => 'Opslag van voorkeuren',
     'preferences_intro' => 'Kies welke optionele cookies IRDI mag gebruiken. Noodzakelijke cookies zijn vereist om de website te laten werken en kunnen niet worden uitgeschakeld.',
     'necessary_description' => 'Worden gebruikt voor beveiliging, authenticatie, sessies en andere essentiële websitefuncties.',
     'always_active' => 'Altijd actief',
@@ -37,4 +37,5 @@ return [
     'allow_analytics' => 'Analytische cookies toestaan',
     'back' => 'Terug',
     'save_preferences' => 'Voorkeuren opslaan',
+    'preferences_body' => 'IRDI kan lokale voorkeuren opslaan die nodig zijn voor functies die u kiest te gebruiken, waaronder toegankelijkheidsvoorkeuren. Noodzakelijke sessie- en beveiligingstechnologieën kunnen ook worden gebruikt om u aangemeld te houden, formulieren te beschermen en accountfuncties uit te voeren.',
 ];

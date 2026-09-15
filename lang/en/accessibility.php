@@ -38,4 +38,6 @@ return [
     'highlight_links_description' => 'Make links easier to identify.',
     'reset_accessibility' => 'Reset Accessibility',
     'open_preferences' => 'Open accessibility preferences',
+    'status_information_title' => 'Status and Verification Information',
+    'status_information_body' => 'IRDI aims to present membership standing, verification information, feedback, notices, and account status in ways that do not rely on color alone. Text labels and other context are used to communicate important status information.',
 ];

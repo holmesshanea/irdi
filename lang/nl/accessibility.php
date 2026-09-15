@@ -38,4 +38,6 @@ return [
     'highlight_links_description' => 'Maakt links gemakkelijker herkenbaar.',
     'reset_accessibility' => 'Toegankelijkheid herstellen',
     'open_preferences' => 'Toegankelijkheidsvoorkeuren openen',
+    'status_information_title' => 'Status- en verificatie-informatie',
+    'status_information_body' => 'IRDI streeft ernaar lidmaatschapsstatus, verificatie-informatie, feedback, meldingen en accountstatus weer te geven zonder uitsluitend op kleur te vertrouwen. Tekstlabels en aanvullende context worden gebruikt om belangrijke statusinformatie duidelijk te maken.',
 ];

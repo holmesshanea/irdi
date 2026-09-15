@@ -63,6 +63,16 @@
 
             <section class="space-y-3">
                 <flux:heading size="lg" level="2">
+                    {{ __('accessibility.status_information_title') }}
+                </flux:heading>
+
+                <flux:text class="leading-7 text-zinc-700">
+                    {{ __('accessibility.status_information_body') }}
+                </flux:text>
+            </section>
+
+            <section class="space-y-3">
+                <flux:heading size="lg" level="2">
                     {{ __('accessibility.ongoing_title') }}
                 </flux:heading>
 

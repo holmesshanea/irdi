@@ -9,6 +9,7 @@ return [
     'overview' => [
         'heading' => 'Unsere wachsende Gemeinschaft',
         'description' => 'Ein Überblick über die aktive IRDI-Mitgliedschaft und die verantwortungsbewussten Sondengänger, die an einem globalen Standard mitwirken.',
+        'standing_note' => 'Diese Statistiken beschreiben IRDI-Mitgliedschaft und Teilnahme. Mitglied in gutem Stand ist ein aktueller Organisationsstatus; diese Zahlen sind kein Vertrauenswert, keine Hintergrundprüfung, keine Empfehlung und keine Garantie für das Verhalten eines Mitglieds.',
     ],
     'cards' => [
         'active_members' => 'Aktive Mitglieder',

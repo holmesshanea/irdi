@@ -48,6 +48,16 @@
                 </flux:text>
             </section>
 
+            <section class="space-y-3">
+                <flux:heading size="lg" level="2">
+                    {{ __('cookies.preferences_title') }}
+                </flux:heading>
+
+                <flux:text class="leading-7 text-zinc-700">
+                    {{ __('cookies.preferences_body') }}
+                </flux:text>
+            </section>
+
             <section class="space-y-4">
                 <flux:heading size="lg" level="2">
                     {{ __('cookies.analytics_title') }}

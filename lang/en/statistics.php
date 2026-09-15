@@ -9,6 +9,7 @@ return [
     'overview' => [
         'heading' => 'Our Growing Community',
         'description' => 'A snapshot of active IRDI membership and the responsible detectorists helping build a global standard.',
+        'standing_note' => 'These statistics describe IRDI membership and participation. Member in Good Standing is a current organizational status; these figures are not a trust score, background check, endorsement, or guarantee of member conduct.',
     ],
     'cards' => [
         'active_members' => 'Active Members',

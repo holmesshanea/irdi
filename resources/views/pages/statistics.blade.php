@@ -225,6 +225,12 @@ class extends Component
                 </p>
             </div>
 
+            <div class="mx-auto mt-8 max-w-3xl rounded-xl border border-irdi-gold/40 bg-irdi-gold/10 p-5 text-center">
+                <p class="text-sm leading-6 text-zinc-700">
+                    {{ __('statistics.overview.standing_note') }}
+                </p>
+            </div>
+
             <div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
                 <flux:card class="group p-7 transition hover:-translate-y-1 hover:shadow-lg">
                     <div class="flex items-start justify-between gap-4">

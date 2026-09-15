@@ -9,6 +9,7 @@ return [
     'overview' => [
         'heading' => 'Onze groeiende gemeenschap',
         'description' => 'Een momentopname van het actieve IRDI-lidmaatschap en de verantwoordelijke detectoristen die helpen een wereldwijde standaard op te bouwen.',
+        'standing_note' => 'Deze statistieken beschrijven IRDI-lidmaatschap en deelname. Lid met een goede status is een actuele organisatiestatus; deze cijfers zijn geen vertrouwensscore, antecedentenonderzoek, aanbeveling of garantie van gedrag.',
     ],
     'cards' => [
         'active_members' => 'Actieve leden',

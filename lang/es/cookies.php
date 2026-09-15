@@ -29,7 +29,7 @@ return [
     'preferences' => 'Preferencias',
     'reject_optional' => 'Rechazar opcionales',
     'accept_all' => 'Aceptar todas',
-    'preferences_title' => 'Preferencias de cookies',
+    'preferences_title' => 'Almacenamiento de preferencias',
     'preferences_intro' => 'Elija qué cookies opcionales puede utilizar IRDI. Las cookies necesarias son imprescindibles para que el sitio web funcione y no pueden desactivarse.',
     'necessary_description' => 'Se utilizan para la seguridad, autenticación, sesiones y otras funciones esenciales del sitio web.',
     'always_active' => 'Siempre activas',
@@ -37,4 +37,5 @@ return [
     'allow_analytics' => 'Permitir cookies de análisis',
     'back' => 'Volver',
     'save_preferences' => 'Guardar preferencias',
+    'preferences_body' => 'IRDI puede almacenar preferencias locales necesarias para las funciones que decidas utilizar, incluidas las preferencias de accesibilidad. También pueden utilizarse tecnologías necesarias de sesión y seguridad para mantener tu sesión, proteger formularios y operar funciones de la cuenta.',
 ];

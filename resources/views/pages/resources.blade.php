@@ -34,7 +34,7 @@
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    {{ __('Explore IRDI standards, educational materials, and trusted resources that support ethical, responsible, and informed metal detecting.') }}
+                    {{ __('Explore IRDI standards, accountability guidance, and educational resources that support ethical, responsible, and informed metal detecting.') }}
                 </p>
 
             </div>
@@ -56,7 +56,7 @@
                     <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                     <p class="mt-4 text-zinc-600">
-                        {{ __('Standards and guidance developed by IRDI for responsible detectorists.') }}
+                        {{ __('Standards and guidance that help IRDI members understand their commitments, maintain Good Standing, and practice responsible detecting.') }}
                     </p>
 
                 </div>
@@ -119,6 +119,60 @@
                             </flux:button>
                         </div>
 
+                    </flux:card>
+
+                    {{-- Membership and Good Standing --}}
+                    <flux:card
+                        class="flex h-full flex-col p-6 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                        <div class="flex size-11 items-center justify-center rounded-lg bg-irdi-green/10 text-irdi-green">
+                            <flux:icon.shield-check class="size-6" />
+                        </div>
+
+                        <h3 class="mt-5 text-xl font-semibold text-irdi-green">
+                            {{ __('Membership & Good Standing') }}
+                        </h3>
+
+                        <p class="mt-3 flex-1 text-sm leading-6 text-zinc-600">
+                            {{ __('Learn how IRDI membership works, what Member in Good Standing means, and how accountability supports responsible membership.') }}
+                        </p>
+
+                        <div class="mt-6">
+                            <flux:button
+                                href="{{ route('membership') }}"
+                                variant="outline"
+                                icon="shield-check"
+                            >
+                                {{ __('Learn About Membership') }}
+                            </flux:button>
+                        </div>
+                    </flux:card>
+
+                    {{-- Member Verification --}}
+                    <flux:card
+                        class="flex h-full flex-col p-6 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                        <div class="flex size-11 items-center justify-center rounded-lg bg-irdi-green/10 text-irdi-green">
+                            <flux:icon.identification class="size-6" />
+                        </div>
+
+                        <h3 class="mt-5 text-xl font-semibold text-irdi-green">
+                            {{ __('Member Verification') }}
+                        </h3>
+
+                        <p class="mt-3 flex-1 text-sm leading-6 text-zinc-600">
+                            {{ __('Use the public IRDI Member Directory to verify a member’s current standing and view available public membership information and property owner feedback.') }}
+                        </p>
+
+                        <div class="mt-6">
+                            <flux:button
+                                href="{{ route('directory') }}"
+                                variant="outline"
+                                icon="identification"
+                            >
+                                {{ __('Verify an IRDI Member') }}
+                            </flux:button>
+                        </div>
                     </flux:card>
 
                 </div>

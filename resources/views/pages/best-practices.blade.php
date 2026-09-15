@@ -34,7 +34,7 @@
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    {{ __('Practical guidance for responsible, respectful, and lawful metal detecting.') }}
+                    {{ __('Practical guidance IRDI members are expected to follow throughout responsible, respectful, and lawful metal detecting.') }}
                 </p>
 
             </div>
@@ -329,7 +329,7 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Responsible metal detecting depends on trust. By respecting property, protecting history, following the law, recovering targets carefully, and treating others with integrity, IRDI members help strengthen that trust and protect the future of the hobby.') }}
+                                {{ __('Responsible metal detecting depends on trust. By respecting property, protecting history, following the law, recovering targets carefully, and treating others with integrity, IRDI members help strengthen that trust, maintain the standards expected of membership, and protect the future of the hobby.') }}
                             </p>
                         </div>
 
