@@ -5,6 +5,7 @@ use App\Models\MembershipEnforcement;
 use App\Models\MessageReport;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipSuspensionContinuedNotification;
 use App\Notifications\MembershipProbationNotification;
 use App\Notifications\MembershipRestoredNotification;
 use App\Notifications\MembershipWarningIssuedNotification;
@@ -462,7 +463,7 @@ class extends Component
 
             StaffActivity::record(
                 action: 'membership_probation_resolved',
-                description: 'Restored '.$this->user->name.' from probation to Good Standing.',
+                description: 'Resolved membership probation for '.$this->user->name.'.',
                 targetUserId: $this->user->id,
                 subject: $probation,
                 metadata: [
@@ -471,13 +472,20 @@ class extends Component
                     'original_reason' => $probation->reason,
                 ],
             );
+
         });
 
         $this->probationRestoreReason = '';
 
         $this->loadUser();
 
-        session()->flash('status', 'Probation has been resolved and the member has been restored to Good Standing.');
+        session()->flash(
+            'status',
+            $this->user->isInGoodStanding()
+                ? 'Probation has been resolved and the member has been restored to Good Standing.'
+                : 'Probation has been resolved. The member is not currently in Good Standing because another active accountability action remains.'
+        );
+
     }
 
     public function continueProbation(int $probationId): void
@@ -1452,6 +1460,13 @@ class extends Component
             );
         });
 
+        $this->user->notify(
+            new MembershipSuspensionContinuedNotification(
+                reason: $this->suspensionContinueReason,
+                eligibleForReviewAt: $nextReviewDate,
+            )
+        );
+
         $this->suspensionContinueReason = '';
         $this->suspensionContinuePeriod = '90';
 
@@ -1460,8 +1475,8 @@ class extends Component
         session()->flash(
             'status',
             $nextReviewDate === null
-                ? 'Suspension has been continued indefinitely.'
-                : 'Suspension has been continued and a new formal review date has been set.'
+                ? 'Suspension has been continued indefinitely and the member has been notified.'
+                : 'Suspension has been continued, a new formal review date has been set, and the member has been notified.'
         );
     }
 

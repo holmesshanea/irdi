@@ -537,4 +537,3 @@ test('suspending member closes active probation as escalation', function () {
         'subject_id' => $probation->id,
     ]);
 });
-

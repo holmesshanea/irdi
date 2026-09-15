@@ -3,7 +3,9 @@
 use App\Models\BanIdentifier;
 use App\Models\MembershipEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipSuspensionContinuedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -277,6 +279,7 @@ test('passing a suspension review date does not automatically restore membership
 });
 
 test('administrator can continue an active suspension with a new formal review date', function () {
+    Notification::fake();
     $admin = suspensionUser(['is_admin' => true]);
     $member = suspensionUser(['membership_status' => 'suspended']);
 
@@ -319,9 +322,21 @@ test('administrator can continue an active suspension with a new formal review d
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $suspension->id,
     ]);
+
+    Notification::assertSentTo(
+        $member,
+        MembershipSuspensionContinuedNotification::class,
+        function (MembershipSuspensionContinuedNotification $notification) {
+            return $notification->reason ===
+                'The underlying concerns remain unresolved and additional suspension time is required.'
+                && $notification->eligibleForReviewAt?->toDateTimeString() ===
+                now()->addDays(180)->toDateTimeString();
+        }
+    );
 });
 
 test('administrator can continue a suspension indefinitely', function () {
+    Notification::fake();
     $admin = suspensionUser(['is_admin' => true]);
     $member = suspensionUser(['membership_status' => 'suspended']);
 
@@ -353,6 +368,16 @@ test('administrator can continue a suspension indefinitely', function () {
         ->and($suspension->status)->toBe('active')
         ->and($suspension->eligible_for_review_at)->toBeNull()
         ->and($suspension->review_requested_at)->toBeNull();
+
+    Notification::assertSentTo(
+        $member,
+        MembershipSuspensionContinuedNotification::class,
+        function (MembershipSuspensionContinuedNotification $notification) {
+            return $notification->reason ===
+                'The suspension must remain in effect without a scheduled review date at this time.'
+                && $notification->eligibleForReviewAt === null;
+        }
+    );
 });
 
 test('administrator can resolve suspension to probation', function () {
