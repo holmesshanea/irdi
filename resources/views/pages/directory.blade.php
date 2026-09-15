@@ -10,7 +10,7 @@ use Symfony\Component\Intl\Countries;
 
 new
 #[Layout('components.layouts.public')]
-#[Title('IRDI Member Directory | Responsible Detectorists')]
+#[Title('Verify an IRDI Member | Member Directory')]
 
 class extends Component
 {
@@ -234,11 +234,11 @@ class extends Component
                 </p>
 
                 <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    {{ __('Member Directory') }}
+                    {{ __('Verify an IRDI Member') }}
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
-                    {{ __('Search for active IRDI Members.') }}
+                    {{ __("Search the IRDI Member Directory to confirm a member's current membership and standing, view their public profile, and—when available—see feedback from property owners who have invited them onto their land.") }}
                 </p>
 
             </div>
@@ -248,6 +248,28 @@ class extends Component
 
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+
+            <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
+                <div class="flex items-start gap-4">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-irdi-gold/15 text-irdi-green">
+                        <flux:icon.shield-check class="size-5" aria-hidden="true" />
+                    </div>
+
+                    <div>
+                        <flux:heading size="lg" level="2">
+                            {{ __('Current IRDI Membership Verification') }}
+                        </flux:heading>
+
+                        <flux:text class="mt-2 max-w-4xl leading-7">
+                            {{ __('Profiles shown in this directory belong to current IRDI members in good standing who have chosen to make their profiles public. Open a member profile to view their current standing, membership information, and available property owner feedback.') }}
+                        </flux:text>
+
+                        <flux:text class="mt-2 max-w-4xl text-sm text-zinc-500">
+                            {{ __('Directory status reflects the member’s current status with IRDI and may change if their membership standing changes.') }}
+                        </flux:text>
+                    </div>
+                </div>
+            </div>
 
             <div class="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-7">
 
@@ -382,12 +404,12 @@ class extends Component
 
                 <div>
                     <flux:heading size="lg" level="2">
-                        {{ __('Directory Results') }}
+                        {{ __('Members in Good Standing') }}
                     </flux:heading>
 
                     <flux:text class="mt-1">
                         {{ $this->profiles->total() }}
-                        {{ Str::plural('member', $this->profiles->total()) }} found
+                        {{ Str::plural('member', $this->profiles->total()) }} {{ __('found') }}
                     </flux:text>
                 </div>
 
@@ -485,6 +507,15 @@ class extends Component
 
                                         </div>
                                     @endif
+
+                                    <div class="mt-3">
+                                        <flux:badge size="sm" color="green">
+                                            <span class="inline-flex items-center gap-1.5">
+                                                <span class="size-2 rounded-full bg-green-500" aria-hidden="true"></span>
+                                                {{ __('Member in Good Standing') }}
+                                            </span>
+                                        </flux:badge>
+                                    </div>
 
                                     @if ($profile->city || $profile->state_province || $profile->country)
                                         <div class="mt-2 flex items-center gap-2 text-sm text-zinc-600">
