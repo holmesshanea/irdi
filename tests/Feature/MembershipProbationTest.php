@@ -227,6 +227,66 @@ test('administrator can resolve probation and restore good standing', function (
         ->and($member->fresh()->isInGoodStanding())->toBeTrue();
 });
 
+test('resolving probation does not claim good standing while administrative review remains active', function () {
+    $admin = probationStaffUser([
+        'is_admin' => true,
+    ]);
+
+    $member = probationStaffUser();
+
+    $probation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'Membership probation requiring corrective action.',
+        'starts_at' => now()->subDays(100),
+        'eligible_for_review_at' => now()->subDays(10),
+        'restoration_requirements' => 'Complete the required corrective action.',
+    ]);
+
+    MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+        'reason' => 'A separate concern requires administrative review.',
+        'starts_at' => now()->subDay(),
+    ]);
+
+    expect($member->fresh()->isOnProbation())->toBeTrue()
+        ->and($member->fresh()->isUnderAdministrativeReview())->toBeTrue()
+        ->and($member->fresh()->isInGoodStanding())->toBeFalse();
+
+    $this->actingAs($admin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'probationRestoreReason',
+            'The member completed all requirements associated with the probation.'
+        )
+        ->call('restoreFromProbation', $probation->id)
+        ->assertHasNoErrors();
+
+    $member->refresh();
+    $probation->refresh();
+
+    expect($probation->status)->toBe('resolved')
+        ->and($probation->resolved_at)->not->toBeNull()
+        ->and($member->isOnProbation())->toBeFalse()
+        ->and($member->isUnderAdministrativeReview())->toBeTrue()
+        ->and($member->isInGoodStanding())->toBeFalse();
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'actor_id' => $admin->id,
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_resolved',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $probation->id,
+        'description' => 'Resolved membership probation for '.$member->name.'.',
+    ]);
+});
+
 test('restoring probation requires documented reason', function () {
     $admin = probationStaffUser([
         'is_admin' => true,
@@ -477,3 +537,4 @@ test('suspending member closes active probation as escalation', function () {
         'subject_id' => $probation->id,
     ]);
 });
+
