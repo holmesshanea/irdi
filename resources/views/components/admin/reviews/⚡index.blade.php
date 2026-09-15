@@ -361,14 +361,16 @@ class extends Component
                 @foreach ($reviews as $review)
 
                     @php
-                        $averageRating = round(
-                            (
-                                $review->respect_for_property
-                                + $review->communication_courtesy
-                                + $review->care_of_property
-                            ) / 3,
-                            1
-                        );
+                        $averageRating = $review->overall_experience !== null
+                            ? (float) $review->overall_experience
+                            : round(
+                                (
+                                    $review->respect_for_property
+                                    + $review->communication_courtesy
+                                    + $review->care_of_property
+                                ) / 3,
+                                1
+                            );
                     @endphp
 
                     <flux:card class="p-5 {{ $review->hidden_at ? 'opacity-70' : '' }}">

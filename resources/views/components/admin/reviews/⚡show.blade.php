@@ -173,14 +173,16 @@ class extends Component
         @endif
 
         @php
-            $averageRating = round(
-                (
-                    $review->respect_for_property
-                    + $review->communication_courtesy
-                    + $review->care_of_property
-                ) / 3,
-                1
-            );
+            $averageRating = $review->overall_experience !== null
+                ? (float) $review->overall_experience
+                : round(
+                    (
+                        $review->respect_for_property
+                        + $review->communication_courtesy
+                        + $review->care_of_property
+                    ) / 3,
+                    1
+                );
         @endphp
 
         <flux:card class="p-6 {{ $review->hidden_at ? 'opacity-70' : '' }}">
@@ -240,45 +242,86 @@ class extends Component
 
             </div>
 
-            <div class="mt-6 grid gap-4 sm:grid-cols-3">
+            @if ($review->overall_experience !== null)
 
-                <div class="rounded-lg bg-zinc-50 p-4">
+                <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-                    <p class="text-sm font-medium text-zinc-500">
-                        Respect for Property
-                    </p>
+                    <div class="rounded-lg bg-zinc-50 p-4">
+                        <p class="text-sm font-medium text-zinc-500">
+                            Overall Experience
+                        </p>
+                        <p class="mt-2 text-xl font-semibold text-irdi-green">
+                            {{ $review->overall_experience }} / 5
+                        </p>
+                    </div>
 
-                    <p class="mt-2 text-xl font-semibold text-irdi-green">
-                        {{ $review->respect_for_property }} / 5
-                    </p>
+                    <div class="rounded-lg bg-zinc-50 p-4">
+                        <p class="text-sm font-medium text-zinc-500">
+                            Respect for Property
+                        </p>
+                        <p class="mt-2 text-xl font-semibold text-irdi-green">
+                            {{ $review->respect_for_property }} / 5
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg bg-zinc-50 p-4">
+                        <p class="text-sm font-medium text-zinc-500">
+                            Communication & Courtesy
+                        </p>
+                        <p class="mt-2 text-xl font-semibold text-irdi-green">
+                            {{ $review->communication_courtesy }} / 5
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg bg-zinc-50 p-4">
+                        <p class="text-sm font-medium text-zinc-500">
+                            Property Left Satisfactorily
+                        </p>
+                        <div class="mt-2">
+                            @if ($review->property_left_satisfactorily)
+                                <flux:badge color="green">Yes</flux:badge>
+                            @else
+                                <flux:badge color="red">No</flux:badge>
+                            @endif
+                        </div>
+                    </div>
 
                 </div>
 
-                <div class="rounded-lg bg-zinc-50 p-4">
+            @else
 
-                    <p class="text-sm font-medium text-zinc-500">
-                        Communication & Courtesy
-                    </p>
+                <div class="mt-6 grid gap-4 sm:grid-cols-3">
 
-                    <p class="mt-2 text-xl font-semibold text-irdi-green">
-                        {{ $review->communication_courtesy }} / 5
-                    </p>
+                    <div class="rounded-lg bg-zinc-50 p-4">
+                        <p class="text-sm font-medium text-zinc-500">
+                            Respect for Property
+                        </p>
+                        <p class="mt-2 text-xl font-semibold text-irdi-green">
+                            {{ $review->respect_for_property }} / 5
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg bg-zinc-50 p-4">
+                        <p class="text-sm font-medium text-zinc-500">
+                            Communication & Courtesy
+                        </p>
+                        <p class="mt-2 text-xl font-semibold text-irdi-green">
+                            {{ $review->communication_courtesy }} / 5
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg bg-zinc-50 p-4">
+                        <p class="text-sm font-medium text-zinc-500">
+                            Care of the Property
+                        </p>
+                        <p class="mt-2 text-xl font-semibold text-irdi-green">
+                            {{ $review->care_of_property }} / 5
+                        </p>
+                    </div>
 
                 </div>
 
-                <div class="rounded-lg bg-zinc-50 p-4">
-
-                    <p class="text-sm font-medium text-zinc-500">
-                        Care of the Property
-                    </p>
-
-                    <p class="mt-2 text-xl font-semibold text-irdi-green">
-                        {{ $review->care_of_property }} / 5
-                    </p>
-
-                </div>
-
-            </div>
+            @endif
 
             <div class="mt-6 border-t border-zinc-200 pt-6">
 
@@ -317,6 +360,48 @@ class extends Component
                     <p class="mt-3 whitespace-pre-line leading-7 text-zinc-700">
                         {{ $review->comments }}
                     </p>
+
+                </div>
+
+            @endif
+
+            @if ($review->overall_experience !== null)
+
+                <div class="mt-6 border-t border-zinc-200 pt-6">
+
+                    <p class="text-sm font-medium text-zinc-500">
+                        Private Concern
+                    </p>
+
+                    <div class="mt-2">
+
+                        @if ($review->private_concern)
+
+                            <flux:badge color="red">
+                                Yes
+                            </flux:badge>
+
+                            @if ($review->private_concern_details)
+                                <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-4">
+                                    <p class="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                                        Confidential — Authorized IRDI Staff Only
+                                    </p>
+
+                                    <p class="mt-2 whitespace-pre-line text-sm leading-6 text-zinc-700">
+                                        {{ $review->private_concern_details }}
+                                    </p>
+                                </div>
+                            @endif
+
+                        @else
+
+                            <flux:badge color="green">
+                                No
+                            </flux:badge>
+
+                        @endif
+
+                    </div>
 
                 </div>
 

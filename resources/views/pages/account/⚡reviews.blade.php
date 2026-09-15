@@ -206,15 +206,15 @@ class extends Component
                             </div>
 
                             @error('reviewer_email')
-                                <p role="alert" class="mt-2 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
+                            <p role="alert" class="mt-2 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
                             @enderror
 
                             @error('reviewer_email_' . $profile->id)
-                                <p role="alert" class="mt-2 text-sm text-red-600">
-                                    {{ $message }}
-                                </p>
+                            <p role="alert" class="mt-2 text-sm text-red-600">
+                                {{ $message }}
+                            </p>
                             @enderror
 
                         </form>
@@ -408,57 +408,100 @@ class extends Component
                                                         </p>
                                                     </div>
 
-                                                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                                    @if ($invitation->review->overall_experience !== null)
 
-                                                        <div class="rounded-lg bg-zinc-50 p-4">
+                                                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
 
-                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                {{ __('Respect for Property') }}
-                                                            </p>
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Overall Experience') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->overall_experience }}/5
+                                                                </p>
+                                                            </div>
 
-                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                {{ $invitation->review->respect_for_property }}/5
-                                                            </p>
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Respect for Property') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->respect_for_property }}/5
+                                                                </p>
+                                                            </div>
+
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Communication & Courtesy') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->communication_courtesy }}/5
+                                                                </p>
+                                                            </div>
+
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Property Left Satisfactorily') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->property_left_satisfactorily ? __('Yes') : __('No') }}
+                                                                </p>
+                                                            </div>
+
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Would Allow Return') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->would_allow_return ? __('Yes') : __('No') }}
+                                                                </p>
+                                                            </div>
 
                                                         </div>
 
-                                                        <div class="rounded-lg bg-zinc-50 p-4">
+                                                    @else
 
-                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                {{ __('Communication & Courtesy') }}
-                                                            </p>
+                                                        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
 
-                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                {{ $invitation->review->communication_courtesy }}/5
-                                                            </p>
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Respect for Property') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->respect_for_property }}/5
+                                                                </p>
+                                                            </div>
+
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Communication & Courtesy') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->communication_courtesy }}/5
+                                                                </p>
+                                                            </div>
+
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Care of Property') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->care_of_property }}/5
+                                                                </p>
+                                                            </div>
+
+                                                            <div class="rounded-lg bg-zinc-50 p-4">
+                                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
+                                                                    {{ __('Would Allow Return') }}
+                                                                </p>
+                                                                <p class="mt-2 text-lg font-semibold text-zinc-900">
+                                                                    {{ $invitation->review->would_allow_return ? __('Yes') : __('No') }}
+                                                                </p>
+                                                            </div>
 
                                                         </div>
 
-                                                        <div class="rounded-lg bg-zinc-50 p-4">
-
-                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                {{ __('Care of Property') }}
-                                                            </p>
-
-                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                {{ $invitation->review->care_of_property }}/5
-                                                            </p>
-
-                                                        </div>
-
-                                                        <div class="rounded-lg bg-zinc-50 p-4">
-
-                                                            <p class="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                                                                {{ __('Would Allow Return') }}
-                                                            </p>
-
-                                                            <p class="mt-2 text-lg font-semibold text-zinc-900">
-                                                                {{ $invitation->review->would_allow_return ? 'Yes' : 'No' }}
-                                                            </p>
-
-                                                        </div>
-
-                                                    </div>
+                                                    @endif
 
                                                     @if ($invitation->review->comments)
 

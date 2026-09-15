@@ -13,20 +13,27 @@ class PropertyReview extends Model
         'member_profile_id',
         'property_review_invitation_id',
         'reviewer_email',
+        'overall_experience',
         'respect_for_property',
         'communication_courtesy',
         'care_of_property',
+        'property_left_satisfactorily',
         'would_allow_return',
         'comments',
+        'private_concern',
+        'private_concern_details',
     ];
 
     protected function casts(): array
     {
         return [
+            'overall_experience' => 'integer',
             'respect_for_property' => 'integer',
             'communication_courtesy' => 'integer',
             'care_of_property' => 'integer',
+            'property_left_satisfactorily' => 'boolean',
             'would_allow_return' => 'boolean',
+            'private_concern' => 'boolean',
             'hidden_at' => 'datetime',
             'admin_reviewed_at' => 'datetime',
         ];

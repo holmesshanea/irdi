@@ -50,11 +50,17 @@ class extends Component
                 COUNT(*) as review_count,
                 SUM(CASE WHEN would_allow_return = 1 THEN 1 ELSE 0 END) as return_count,
                 AVG(
-                    (
-                        respect_for_property
-                        + communication_courtesy
-                        + care_of_property
-                    ) / 3.0
+                    CASE
+                        WHEN overall_experience IS NOT NULL
+                            THEN overall_experience
+                        WHEN care_of_property IS NOT NULL
+                            THEN (
+                                respect_for_property
+                                + communication_courtesy
+                                + care_of_property
+                            ) / 3.0
+                        ELSE NULL
+                    END
                 ) as average_rating
             ')
             ->first();

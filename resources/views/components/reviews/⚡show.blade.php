@@ -21,15 +21,21 @@ class extends Component
 
     public bool $emailVerified = false;
 
+    public string $overallExperience = '';
+
     public string $respectForProperty = '';
 
     public string $communicationCourtesy = '';
 
-    public string $careOfProperty = '';
+    public string $propertyLeftSatisfactorily = '';
 
     public string $wouldAllowReturn = '';
 
     public string $comments = '';
+
+    public string $privateConcern = '';
+
+    public string $privateConcernDetails = '';
 
     public bool $reviewSubmitted = false;
 
@@ -171,11 +177,19 @@ class extends Component
         }
 
         $validated = $this->validate([
+            'overallExperience' => ['required', 'integer', 'between:1,5'],
             'respectForProperty' => ['required', 'integer', 'between:1,5'],
             'communicationCourtesy' => ['required', 'integer', 'between:1,5'],
-            'careOfProperty' => ['required', 'integer', 'between:1,5'],
+            'propertyLeftSatisfactorily' => ['required', 'in:yes,no'],
             'wouldAllowReturn' => ['required', 'in:yes,no'],
             'comments' => ['nullable', 'string', 'max:2000'],
+            'privateConcern' => ['required', 'in:yes,no'],
+            'privateConcernDetails' => [
+                'nullable',
+                'required_if:privateConcern,yes',
+                'string',
+                'max:2000',
+            ],
         ]);
 
         DB::transaction(function () use ($validated) {
@@ -225,12 +239,19 @@ class extends Component
                 'member_profile_id' => $invitation->member_profile_id,
                 'property_review_invitation_id' => $invitation->id,
                 'reviewer_email' => $invitation->reviewer_email,
+                'overall_experience' => $validated['overallExperience'],
                 'respect_for_property' => $validated['respectForProperty'],
                 'communication_courtesy' => $validated['communicationCourtesy'],
-                'care_of_property' => $validated['careOfProperty'],
+                'care_of_property' => null,
+                'property_left_satisfactorily' => $validated['propertyLeftSatisfactorily'] === 'yes',
                 'would_allow_return' => $validated['wouldAllowReturn'] === 'yes',
                 'comments' => filled($validated['comments'])
                     ? trim($validated['comments'])
+                    : null,
+                'private_concern' => $validated['privateConcern'] === 'yes',
+                'private_concern_details' => $validated['privateConcern'] === 'yes'
+                && filled($validated['privateConcernDetails'])
+                    ? trim($validated['privateConcernDetails'])
                     : null,
             ]);
 
@@ -357,15 +378,15 @@ class extends Component
                         <div>
 
                             <label class="block text-sm font-semibold text-irdi-green">
-                                {{ __('Respect for Property') }}
+                                {{ __('Overall Experience') }}
                             </label>
 
                             <p class="mt-1 text-sm text-zinc-500">
-                                {{ __('How well did the IRDI member respect your property and any boundaries or conditions you established?') }}
+                                {{ __('Overall, how would you rate your experience with this IRDI member?') }}
                             </p>
 
                             <flux:select
-                                wire:model="respectForProperty"
+                                wire:model="overallExperience"
                                 class="mt-3"
                                 placeholder="{{ __('Select a rating') }}"
                             >
@@ -376,127 +397,86 @@ class extends Component
                                 <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
                             </flux:select>
 
-                            @error('respectForProperty')
-                            <p class="mt-2 text-sm text-red-600">
-                                {{ $message }}
-                            </p>
+                            @error('overallExperience')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
 
                         </div>
 
                         <div>
-
-                            <label class="block text-sm font-semibold text-irdi-green">
-                                {{ __('Communication & Courtesy') }}
-                            </label>
-
-                            <p class="mt-1 text-sm text-zinc-500">
-                                {{ __('How would you rate the IRDI member\'s communication, professionalism, and courtesy?') }}
-                            </p>
-
-                            <flux:select
-                                wire:model="communicationCourtesy"
-                                class="mt-3"
-                                placeholder="{{ __('Select a rating') }}"
-                            >
+                            <label class="block text-sm font-semibold text-irdi-green">{{ __('Respect for Property') }}</label>
+                            <p class="mt-1 text-sm text-zinc-500">{{ __('How well did the IRDI member respect your property and any boundaries or conditions you established?') }}</p>
+                            <flux:select wire:model="respectForProperty" class="mt-3" placeholder="{{ __('Select a rating') }}">
                                 <flux:select.option value="5">{{ __('5 — Excellent') }}</flux:select.option>
                                 <flux:select.option value="4">{{ __('4 — Very Good') }}</flux:select.option>
                                 <flux:select.option value="3">{{ __('3 — Good') }}</flux:select.option>
                                 <flux:select.option value="2">{{ __('2 — Fair') }}</flux:select.option>
                                 <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
                             </flux:select>
-
-                            @error('communicationCourtesy')
-                            <p class="mt-2 text-sm text-red-600">
-                                {{ $message }}
-                            </p>
-                            @enderror
-
+                            @error('respectForProperty')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
 
                         <div>
-
-                            <label class="block text-sm font-semibold text-irdi-green">
-                                {{ __('Care of the Property') }}
-                            </label>
-
-                            <p class="mt-1 text-sm text-zinc-500">
-                                {{ __('How well did the IRDI member care for the land, including filling holes and leaving the property in good condition?') }}
-                            </p>
-
-                            <flux:select
-                                wire:model="careOfProperty"
-                                class="mt-3"
-                                placeholder="{{ __('Select a rating') }}"
-                            >
+                            <label class="block text-sm font-semibold text-irdi-green">{{ __('Communication & Courtesy') }}</label>
+                            <p class="mt-1 text-sm text-zinc-500">{{ __("How would you rate the IRDI member's communication, professionalism, and courtesy?") }}</p>
+                            <flux:select wire:model="communicationCourtesy" class="mt-3" placeholder="{{ __('Select a rating') }}">
                                 <flux:select.option value="5">{{ __('5 — Excellent') }}</flux:select.option>
                                 <flux:select.option value="4">{{ __('4 — Very Good') }}</flux:select.option>
                                 <flux:select.option value="3">{{ __('3 — Good') }}</flux:select.option>
                                 <flux:select.option value="2">{{ __('2 — Fair') }}</flux:select.option>
                                 <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
                             </flux:select>
-
-                            @error('careOfProperty')
-                            <p class="mt-2 text-sm text-red-600">
-                                {{ $message }}
-                            </p>
-                            @enderror
-
+                            @error('communicationCourtesy')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
 
                         <div>
-
-                            <label class="block text-sm font-semibold text-irdi-green">
-                                {{ __('Would you allow this IRDI member to return?') }}
-                            </label>
-
-                            <p class="mt-1 text-sm text-zinc-500">
-                                {{ __('Based on this experience, would you give this IRDI member permission to detect on your property again?') }}
-                            </p>
-
-                            <flux:select
-                                wire:model="wouldAllowReturn"
-                                class="mt-3"
-                                placeholder="{{ __('Select an answer') }}"
-                            >
-                                <flux:select.option value="yes">
-                                    {{ __('Yes') }}
-                                </flux:select.option>
-
-                                <flux:select.option value="no">
-                                    {{ __('No') }}
-                                </flux:select.option>
+                            <label class="block text-sm font-semibold text-irdi-green">{{ __('Was the property left in satisfactory condition?') }}</label>
+                            <p class="mt-1 text-sm text-zinc-500">{{ __('Consider whether holes were properly filled, the area was left clean, and the property was left in an acceptable condition.') }}</p>
+                            <flux:select wire:model="propertyLeftSatisfactorily" class="mt-3" placeholder="{{ __('Select an answer') }}">
+                                <flux:select.option value="yes">{{ __('Yes') }}</flux:select.option>
+                                <flux:select.option value="no">{{ __('No') }}</flux:select.option>
                             </flux:select>
-
-                            @error('wouldAllowReturn')
-                            <p class="mt-2 text-sm text-red-600">
-                                {{ $message }}
-                            </p>
-                            @enderror
-
+                            @error('propertyLeftSatisfactorily')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
 
                         <div>
+                            <label class="block text-sm font-semibold text-irdi-green">{{ __('Would you allow this IRDI member to return?') }}</label>
+                            <p class="mt-1 text-sm text-zinc-500">{{ __('Based on this experience, would you give this IRDI member permission to detect on your property again?') }}</p>
+                            <flux:select wire:model="wouldAllowReturn" class="mt-3" placeholder="{{ __('Select an answer') }}">
+                                <flux:select.option value="yes">{{ __('Yes') }}</flux:select.option>
+                                <flux:select.option value="no">{{ __('No') }}</flux:select.option>
+                            </flux:select>
+                            @error('wouldAllowReturn')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
 
-                            <flux:textarea
-                                wire:model="comments"
-                                label="{{ __('Comments About Your Experience') }}"
-                                description="{{ __('Optional. Please keep your comments focused on your experience with this IRDI member.') }}"
-                                rows="5"
-                            />
+                        <div>
+                            <flux:textarea wire:model="comments" label="{{ __('Comments About Your Experience') }}" description="{{ __('Optional. Please keep your comments focused on your experience with this IRDI member.') }}" rows="5" />
+                            @error('comments')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                            <p class="mt-2 text-right text-sm text-zinc-500">{{ __(':count / 2,000 characters', ['count' => strlen($comments)]) }}</p>
+                        </div>
 
-                            <p class="mt-2 text-right text-sm text-zinc-500">
-                                {{ __(':count / 2,000 characters', ['count' => strlen($comments)]) }}
-                            </p>
-
+                        <div class="rounded-lg border border-amber-200 bg-amber-50 p-5">
+                            <h3 class="font-semibold text-amber-900">{{ __('Private Concern') }}</h3>
+                            <p class="mt-2 text-sm leading-6 text-amber-800">{{ __('Do you have a concern about this experience that you would like to share privately with IRDI staff?') }}</p>
+                            <p class="mt-2 text-sm leading-6 text-amber-700">{{ __('Private concerns and their details are confidential. They are provided to authorized IRDI staff for review and are not displayed to the IRDI member or on their public profile.') }}</p>
+                            <div class="mt-4">
+                                <flux:select wire:model.live="privateConcern" placeholder="{{ __('Select an answer') }}">
+                                    <flux:select.option value="no">{{ __('No') }}</flux:select.option>
+                                    <flux:select.option value="yes">{{ __('Yes') }}</flux:select.option>
+                                </flux:select>
+                                @error('privateConcern')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            @if ($privateConcern === 'yes')
+                                <div class="mt-5">
+                                    <flux:textarea wire:model="privateConcernDetails" label="{{ __('Private Concern Details') }}" description="{{ __('Please describe your concern for IRDI staff. This information will not be shown to the member or displayed publicly.') }}" rows="5" />
+                                    @error('privateConcernDetails')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                                    <p class="mt-2 text-right text-sm text-amber-700">{{ __(':count / 2,000 characters', ['count' => strlen($privateConcernDetails)]) }}</p>
+                                </div>
+                            @endif
                         </div>
 
                         <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-
-                            <p class="text-sm leading-6 text-zinc-600">
-                                {{ __('Your email address is used to verify this submission and help prevent duplicate or fraudulent feedback. It will not be displayed publicly.') }}
-                            </p>
-
+                            <p class="text-sm leading-6 text-zinc-600">{{ __('Your email address is used to verify this submission and help prevent duplicate or fraudulent feedback. It will not be displayed publicly.') }}</p>
                         </div>
 
                         @error('reviewSubmission')
