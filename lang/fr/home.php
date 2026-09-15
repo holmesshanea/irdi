@@ -3,15 +3,38 @@
 return [
     'meta' => [
         'title' => 'Détection de métaux responsable | IRDI',
-        'description' => 'IRDI promeut la détection de métaux responsable, la gestion éthique, le respect des propriétaires et la préservation de notre histoire commune grâce à l’éducation, aux bonnes pratiques et à une communauté internationale de prospecteurs responsables.',
+        'description' => 'IRDI promeut la détection de métaux responsable grâce à des normes éthiques, à la vérification publique des membres, aux avis des propriétaires et à une responsabilisation continue.',
     ],
     'hero' => [
         'organization' => 'International Responsible Detectorist Institute',
         'heading' => 'Élever les standards de la détection de métaux responsable',
-        'description' => 'Promouvoir la détection de métaux responsable, la gestion éthique et le respect de notre histoire commune.',
+        'description' => 'Normes éthiques, vérification publique des membres, avis des propriétaires et responsabilisation continue pour une détection de métaux responsable.',
         'become_member' => 'Devenir membre',
-        'member_directory' => 'Annuaire des membres',
-        'active_members_worldwide' => '{1} Membre IRDI actif dans le monde|[2,*] Membres IRDI actifs dans le monde',
+        'verify_member' => 'Vérifier un membre',
+        'members_in_good_standing_worldwide' => '{1} Membre IRDI en règle dans le monde|[2,*] Membres IRDI en règle dans le monde',
+    ],
+    'trust' => [
+        'eyebrow' => 'Confiance et responsabilité',
+        'heading' => 'L’adhésion est un engagement. La confiance se mérite.',
+        'description' => 'IRDI associe l’engagement en faveur d’une détection responsable à la vérification publique et à une responsabilisation continue. L’adhésion commence par des normes communes ; le statut en règle reflète la situation actuelle d’un membre auprès d’IRDI.',
+        'standards' => [
+            'heading' => 'Normes communes',
+            'description' => 'Les membres s’engagent à respecter le Code d’éthique et les Bonnes pratiques d’IRDI pendant toute leur adhésion.',
+        ],
+        'standing' => [
+            'heading' => 'Vérification publique',
+            'description' => 'L’annuaire IRDI et les profils publics indiquent l’adhésion actuelle et le statut en règle.',
+        ],
+        'feedback' => [
+            'heading' => 'Avis des propriétaires',
+            'description' => 'Les avis admissibles des propriétaires apportent un contexte concret sur la conduite d’un membre sur une propriété privée.',
+        ],
+        'accountability' => [
+            'heading' => 'Responsabilisation continue',
+            'description' => 'IRDI peut examiner les préoccupations et prendre des mesures proportionnées lorsque les normes d’adhésion ne sont pas respectées.',
+        ],
+        'verify_member' => 'Vérifier un membre',
+        'learn_membership' => 'En savoir plus sur l’adhésion',
     ],
     'principles' => [
         'heading' => 'Nos principes directeurs',

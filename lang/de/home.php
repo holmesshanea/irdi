@@ -3,15 +3,38 @@
 return [
     'meta' => [
         'title' => 'Verantwortungsvolle Metallortung | IRDI',
-        'description' => 'IRDI fördert verantwortungsvolle Metallortung, ethische Verantwortung, Respekt gegenüber Grundstückseigentümern und den Erhalt unserer gemeinsamen Geschichte durch Bildung, bewährte Verfahren und eine internationale Gemeinschaft verantwortungsbewusster Sondengänger.',
+        'description' => 'IRDI fördert verantwortungsvolle Metallortung durch ethische Standards, öffentliche Mitgliederverifizierung, Rückmeldungen von Grundstückseigentümern und fortlaufende Rechenschaftspflicht.',
     ],
     'hero' => [
         'organization' => 'International Responsible Detectorist Institute',
         'heading' => 'Höhere Standards für verantwortungsvolle Metallortung',
-        'description' => 'Wir fördern verantwortungsvolle Metallortung, ethische Verantwortung und Respekt für unsere gemeinsame Geschichte.',
+        'description' => 'Ethische Standards, öffentliche Mitgliederverifizierung, Rückmeldungen von Grundstückseigentümern und fortlaufende Rechenschaftspflicht für verantwortungsvolle Metallortung.',
         'become_member' => 'Mitglied werden',
-        'member_directory' => 'Mitgliederverzeichnis',
-        'active_members_worldwide' => '{1} Aktives IRDI-Mitglied weltweit|[2,*] Aktive IRDI-Mitglieder weltweit',
+        'verify_member' => 'Mitglied verifizieren',
+        'members_in_good_standing_worldwide' => '{1} IRDI-Mitglied in gutem Stand weltweit|[2,*] IRDI-Mitglieder in gutem Stand weltweit',
+    ],
+    'trust' => [
+        'eyebrow' => 'Vertrauen & Verantwortung',
+        'heading' => 'Mitgliedschaft ist ein Bekenntnis. Vertrauen muss verdient werden.',
+        'description' => 'IRDI verbindet das Bekenntnis zu verantwortungsvoller Metallortung mit öffentlicher Verifizierung und fortlaufender Rechenschaftspflicht. Die Mitgliedschaft beginnt mit gemeinsamen Standards; ein guter Stand spiegelt den aktuellen Status eines Mitglieds bei IRDI wider.',
+        'standards' => [
+            'heading' => 'Gemeinsame Standards',
+            'description' => 'Mitglieder verpflichten sich, den IRDI-Ethikkodex und die Best Practices während ihrer gesamten Mitgliedschaft einzuhalten.',
+        ],
+        'standing' => [
+            'heading' => 'Öffentliche Verifizierung',
+            'description' => 'Das IRDI-Mitgliederverzeichnis und öffentliche Profile zeigen die aktuelle Mitgliedschaft und den Status in gutem Stand.',
+        ],
+        'feedback' => [
+            'heading' => 'Rückmeldungen von Grundstückseigentümern',
+            'description' => 'Zulässige Rückmeldungen von Grundstückseigentümern geben zusätzlichen Einblick in das Verhalten eines Mitglieds auf Privatgrundstücken.',
+        ],
+        'accountability' => [
+            'heading' => 'Fortlaufende Rechenschaftspflicht',
+            'description' => 'IRDI kann Bedenken prüfen und angemessene Maßnahmen ergreifen, wenn Mitgliedschaftsstandards nicht eingehalten werden.',
+        ],
+        'verify_member' => 'Mitglied verifizieren',
+        'learn_membership' => 'Mehr über die Mitgliedschaft',
     ],
     'principles' => [
         'heading' => 'Unsere Leitprinzipien',

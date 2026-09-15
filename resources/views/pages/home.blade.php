@@ -51,7 +51,7 @@
                         variant="outline"
                         class="border-white/40! bg-transparent! text-white! hover:bg-white/10! hover:text-white!"
                     >
-                        {{ __('home.hero.member_directory') }}
+                        {{ __('home.hero.verify_member') }}
                     </flux:button>
 
                 </div>
@@ -65,11 +65,76 @@
                         </span>
 
                         <span class="text-sm text-zinc-200 sm:text-base">
-                            {{ trans_choice('home.hero.active_members_worldwide', $memberCount) }}
+                            {{ trans_choice('home.hero.members_in_good_standing_worldwide', $memberCount) }}
                         </span>
                     </div>
                 </div>
 
+            </div>
+
+        </div>
+    </section>
+
+    {{-- Trust & Accountability --}}
+    <section class="bg-zinc-50">
+        <div class="mx-auto max-w-7xl px-6 py-16 lg:px-8 lg:py-20">
+
+            <div class="mx-auto max-w-3xl text-center">
+                <p class="text-sm font-semibold uppercase tracking-widest text-irdi-gold-text">
+                    {{ __('home.trust.eyebrow') }}
+                </p>
+
+                <h2 class="mt-3 text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+                    {{ __('home.trust.heading') }}
+                </h2>
+
+                <p class="mt-5 text-lg leading-8 text-zinc-600">
+                    {{ __('home.trust.description') }}
+                </p>
+            </div>
+
+            <div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="rounded-xl border border-zinc-200 bg-white p-6">
+                    <div class="flex size-11 items-center justify-center rounded-full bg-irdi-green/10">
+                        <flux:icon.document-check class="size-5 text-irdi-green" />
+                    </div>
+                    <h3 class="mt-4 font-semibold text-irdi-green">{{ __('home.trust.standards.heading') }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">{{ __('home.trust.standards.description') }}</p>
+                </div>
+
+                <div class="rounded-xl border border-zinc-200 bg-white p-6">
+                    <div class="flex size-11 items-center justify-center rounded-full bg-irdi-green/10">
+                        <flux:icon.shield-check class="size-5 text-irdi-green" />
+                    </div>
+                    <h3 class="mt-4 font-semibold text-irdi-green">{{ __('home.trust.standing.heading') }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">{{ __('home.trust.standing.description') }}</p>
+                </div>
+
+                <div class="rounded-xl border border-zinc-200 bg-white p-6">
+                    <div class="flex size-11 items-center justify-center rounded-full bg-irdi-green/10">
+                        <flux:icon.star class="size-5 text-irdi-green" />
+                    </div>
+                    <h3 class="mt-4 font-semibold text-irdi-green">{{ __('home.trust.feedback.heading') }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">{{ __('home.trust.feedback.description') }}</p>
+                </div>
+
+                <div class="rounded-xl border border-zinc-200 bg-white p-6">
+                    <div class="flex size-11 items-center justify-center rounded-full bg-irdi-green/10">
+                        <flux:icon.scale class="size-5 text-irdi-green" />
+                    </div>
+                    <h3 class="mt-4 font-semibold text-irdi-green">{{ __('home.trust.accountability.heading') }}</h3>
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">{{ __('home.trust.accountability.description') }}</p>
+                </div>
+            </div>
+
+            <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <flux:button href="{{ route('directory') }}" variant="primary">
+                    {{ __('home.trust.verify_member') }}
+                </flux:button>
+
+                <flux:button href="{{ route('membership') }}" variant="ghost">
+                    {{ __('home.trust.learn_membership') }}
+                </flux:button>
             </div>
 
         </div>

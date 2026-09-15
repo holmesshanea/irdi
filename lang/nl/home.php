@@ -3,15 +3,38 @@
 return [
     'meta' => [
         'title' => 'Verantwoord metaaldetecteren | IRDI',
-        'description' => 'IRDI bevordert verantwoord metaaldetecteren, ethisch beheer, respect voor grondeigenaren en het behoud van onze gedeelde geschiedenis door educatie, goede praktijken en een internationale gemeenschap van verantwoordelijke detectoristen.',
+        'description' => 'IRDI bevordert verantwoord metaaldetecteren via ethische normen, openbare ledenverificatie, feedback van grondeigenaren en voortdurende verantwoordelijkheid.',
     ],
     'hero' => [
         'organization' => 'International Responsible Detectorist Institute',
         'heading' => 'De standaard voor verantwoord metaaldetecteren verhogen',
-        'description' => 'Wij bevorderen verantwoord metaaldetecteren, ethisch beheer en respect voor onze gedeelde geschiedenis.',
+        'description' => 'Ethische normen, openbare ledenverificatie, feedback van grondeigenaren en voortdurende verantwoordelijkheid voor verantwoord metaaldetecteren.',
         'become_member' => 'Word lid',
-        'member_directory' => 'Ledenlijst',
-        'active_members_worldwide' => '{1} Actief IRDI-lid wereldwijd|[2,*] Actieve IRDI-leden wereldwijd',
+        'verify_member' => 'Verifieer een lid',
+        'members_in_good_standing_worldwide' => '{1} IRDI-lid met goede status wereldwijd|[2,*] IRDI-leden met goede status wereldwijd',
+    ],
+    'trust' => [
+        'eyebrow' => 'Vertrouwen & verantwoordelijkheid',
+        'heading' => 'Lidmaatschap is een verbintenis. Vertrouwen wordt verdiend.',
+        'description' => 'IRDI combineert een verbintenis tot verantwoord detecteren met openbare verificatie en voortdurende verantwoordelijkheid. Lidmaatschap begint met gedeelde normen; een goede status weerspiegelt de huidige status van een lid bij IRDI.',
+        'standards' => [
+            'heading' => 'Gedeelde normen',
+            'description' => 'Leden stemmen ermee in de IRDI-ethische code en Best Practices gedurende hun lidmaatschap na te leven.',
+        ],
+        'standing' => [
+            'heading' => 'Openbare verificatie',
+            'description' => 'De IRDI-ledengids en openbare ledenprofielen tonen het huidige lidmaatschap en de goede status.',
+        ],
+        'feedback' => [
+            'heading' => 'Feedback van grondeigenaren',
+            'description' => 'In aanmerking komende feedback van grondeigenaren biedt praktische context over het gedrag van een lid op privéterrein.',
+        ],
+        'accountability' => [
+            'heading' => 'Voortdurende verantwoordelijkheid',
+            'description' => 'IRDI kan zorgen beoordelen en passende maatregelen nemen wanneer lidmaatschapsnormen niet worden nageleefd.',
+        ],
+        'verify_member' => 'Verifieer een lid',
+        'learn_membership' => 'Meer over lidmaatschap',
     ],
     'principles' => [
         'heading' => 'Onze leidende principes',

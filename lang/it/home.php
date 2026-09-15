@@ -3,15 +3,38 @@
 return [
     'meta' => [
         'title' => 'Metal detecting responsabile | IRDI',
-        'description' => 'IRDI promuove il metal detecting responsabile, la tutela etica, il rispetto dei proprietari terrieri e la conservazione della nostra storia condivisa attraverso l’educazione, le buone pratiche e una comunità internazionale di detectoristi responsabili.',
+        'description' => 'IRDI promuove il metal detecting responsabile attraverso standard etici, verifica pubblica dell’iscrizione, feedback dei proprietari terrieri e responsabilità continua.',
     ],
     'hero' => [
         'organization' => 'International Responsible Detectorist Institute',
         'heading' => 'Elevare lo standard del metal detecting responsabile',
-        'description' => 'Promuoviamo il metal detecting responsabile, la tutela etica e il rispetto per la nostra storia condivisa.',
+        'description' => 'Standard etici, verifica pubblica dell’iscrizione, feedback dei proprietari terrieri e responsabilità continua per un metal detecting responsabile.',
         'become_member' => 'Diventa membro',
-        'member_directory' => 'Elenco dei membri',
-        'active_members_worldwide' => '{1} Membro IRDI attivo nel mondo|[2,*] Membri IRDI attivi nel mondo',
+        'verify_member' => 'Verifica un membro',
+        'members_in_good_standing_worldwide' => '{1} Membro IRDI in regola nel mondo|[2,*] Membri IRDI in regola nel mondo',
+    ],
+    'trust' => [
+        'eyebrow' => 'Fiducia e responsabilità',
+        'heading' => 'L’iscrizione è un impegno. La fiducia si guadagna.',
+        'description' => 'IRDI unisce l’impegno per un metal detecting responsabile alla verifica pubblica e alla responsabilità continua. L’iscrizione inizia con standard condivisi; lo stato in regola riflette la situazione attuale di un membro presso IRDI.',
+        'standards' => [
+            'heading' => 'Standard condivisi',
+            'description' => 'I membri accettano di seguire il Codice Etico e le Buone Pratiche IRDI per tutta la durata della loro iscrizione.',
+        ],
+        'standing' => [
+            'heading' => 'Verifica pubblica',
+            'description' => 'L’elenco IRDI e i profili pubblici mostrano l’iscrizione attuale e lo stato in regola.',
+        ],
+        'feedback' => [
+            'heading' => 'Feedback dei proprietari',
+            'description' => 'I feedback idonei dei proprietari terrieri aggiungono un contesto reale sulla condotta di un membro su proprietà privata.',
+        ],
+        'accountability' => [
+            'heading' => 'Responsabilità continua',
+            'description' => 'IRDI può esaminare segnalazioni e adottare misure proporzionate quando gli standard di iscrizione non vengono rispettati.',
+        ],
+        'verify_member' => 'Verifica un membro',
+        'learn_membership' => 'Scopri l’iscrizione',
     ],
     'principles' => [
         'heading' => 'I nostri principi guida',

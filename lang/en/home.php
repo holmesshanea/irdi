@@ -3,15 +3,38 @@
 return [
     'meta' => [
         'title' => 'Responsible Metal Detecting | IRDI',
-        'description' => 'IRDI promotes responsible metal detecting, ethical stewardship, respect for landowners, and preservation of our shared history through education, best practices, and an international community of responsible detectorists.',
+        'description' => 'IRDI promotes responsible metal detecting through ethical standards, public membership verification, property-owner feedback, and ongoing accountability.',
     ],
     'hero' => [
         'organization' => 'International Responsible Detectorist Institute',
         'heading' => 'Raising the Standard for Responsible Metal Detecting',
-        'description' => 'Promoting responsible metal detecting, ethical stewardship, and respect for our shared history.',
+        'description' => 'Ethical standards, public membership verification, property-owner feedback, and ongoing accountability for responsible metal detecting.',
         'become_member' => 'Become a Member',
-        'member_directory' => 'Member Directory',
-        'active_members_worldwide' => '{1} Active IRDI Member Worldwide|[2,*] Active IRDI Members Worldwide',
+        'verify_member' => 'Verify a Member',
+        'members_in_good_standing_worldwide' => '{1} IRDI Member in Good Standing Worldwide|[2,*] IRDI Members in Good Standing Worldwide',
+    ],
+    'trust' => [
+        'eyebrow' => 'Trust & Accountability',
+        'heading' => 'Membership is a commitment. Trust is earned.',
+        'description' => 'IRDI combines a commitment to responsible detecting with public verification and ongoing accountability. Membership begins with shared standards; good standing reflects a member’s current status with IRDI.',
+        'standards' => [
+            'heading' => 'Shared Standards',
+            'description' => 'Members agree to follow the IRDI Code of Ethics and Best Practices throughout their membership.',
+        ],
+        'standing' => [
+            'heading' => 'Public Verification',
+            'description' => 'The IRDI Directory and public member profiles show current membership and good-standing status.',
+        ],
+        'feedback' => [
+            'heading' => 'Property Owner Feedback',
+            'description' => 'Eligible feedback from property owners adds real-world context about a member’s conduct on private property.',
+        ],
+        'accountability' => [
+            'heading' => 'Ongoing Accountability',
+            'description' => 'IRDI can review concerns and take proportionate action when membership standards are not upheld.',
+        ],
+        'verify_member' => 'Verify a Member',
+        'learn_membership' => 'Learn About Membership',
     ],
     'principles' => [
         'heading' => 'Our Guiding Principles',
