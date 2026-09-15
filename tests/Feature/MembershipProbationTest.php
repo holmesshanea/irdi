@@ -3,6 +3,8 @@
 
 use App\Models\MembershipEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipProbationContinuedNotification;
+use App\Notifications\MembershipProbationResolvedNotification;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -190,6 +192,7 @@ test('member cannot receive duplicate active probation', function () {
 });
 
 test('administrator can resolve probation and restore good standing', function () {
+    Notification::fake();
     $admin = probationStaffUser([
         'is_admin' => true,
     ]);
@@ -225,6 +228,14 @@ test('administrator can resolve probation and restore good standing', function (
     expect($member->fresh()->membership_status)->toBe('active')
         ->and($member->fresh()->isOnProbation())->toBeFalse()
         ->and($member->fresh()->isInGoodStanding())->toBeTrue();
+
+    Notification::assertSentTo(
+        $member,
+        MembershipProbationResolvedNotification::class,
+        function (MembershipProbationResolvedNotification $notification): bool {
+            return $notification->inGoodStanding === true;
+        }
+    );
 });
 
 test('resolving probation does not claim good standing while administrative review remains active', function () {
@@ -346,6 +357,7 @@ test('probation cannot be resolved through a different member component', functi
 });
 
 test('administrator can continue probation after formal review', function () {
+    Notification::fake();
     $admin = probationStaffUser([
         'is_admin' => true,
     ]);
@@ -384,6 +396,18 @@ test('administrator can continue probation after formal review', function () {
         ->toBeGreaterThanOrEqual(89.0)
         ->and(now()->diffInDays($probation->eligible_for_review_at))
         ->toBeLessThanOrEqual(90.0);
+
+    Notification::assertSentTo(
+        $member,
+        MembershipProbationContinuedNotification::class,
+        function (MembershipProbationContinuedNotification $notification) use ($probation): bool {
+            $probation->refresh();
+
+            return $notification->eligibleForReviewAt->equalTo(
+                $probation->eligible_for_review_at
+            );
+        }
+    );
 });
 
 test('continuing probation requires documented reason', function () {

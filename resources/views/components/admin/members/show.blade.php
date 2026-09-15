@@ -5,6 +5,8 @@ use App\Models\MembershipEnforcement;
 use App\Models\MessageReport;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipProbationContinuedNotification;
+use App\Notifications\MembershipProbationResolvedNotification;
 use App\Notifications\MembershipWarningWithdrawnNotification;
 use App\Notifications\MembershipWarningResolvedNotification;
 use App\Notifications\MembershipBannedNotification;
@@ -488,9 +490,17 @@ class extends Component
 
         });
 
+
+
         $this->probationRestoreReason = '';
 
         $this->loadUser();
+
+        $this->user->notify(
+            new MembershipProbationResolvedNotification(
+                inGoodStanding: $this->user->isInGoodStanding(),
+            )
+        );
 
         session()->flash(
             'status',
@@ -532,12 +542,12 @@ class extends Component
         $previousReviewRequestedAt = $probation->review_requested_at;
         $nextReviewDate = now()->addDays(90);
 
-        DB::transaction(function () use (
+        $probation = DB::transaction(function () use (
             $probation,
             $previousReviewDate,
             $previousReviewRequestedAt,
             $nextReviewDate
-        ): void {
+        ): MembershipEnforcement {
             $probation->update([
                 'eligible_for_review_at' => $nextReviewDate,
                 'review_requested_at' => null,
@@ -556,7 +566,16 @@ class extends Component
                     'next_eligible_for_review_at' => $nextReviewDate->toIso8601String(),
                 ],
             );
+            return $probation;
         });
+
+        $this->user->notify(
+            new MembershipProbationContinuedNotification(
+                eligibleForReviewAt: $probation->eligible_for_review_at,
+            )
+        );
+
+
 
         $this->probationContinueReason = '';
 
