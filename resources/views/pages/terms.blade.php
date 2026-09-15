@@ -53,7 +53,7 @@
 
                         <div>
                             <p class="text-sm text-zinc-500">
-                                {{ __('Last updated: August 22, 2026') }}
+                                {{ __('Last updated: September 15, 2026') }}
                             </p>
                         </div>
 
@@ -81,7 +81,21 @@
                             </p>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Membership may require acceptance of IRDI policies, including the Code of Ethics and Best Practices. Members are responsible for complying with applicable laws, regulations, permissions, and property-owner requirements wherever they participate in metal detecting activities.') }}
+                                {{ __('Membership requires acceptance of applicable IRDI membership requirements, including the Code of Ethics and Best Practices. Members are expected to uphold those standards throughout their membership and are responsible for complying with applicable laws, regulations, permissions, and property-owner requirements wherever they participate in metal detecting activities.') }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h2 class="text-xl font-semibold text-irdi-green">
+                                {{ __('Member in Good Standing') }}
+                            </h2>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('A Member in Good Standing is a member whose current IRDI membership status meets IRDI’s membership and accountability requirements. Good Standing is a current organizational status and may change if IRDI takes action under its policies or accountability processes.') }}
+                            </p>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('IRDI membership or Good Standing is not a professional license, certification, background check, personal endorsement, warranty, or guarantee of identity, qualifications, legal compliance, property-owner permission, or future conduct.') }}
                             </p>
                         </div>
 
@@ -119,11 +133,11 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Members may choose whether eligible profiles are displayed in the public Member Directory. Information intentionally published through a visible profile may be viewed by members of the public.') }}
+                                {{ __('Eligible members may choose whether their profiles are displayed in the public Member Directory. The Directory is a current verification tool and may display membership standing, membership information, profile information, and available public property owner feedback. A profile may cease to be publicly available if the member’s eligibility or standing changes.') }}
                             </p>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Directory visibility or IRDI membership does not constitute a guarantee, certification, endorsement, background check, or warranty concerning any individual, organization, or business.') }}
+                                {{ __('Directory visibility, IRDI membership, or Good Standing does not constitute a guarantee, certification, endorsement, background check, or warranty concerning any individual, organization, or business.') }}
                             </p>
                         </div>
 
@@ -152,6 +166,24 @@
 
                             <p class="mt-3 leading-7">
                                 {{ __('Members are solely responsible for obtaining appropriate permission from landowners or other authorized parties and for understanding and complying with applicable local, state, provincial, national, and other laws and regulations.') }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h2 class="text-xl font-semibold text-irdi-green">
+                                {{ __('Property Owner Feedback') }}
+                            </h2>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('Eligible members may invite property owners to provide feedback about their experience through IRDI. Reviewers are responsible for submitting feedback honestly and in good faith. IRDI may verify access to a reviewer’s email address, but IRDI does not independently verify property ownership or guarantee the truth, accuracy, completeness, or reliability of submitted feedback.') }}
+                            </p>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('IRDI may display eligible ratings, answers, and public comments, calculate public feedback summaries, and moderate, hide, restore, or otherwise manage feedback when reasonably necessary to enforce IRDI policies, protect users, or maintain the integrity of the feedback system.') }}
+                            </p>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('Private concerns submitted through the feedback process are intended for authorized IRDI staff review and are not part of the public or member-facing feedback record. IRDI may consider those concerns when administering its accountability, moderation, or enforcement processes.') }}
                             </p>
                         </div>
 
@@ -209,11 +241,25 @@
 
                         <div>
                             <h2 class="text-xl font-semibold text-irdi-green">
+                                {{ __('Moderation and Accountability') }}
+                            </h2>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('IRDI may review reports, property owner feedback, private concerns, member communications, and other relevant information when reasonably necessary to investigate potential violations, protect users, administer membership standing, or enforce IRDI policies.') }}
+                            </p>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('Depending on the circumstances and applicable IRDI policies, IRDI may take actions including content moderation, messaging restrictions, warnings, membership review, suspension, restoration, or termination. Internal reports, private concerns, staff notes, and detailed enforcement records are not necessarily made public.') }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h2 class="text-xl font-semibold text-irdi-green">
                                 {{ __('Suspension or Termination') }}
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('IRDI may suspend, restrict, or terminate access to accounts, memberships, profiles, or website features when reasonably necessary to enforce these Terms, protect IRDI or its users, address abuse or fraud, or comply with legal requirements.') }}
+                                {{ __('IRDI may suspend, restrict, restore, or terminate access to accounts, memberships, profiles, messaging, or other website features when reasonably necessary to enforce these Terms or other IRDI policies, administer membership standing, protect IRDI or its users, address abuse or fraud, or comply with legal requirements.') }}
                             </p>
                         </div>
 
@@ -223,7 +269,7 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Users may be able to delete their IRDI account through account settings. Account deletion may permanently remove associated membership information and Detectorist, Organization, and Vendor profiles.') }}
+                                {{ __('Users may be able to delete their IRDI account through account settings. Account deletion may permanently remove associated account, membership, and profile information, but IRDI may retain records when reasonably necessary for legal obligations, security, fraud prevention, dispute resolution, moderation, enforcement, accountability, or protection of IRDI and its users.') }}
                             </p>
                         </div>
 

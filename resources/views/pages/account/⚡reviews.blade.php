@@ -51,8 +51,28 @@ class extends Component
             </h1>
 
             <p class="mt-3 max-w-2xl text-zinc-600">
-                {{ __('View property owner review invitations and reviews connected to your IRDI member profile.') }}
+                {{ __('Manage property owner feedback connected to your IRDI member profile and review the public feedback that helps provide real-world context for your membership record.') }}
             </p>
+        </div>
+
+        <div class="mb-8 rounded-xl border border-irdi-gold/40 bg-irdi-gold/10 p-5 sm:p-6">
+            <div class="flex items-start gap-3">
+                <flux:icon.shield-check class="mt-0.5 size-5 shrink-0 text-irdi-green" />
+
+                <div>
+                    <h2 class="font-semibold text-irdi-green">
+                        {{ __('Your Property Owner Feedback Record') }}
+                    </h2>
+
+                    <p class="mt-2 text-sm leading-6 text-zinc-700">
+                        {{ __('Property owner feedback adds first-hand experience to your public IRDI profile and helps support trust and accountability. Public ratings, answers, and comments may appear on or contribute to your public Property Owner Feedback record.') }}
+                    </p>
+
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">
+                        {{ __('Private concerns submitted to IRDI are not shown here, on your public profile, or elsewhere in the member-facing review experience. They are available only to authorized IRDI staff for review.') }}
+                    </p>
+                </div>
+            </div>
         </div>
 
         @if (auth()->user()->membership_status === 'suspended')
@@ -158,7 +178,7 @@ class extends Component
                             </div>
 
                             <p class="mt-3 text-sm leading-6 text-zinc-600">
-                                {{ __('IRDI will email the property owner a private, single-use feedback invitation.') }}
+                                {{ __('IRDI will email the property owner a private, single-use invitation to provide feedback about their experience with you.') }}
                             </p>
 
                             <p class="mt-1 text-sm text-zinc-500">
@@ -249,19 +269,19 @@ class extends Component
                 <div class="mt-6 flex flex-wrap gap-2">
 
                     <span class="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                        {{ $completedCount }} Completed
+                        {{ __(':count Completed', ['count' => $completedCount]) }}
                     </span>
 
                     <span class="inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                        {{ $pendingCount }} Pending
+                        {{ __(':count Pending', ['count' => $pendingCount]) }}
                     </span>
 
                     <span class="inline-flex rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                        {{ $expiredCount }} Expired
+                        {{ __(':count Expired', ['count' => $expiredCount]) }}
                     </span>
 
                     <span class="inline-flex rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-800">
-                        {{ $cancelledCount }} Cancelled
+                        {{ __(':count Cancelled', ['count' => $cancelledCount]) }}
                     </span>
 
                 </div>

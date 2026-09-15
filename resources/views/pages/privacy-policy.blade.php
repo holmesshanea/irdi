@@ -53,7 +53,7 @@
 
                         <div>
                             <p class="text-sm text-zinc-500">
-                                {{ __('Last updated: August 22, 2026') }}
+                                {{ __('Last updated: September 15, 2026') }}
                             </p>
                         </div>
 
@@ -63,7 +63,7 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('The International Responsible Detectorist Institute ("IRDI," "we," "us," or "our") respects your privacy. This Privacy Policy explains how we collect, use, store, and protect information when you use the IRDI website, create an account, become a member, create a member profile, use the Member Directory, or contact us.') }}
+                                {{ __('The International Responsible Detectorist Institute ("IRDI," "we," "us," or "our") respects your privacy. This Privacy Policy explains how we collect, use, store, and protect information when you use the IRDI website, create an account, become a member, create a member profile, use the Member Directory, exchange member messages, submit or receive property owner feedback, participate in IRDI accountability processes, or contact us.') }}
                             </p>
                         </div>
 
@@ -87,7 +87,13 @@
                                     {{ __('Profile images, biographies, websites, usernames, and location information you choose to provide.') }}
                                 </li>
                                 <li>
-                                    {{ __('Messages and information submitted through contact forms or other communications with IRDI.') }}
+                                    {{ __('Messages and information submitted through contact forms, member messaging, reports, or other communications with IRDI.') }}
+                                </li>
+                                <li>
+                                    {{ __('Property owner feedback, review invitation information, reviewer email addresses, ratings, comments, and related submission information.') }}
+                                </li>
+                                <li>
+                                    {{ __('Private concerns submitted through the property owner feedback process and information created or maintained as part of moderation, enforcement, appeals, or other accountability processes.') }}
                                 </li>
                             </ul>
                         </div>
@@ -112,7 +118,7 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('IRDI may maintain information related to your membership, including membership status, membership start date, and your acceptance of IRDI membership requirements such as the Code of Ethics and Best Practices.') }}
+                                {{ __('IRDI may maintain information related to your membership, including membership status and standing, membership start date, acceptance of the Code of Ethics and Best Practices, and records reasonably necessary to administer IRDI accountability, moderation, enforcement, review, suspension, restoration, or termination processes.') }}
                             </p>
                         </div>
 
@@ -126,11 +132,29 @@
                             </p>
 
                             <p class="mt-3 leading-7">
-                                {{ __('If you choose to make a profile publicly visible, information associated with that profile may be available to anyone who visits the IRDI website. This may include your profile name, public username, profile type, profile image, location, biography, website, and membership information.') }}
+                                {{ __('If you choose to make a profile publicly visible, information associated with that profile may be available to anyone who visits the IRDI website. This may include your profile name, public username, profile type, profile image, location, biography, website, current membership standing, membership information, and available public property owner feedback.') }}
                             </p>
 
                             <p class="mt-3 leading-7">
                                 {{ __('Your IRDI account email address is not automatically displayed on your public member profile.') }}
+                            </p>
+                        </div>
+
+                        <div>
+                            <h2 class="text-xl font-semibold text-irdi-green">
+                                {{ __('Property Owner Feedback and Private Concerns') }}
+                            </h2>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('IRDI members may invite property owners to submit feedback through private, single-use invitations. IRDI collects the reviewer email address to verify access to that email address and to help prevent duplicate or fraudulent submissions. Email verification does not mean IRDI has independently verified property ownership or the truth or accuracy of the feedback submitted.') }}
+                            </p>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('Ratings, answers, and public comments from eligible feedback may be displayed on or used to calculate information shown on a member’s public profile, subject to IRDI moderation and visibility rules.') }}
+                            </p>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('A property owner may also submit a Private Concern and Private Concern Details. These fields are not displayed publicly and are not shown in the member-facing review experience. They are available only to authorized IRDI staff for review and may be used as part of IRDI’s accountability, moderation, or enforcement processes.') }}
                             </p>
                         </div>
 
@@ -152,6 +176,8 @@
                                 <li>{{ __('Respond to questions, requests, and contact-form submissions.') }}</li>
                                 <li>{{ __('Maintain the security and proper operation of the website.') }}</li>
                                 <li>{{ __('Improve IRDI services and website functionality.') }}</li>
+                                <li>{{ __('Administer property owner feedback, moderation, member reports, and accountability processes.') }}</li>
+                                <li>{{ __('Evaluate and maintain current membership standing and enforce IRDI policies.') }}</li>
                             </ul>
                         </div>
 
@@ -161,7 +187,7 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Information that you intentionally publish through a public IRDI profile should be considered publicly available. Please avoid including sensitive personal information in your public biography, website information, profile image, or other public profile fields.') }}
+                                {{ __('Information that you intentionally publish through a public IRDI profile should be considered publicly available. Current membership standing and eligible public property owner feedback may also be displayed as part of IRDI’s public verification features. Private concerns, reviewer email addresses, internal moderation notes, and private enforcement details are not intended for public display. Please avoid including sensitive personal information in public profile fields or public feedback comments.') }}
                             </p>
                         </div>
 
@@ -217,7 +243,7 @@
                             </p>
 
                             <p class="mt-3 leading-7">
-                                {{ __('You may also choose to delete individual member profiles or delete your IRDI account. Account deletion may permanently remove your account, membership information, and associated profiles.') }}
+                                {{ __('You may also choose to delete individual member profiles or delete your IRDI account. Account deletion may permanently remove or de-identify account, membership, and profile information, but IRDI may retain certain records when reasonably necessary for security, fraud prevention, legal obligations, dispute resolution, moderation, enforcement, accountability, or protection of IRDI and its users.') }}
                             </p>
                         </div>
 
@@ -227,7 +253,7 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('We retain information for as long as reasonably necessary to provide IRDI services, maintain memberships and accounts, comply with legal obligations, resolve disputes, protect the security of the website, and enforce applicable policies.') }}
+                                {{ __('We retain information for as long as reasonably necessary to provide IRDI services, maintain memberships and accounts, administer property owner feedback and accountability processes, comply with legal obligations, resolve disputes, prevent abuse or repeated violations, protect the security and integrity of IRDI, and enforce applicable policies. Different categories of information may be retained for different periods depending on these purposes.') }}
                             </p>
                         </div>
 

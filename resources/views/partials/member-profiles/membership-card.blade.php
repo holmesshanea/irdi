@@ -15,7 +15,7 @@
             <div class="min-w-0">
 
                 <p class="text-[0.6875rem] font-bold uppercase tracking-[0.18em] text-irdi-gold-text">
-                    {{ __('Official IRDI Member') }}
+                    {{ __('Official IRDI Membership') }}
                 </p>
 
                 <h2 class="mt-1 truncate text-xl font-bold leading-tight text-irdi-green">
@@ -30,7 +30,7 @@
 
                     <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-green-700">
                         <span class="h-2 w-2 rounded-full bg-green-500"></span>
-                        {{ __('Active Member') }}
+                        {{ __('Member in Good Standing') }}
                     </span>
 
                     @if ($profile->user->is_super_admin)
@@ -69,14 +69,14 @@
                     href="{{ route('member-profiles.show', $profile) }}"
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="{{ __('Open verified IRDI member profile') }} ({{ __('common.opens_in_new_tab') }})"
+                    aria-label="{{ __('Open live IRDI member profile for current verification') }} ({{ __('common.opens_in_new_tab') }})"
                     class="inline-block rounded-xl border border-irdi-gold/60 bg-white p-1.5"
                 >
                     {!! $qrCode !!}
                 </a>
 
                 <p class="mt-1 text-[0.625rem] font-bold uppercase tracking-[0.14em] text-irdi-green">
-                    {{ __('Scan to Verify') }}
+                    {{ __('Scan for Current Status') }}
                 </p>
 
             </div>
@@ -92,7 +92,7 @@
             >
                 <span>{{ __('International Responsible Detectorist Institute') }}</span>
                 <span class="normal-case tracking-normal text-white/75">
-                    {{ __('Verify at irdi.online') }}
+                    {{ __('Live profile verifies current status') }}
                 </span>
                 <span class="sr-only">({{ __('common.opens_in_new_tab') }})</span>
             </a>

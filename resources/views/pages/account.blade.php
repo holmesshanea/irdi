@@ -150,7 +150,7 @@
                             <div class="mt-2">
                                 @if (auth()->user()->membership_status === 'active')
                                     <flux:badge color="green">
-                                        {{ __('Active') }}
+                                        {{ __('Member in Good Standing') }}
                                     </flux:badge>
                                 @elseif (auth()->user()->membership_status === 'suspended')
                                     <flux:badge color="red">
@@ -181,9 +181,35 @@
 
                             @if (auth()->user()->membership_status === 'active')
 
-                                <p class="text-sm text-zinc-600">
-                                    {{ __('Your IRDI membership is active.') }}
-                                </p>
+                                <div class="rounded-xl border border-green-200 bg-green-50 p-5">
+                                    <div class="flex items-start gap-3">
+                                        <flux:icon.shield-check class="mt-0.5 size-5 shrink-0 text-green-700" />
+
+                                        <div>
+                                            <h4 class="font-semibold text-green-900">
+                                                {{ __('Member in Good Standing') }}
+                                            </h4>
+
+                                            <p class="mt-2 text-sm leading-6 text-green-800">
+                                                {{ __('You currently meet IRDI’s membership and accountability requirements. Maintaining Good Standing means continuing to uphold the Code of Ethics and Best Practices throughout your membership.') }}
+                                            </p>
+
+                                            <p class="mt-2 text-sm leading-6 text-green-800">
+                                                {{ __('Good Standing reflects your current status with IRDI. It is not a background check, endorsement, or guarantee of future conduct, and your standing may change through IRDI’s accountability process.') }}
+                                            </p>
+
+                                            <div class="mt-4 flex flex-wrap gap-2">
+                                                <flux:button href="{{ route('code-of-ethics') }}" variant="outline" size="sm" icon="book-open">
+                                                    {{ __('Code of Ethics') }}
+                                                </flux:button>
+
+                                                <flux:button href="{{ route('best-practices') }}" variant="outline" size="sm" icon="book-open">
+                                                    {{ __('Best Practices') }}
+                                                </flux:button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
                             @elseif (auth()->user()->membership_status === 'suspended')
 
@@ -409,7 +435,7 @@
                         <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                         <p class="mt-4 text-sm text-zinc-600">
-                            {{ __('Create and manage your public IRDI member profile.') }}
+                            {{ __('Manage the public profile used to verify your current IRDI membership, standing, and available property owner feedback.') }}
                         </p>
                     </div>
 
@@ -483,7 +509,7 @@
                                                 </label>
 
                                                 <p class="mt-1 text-xs leading-5 text-zinc-500">
-                                                    {{ __('IRDI will email the property owner a private, single-use feedback invitation.') }}
+                                                    {{ __('IRDI will email the property owner a private, single-use invitation to provide feedback about their experience with you.') }}
                                                 </p>
 
                                                 <input
@@ -589,7 +615,7 @@
                                                     size="sm"
                                                     color="green"
                                                 >
-                                                    {{ __('IRDI Member') }}
+                                                    {{ __('Member in Good Standing') }}
                                                 </flux:badge>
                                             @elseif (auth()->user()->membership_status === 'suspended')
                                                 <flux:badge

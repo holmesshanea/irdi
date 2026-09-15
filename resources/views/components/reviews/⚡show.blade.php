@@ -291,11 +291,11 @@ class extends Component
                     </h2>
 
                     <p class="mt-2 text-sm leading-6 text-green-800">
-                        {{ __('Your feedback has been submitted successfully.') }}
+                        {{ __('Your feedback has been submitted successfully. Thank you for helping support responsible detecting and accountability within IRDI.') }}
                     </p>
 
                     <p class="mt-2 text-sm text-green-700">
-                        {{ __('This invitation has now been permanently used and cannot be submitted again.') }}
+                        {{ __('This invitation has now been permanently used and cannot be submitted again. If you included a Private Concern, it remains available only to authorized IRDI staff for review.') }}
                     </p>
 
                 </div>
@@ -354,6 +354,20 @@ class extends Component
                         {{ __('This invitation is private, can only be used once, and expires :time.', ['time' => $invitation->expires_at->diffForHumans()]) }}
                     </p>
 
+                </div>
+
+                <div class="mt-8 rounded-xl border border-irdi-gold/40 bg-irdi-gold/10 p-5">
+                    <h3 class="font-semibold text-irdi-green">
+                        {{ __('Why IRDI asks for your feedback') }}
+                    </h3>
+
+                    <p class="mt-2 text-sm leading-6 text-zinc-700">
+                        {{ __('IRDI membership is a commitment to responsible conduct. Your first-hand feedback helps add real-world context to a member’s public profile and supports IRDI’s accountability process.') }}
+                    </p>
+
+                    <p class="mt-2 text-sm leading-6 text-zinc-600">
+                        {{ __('Your public feedback may contribute to the member’s Property Owner Feedback record. If you have a concern that should not be shared with the member or displayed publicly, you can send it privately to authorized IRDI staff later in this form.') }}
+                    </p>
                 </div>
 
                 @if ($emailVerified)
@@ -458,7 +472,7 @@ class extends Component
                         <div class="rounded-lg border border-amber-200 bg-amber-50 p-5">
                             <h3 class="font-semibold text-amber-900">{{ __('Private Concern') }}</h3>
                             <p class="mt-2 text-sm leading-6 text-amber-800">{{ __('Do you have a concern about this experience that you would like to share privately with IRDI staff?') }}</p>
-                            <p class="mt-2 text-sm leading-6 text-amber-700">{{ __('Private concerns and their details are confidential. They are provided to authorized IRDI staff for review and are not displayed to the IRDI member or on their public profile.') }}</p>
+                            <p class="mt-2 text-sm leading-6 text-amber-700">{{ __('Private concerns and their details are not shown to the IRDI member or displayed publicly. They are available only to authorized IRDI staff for review and may be considered as part of IRDI’s accountability process.') }}</p>
                             <div class="mt-4">
                                 <flux:select wire:model.live="privateConcern" placeholder="{{ __('Select an answer') }}">
                                     <flux:select.option value="no">{{ __('No') }}</flux:select.option>
@@ -476,7 +490,9 @@ class extends Component
                         </div>
 
                         <div class="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-                            <p class="text-sm leading-6 text-zinc-600">{{ __('Your email address is used to verify this submission and help prevent duplicate or fraudulent feedback. It will not be displayed publicly.') }}</p>
+                            <h3 class="text-sm font-semibold text-zinc-800">{{ __('Before you submit') }}</h3>
+                            <p class="mt-2 text-sm leading-6 text-zinc-600">{{ __('Your ratings, answers, and public comments may appear on or contribute to the member’s public Property Owner Feedback record. Any Private Concern and Private Concern Details are excluded from the member-facing and public review experience.') }}</p>
+                            <p class="mt-2 text-sm leading-6 text-zinc-600">{{ __('Your email address is used to verify this submission and help prevent duplicate or fraudulent feedback. It will not be displayed publicly. IRDI verifies access to the email address, not property ownership or the truth of the feedback submitted.') }}</p>
                         </div>
 
                         @error('reviewSubmission')
@@ -520,7 +536,7 @@ class extends Component
                         </p>
 
                         <p class="mt-2 text-sm text-zinc-500">
-                            {{ __('Your email address will remain private and will not be displayed publicly.') }}
+                            {{ __('Your email address will remain private and will not be displayed publicly. Email verification confirms access to this email address; it does not mean IRDI has independently verified property ownership or the contents of your feedback.') }}
                         </p>
 
                         <div class="mt-6">
