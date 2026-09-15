@@ -172,7 +172,7 @@ class extends Component
                     <div class="mt-5 flex justify-center">
                         <div class="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
                             <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                            {{ __('Active IRDI Member') }}
+                            {{ __('Member in Good Standing') }}
                         </div>
                     </div>
 
@@ -240,6 +240,80 @@ class extends Component
                 <flux:card class="p-6">
                     <div class="flex items-start gap-3">
                         <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                            <flux:icon.shield-check class="size-5" />
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-lg font-semibold text-irdi-green">
+                                {{ __('IRDI Membership & Standing') }}
+                            </h2>
+
+                            <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
+                                <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
+                                {{ __('Member in Good Standing') }}
+                            </div>
+
+                            <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                {{ __('This member currently meets IRDI’s membership and accountability requirements.') }}
+                            </p>
+
+                            @if ($profile->user->member_since)
+                                <div class="mt-5 border-t border-zinc-200 pt-5">
+                                    <p class="text-sm font-medium text-zinc-500">
+                                        {{ __('Member Since') }}
+                                    </p>
+
+                                    <p class="mt-1 font-medium text-zinc-800">
+                                        {{ $profile->user->member_since->translatedFormat('F Y') }}
+                                    </p>
+                                </div>
+                            @endif
+
+                            <div class="mt-5 border-t border-zinc-200 pt-5">
+                                <p class="text-sm font-medium text-zinc-500">
+                                    {{ __('Member Commitment') }}
+                                </p>
+
+                                <p class="mt-2 text-sm leading-6 text-zinc-600">
+                                    {{ __('IRDI members agree to follow the IRDI Code of Ethics and Best Practices and are expected to uphold those standards throughout their membership.') }}
+                                </p>
+
+                                <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                                    <a
+                                        href="{{ route('code-of-ethics') }}"
+                                        class="font-medium text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                    >
+                                        {{ __('Code of Ethics') }}
+                                    </a>
+
+                                    <a
+                                        href="{{ route('best-practices') }}"
+                                        class="font-medium text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                    >
+                                        {{ __('Best Practices') }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                                <p class="text-xs leading-5 text-zinc-500">
+                                    {{ __('Membership standing reflects a member’s current status with IRDI. It is not a background check, endorsement, or guarantee of future conduct.') }}
+                                </p>
+
+                                <a
+                                    href="{{ route('faq') }}"
+                                    class="mt-2 inline-flex text-sm font-medium text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                >
+                                    {{ __('What does Good Standing mean?') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </flux:card>
+
+                <flux:card class="mt-6 p-6">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
                             <flux:icon.user-circle class="size-5" />
                         </div>
 
@@ -292,7 +366,7 @@ class extends Component
                                 </h2>
 
                                 <p class="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
-                                    {{ __('Verified feedback from property owners who received an individual IRDI review invitation from this member. Reviewers must verify their email address before submitting feedback.') }}
+                                    {{ __('Property owner feedback provides additional context about this member’s conduct while detecting on private property. Feedback is submitted through individual IRDI review invitations, and reviewers must verify their email address before submitting.') }}
                                 </p>
                             </div>
                         </div>
