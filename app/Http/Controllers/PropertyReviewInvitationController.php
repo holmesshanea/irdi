@@ -21,7 +21,7 @@ class PropertyReviewInvitationController extends Controller
             abort(403);
         }
 
-        if ($request->user()?->membership_status !== 'active') {
+        if (! $request->user()?->isInGoodStanding()) {
             abort(403);
         }
 
@@ -83,7 +83,7 @@ class PropertyReviewInvitationController extends Controller
             abort(403);
         }
 
-        if ($request->user()?->membership_status !== 'active') {
+        if (! $request->user()?->isInGoodStanding()) {
             abort(403);
         }
 

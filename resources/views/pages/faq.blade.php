@@ -174,7 +174,7 @@
                         <flux:accordion.item heading="{{ __('What does Member in Good Standing mean?') }}">
                             <div class="space-y-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">
                                 <p>
-                                    {{ __('Member in Good Standing means the member currently meets IRDI’s membership and accountability requirements and is not currently suspended or banned.') }}
+                                    {{ __('Member in Good Standing means the member currently meets IRDI’s membership and accountability requirements. Good Standing may be affected by active accountability actions under IRDI policy, including probation or an administrative review, and is not current while membership is suspended or banned.') }}
                                 </p>
 
                                 <p>

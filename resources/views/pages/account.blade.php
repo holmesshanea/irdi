@@ -148,9 +148,13 @@
                             </p>
 
                             <div class="mt-2">
-                                @if (auth()->user()->membership_status === 'active')
+                                @if (auth()->user()->isInGoodStanding())
                                     <flux:badge color="green">
                                         {{ __('Member in Good Standing') }}
+                                    </flux:badge>
+                                @elseif (auth()->user()->membership_status === 'active')
+                                    <flux:badge color="amber">
+                                        {{ __('Good Standing Not Current') }}
                                     </flux:badge>
                                 @elseif (auth()->user()->membership_status === 'suspended')
                                     <flux:badge color="red">
@@ -179,7 +183,7 @@
 
                         <div class="mt-6 border-t border-zinc-200 pt-6">
 
-                            @if (auth()->user()->membership_status === 'active')
+                            @if (auth()->user()->isInGoodStanding())
 
                                 <div class="rounded-xl border border-green-200 bg-green-50 p-5">
                                     <div class="flex items-start gap-3">
@@ -207,6 +211,24 @@
                                                     {{ __('Best Practices') }}
                                                 </flux:button>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            @elseif (auth()->user()->membership_status === 'active')
+
+                                <div class="rounded-xl border border-amber-200 bg-amber-50 p-5">
+                                    <div class="flex items-start gap-3">
+                                        <flux:icon.exclamation-triangle class="mt-0.5 size-5 shrink-0 text-amber-700" />
+
+                                        <div>
+                                            <h4 class="font-semibold text-amber-900">
+                                                {{ __('Good Standing Not Current') }}
+                                            </h4>
+
+                                            <p class="mt-2 text-sm leading-6 text-amber-800">
+                                                {{ __('Your IRDI membership remains active, but you are not currently designated as a Member in Good Standing. Review the accountability notices on this page for information that applies to your membership.') }}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -465,7 +487,7 @@
 
                             <div class="relative rounded-xl border border-zinc-200 p-5">
 
-                                @if (auth()->user()->membership_status === 'active')
+                                @if (auth()->user()->isInGoodStanding())
 
                                     <div
                                         class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
@@ -610,12 +632,19 @@
 
                                         <div class="min-w-0">
 
-                                            @if (auth()->user()->membership_status === 'active')
+                                            @if (auth()->user()->isInGoodStanding())
                                                 <flux:badge
                                                     size="sm"
                                                     color="green"
                                                 >
                                                     {{ __('Member in Good Standing') }}
+                                                </flux:badge>
+                                            @elseif (auth()->user()->membership_status === 'active')
+                                                <flux:badge
+                                                    size="sm"
+                                                    color="amber"
+                                                >
+                                                    {{ __('Good Standing Not Current') }}
                                                 </flux:badge>
                                             @elseif (auth()->user()->membership_status === 'suspended')
                                                 <flux:badge

@@ -170,10 +170,17 @@ class extends Component
                     </p>
 
                     <div class="mt-5 flex justify-center">
-                        <div class="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
-                            <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                            {{ __('Member in Good Standing') }}
-                        </div>
+                        @if ($profile->user->isInGoodStanding())
+                            <div class="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
+                                <span class="h-2.5 w-2.5 rounded-full bg-green-500" aria-hidden="true"></span>
+                                {{ __('Member in Good Standing') }}
+                            </div>
+                        @else
+                            <div class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-800">
+                                <span class="h-2.5 w-2.5 rounded-full bg-amber-500" aria-hidden="true"></span>
+                                {{ __('Good Standing Not Current') }}
+                            </div>
+                        @endif
                     </div>
 
                     @if ($profile->user->member_since)
@@ -248,14 +255,25 @@ class extends Component
                                 {{ __('IRDI Membership & Standing') }}
                             </h2>
 
-                            <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
-                                <span class="h-2.5 w-2.5 rounded-full bg-green-500"></span>
-                                {{ __('Member in Good Standing') }}
-                            </div>
+                            @if ($profile->user->isInGoodStanding())
+                                <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-green-500" aria-hidden="true"></span>
+                                    {{ __('Member in Good Standing') }}
+                                </div>
 
-                            <p class="mt-3 text-sm leading-6 text-zinc-600">
-                                {{ __('This member currently meets IRDI’s membership and accountability requirements.') }}
-                            </p>
+                                <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                    {{ __('This member currently meets IRDI’s membership and accountability requirements.') }}
+                                </p>
+                            @else
+                                <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-800">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-amber-500" aria-hidden="true"></span>
+                                    {{ __('Good Standing Not Current') }}
+                                </div>
+
+                                <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                    {{ __('This member’s IRDI membership remains active, but they are not currently designated as a Member in Good Standing.') }}
+                                </p>
+                            @endif
 
                             @if ($profile->user->member_since)
                                 <div class="mt-5 border-t border-zinc-200 pt-5">

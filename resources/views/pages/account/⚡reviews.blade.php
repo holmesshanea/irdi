@@ -159,7 +159,7 @@ class extends Component
                     ->count();
             @endphp
 
-            @if (auth()->user()->membership_status === 'active')
+            @if (auth()->user()->isInGoodStanding())
 
                 <div class="mb-8 rounded-xl border border-irdi-green/20 bg-white p-6 shadow-sm sm:p-8">
 
@@ -361,7 +361,7 @@ class extends Component
                                                 && ! $invitation->isCancelled()
                                             )
 
-                                                @if (auth()->user()->membership_status === 'active')
+                                                @if (auth()->user()->isInGoodStanding())
 
                                                     <form
                                                         action="{{ route('account.review-invitations.resend', $invitation) }}"

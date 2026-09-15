@@ -509,12 +509,21 @@ class extends Component
                                     @endif
 
                                     <div class="mt-3">
-                                        <flux:badge size="sm" color="green">
-                                            <span class="inline-flex items-center gap-1.5">
-                                                <span class="size-2 rounded-full bg-green-500" aria-hidden="true"></span>
-                                                {{ __('Member in Good Standing') }}
-                                            </span>
-                                        </flux:badge>
+                                        @if ($profile->user->isInGoodStanding())
+                                            <flux:badge size="sm" color="green">
+                                                <span class="inline-flex items-center gap-1.5">
+                                                    <span class="size-2 rounded-full bg-green-500" aria-hidden="true"></span>
+                                                    {{ __('Member in Good Standing') }}
+                                                </span>
+                                            </flux:badge>
+                                        @else
+                                            <flux:badge size="sm" color="amber">
+                                                <span class="inline-flex items-center gap-1.5">
+                                                    <span class="size-2 rounded-full bg-amber-500" aria-hidden="true"></span>
+                                                    {{ __('Good Standing Not Current') }}
+                                                </span>
+                                            </flux:badge>
+                                        @endif
                                     </div>
 
                                     @if ($profile->city || $profile->state_province || $profile->country)

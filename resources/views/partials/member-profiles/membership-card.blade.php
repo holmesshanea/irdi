@@ -28,10 +28,17 @@
 
                 <div class="mt-2 flex flex-wrap items-center gap-2">
 
-                    <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-green-700">
-                        <span class="h-2 w-2 rounded-full bg-green-500"></span>
-                        {{ __('Member in Good Standing') }}
-                    </span>
+                    @if ($profile->user->isInGoodStanding())
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-green-700">
+                            <span class="h-2 w-2 rounded-full bg-green-500" aria-hidden="true"></span>
+                            {{ __('Member in Good Standing') }}
+                        </span>
+                    @else
+                        <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                            <span class="h-2 w-2 rounded-full bg-amber-500" aria-hidden="true"></span>
+                            {{ __('Good Standing Not Current') }}
+                        </span>
+                    @endif
 
                     @if ($profile->user->is_super_admin)
                         <flux:badge color="red" size="sm">
