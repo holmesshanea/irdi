@@ -3,6 +3,10 @@
 use App\Models\BanIdentifier;
 use App\Models\MembershipEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipBannedNotification;
+use App\Notifications\MembershipProbationNotification;
+use App\Notifications\MembershipRestoredNotification;
+use App\Notifications\MembershipSuspendedNotification;
 use App\Notifications\MembershipSuspensionContinuedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
@@ -24,6 +28,7 @@ function suspensionUser(array $attributes = []): User
 }
 
 test('administrator can suspend an active membership', function () {
+    Notification::fake();
     $admin = suspensionUser(['is_admin' => true]);
     $member = suspensionUser();
 
@@ -46,6 +51,11 @@ test('administrator can suspend an active membership', function () {
         'action' => 'suspended',
         'status' => 'active',
     ]);
+
+    Notification::assertSentTo(
+        $member,
+        MembershipSuspendedNotification::class,
+    );
 });
 
 test('ordinary suspension requires a valid reason', function () {
@@ -163,6 +173,7 @@ test('moderator cannot suspend a membership', function () {
 });
 
 test('administrator can restore a suspended membership', function () {
+    Notification::fake();
     $admin = suspensionUser(['is_admin' => true]);
     $member = suspensionUser(['membership_status' => 'suspended']);
 
@@ -205,6 +216,11 @@ test('administrator can restore a suspended membership', function () {
         'admin_id' => $admin->id,
         'action' => 'restored',
     ]);
+
+    Notification::assertSentTo(
+        $member,
+        MembershipRestoredNotification::class,
+    );
 });
 
 test('administrator cannot restore membership without a valid reason', function () {
@@ -381,6 +397,7 @@ test('administrator can continue a suspension indefinitely', function () {
 });
 
 test('administrator can resolve suspension to probation', function () {
+    Notification::fake();
     $admin = suspensionUser(['is_admin' => true]);
     $member = suspensionUser(['membership_status' => 'suspended']);
 
@@ -447,9 +464,15 @@ test('administrator can resolve suspension to probation', function () {
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $probation->id,
     ]);
+
+    Notification::assertSentTo(
+        $member,
+        MembershipProbationNotification::class,
+    );
 });
 
 test('super administrator can resolve suspension with a ban', function () {
+    Notification::fake();
     $superAdmin = suspensionUser([
         'is_super_admin' => true,
         'email' => 'super-admin@example.com',
@@ -531,6 +554,10 @@ test('super administrator can resolve suspension with a ban', function () {
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $ban->id,
     ]);
+    Notification::assertSentTo(
+        $member,
+        MembershipBannedNotification::class,
+    );
 });
 
 test('administrator cannot resolve a suspension with a ban', function () {

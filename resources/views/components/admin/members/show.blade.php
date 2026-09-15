@@ -1780,7 +1780,7 @@ class extends Component
 
         $wasSuspended = $this->user->membership_status === 'suspended';
 
-        DB::transaction(function () use ($wasSuspended): void {
+        $enforcement = DB::transaction(function () use ($wasSuspended): MembershipEnforcement {
             if ($wasSuspended) {
                 $activeSuspensions = MembershipEnforcement::query()
                     ->where('user_id', $this->user->id)
@@ -1877,7 +1877,16 @@ class extends Component
                     'reinstatement_eligible_at' => $enforcement->reinstatement_eligible_at?->toIso8601String(),
                 ],
             );
+            return $enforcement;
         });
+
+        $this->user->notify(
+            new MembershipBannedNotification(
+                reason: $enforcement->reason,
+                permanentlyIneligible: $enforcement->permanently_ineligible,
+                reinstatementEligibleAt: $enforcement->reinstatement_eligible_at?->format('F j, Y'),
+            )
+        );
 
         $this->banReason = '';
         $this->banPermanentlyIneligible = false;
