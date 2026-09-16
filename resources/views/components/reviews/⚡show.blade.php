@@ -84,6 +84,10 @@ class extends Component
             return;
         }
 
+        if ($this->invitation->isCancelled()) {
+            return;
+        }
+
         if ($this->invitation->isExpired()) {
             return;
         }
@@ -115,7 +119,13 @@ class extends Component
 
     public function verifyCode(): void
     {
+        $this->invitation->refresh();
+
         if ($this->invitation->isUsed()) {
+            return;
+        }
+
+        if ($this->invitation->isCancelled()) {
             return;
         }
 
@@ -130,7 +140,6 @@ class extends Component
             ],
         ]);
 
-        $this->invitation->refresh();
 
         if (
             ! $this->invitation->verification_expires_at
@@ -203,6 +212,15 @@ class extends Component
                 $this->addError(
                     'reviewSubmission',
                     __('This review invitation has already been used.')
+                );
+
+                return;
+            }
+
+            if ($invitation->isCancelled()) {
+                $this->addError(
+                    'reviewSubmission',
+                    __('This review invitation has been cancelled.')
                 );
 
                 return;
@@ -310,6 +328,20 @@ class extends Component
 
                     <p class="mt-2 text-sm text-zinc-600">
                         {{ __('Each IRDI property owner feedback invitation can only be used once.') }}
+                    </p>
+
+                </div>
+
+            @elseif ($invitation->isCancelled())
+
+                <div class="rounded-lg bg-zinc-100 p-5 text-center">
+
+                    <h2 class="text-lg font-semibold text-zinc-900">
+                        {{ __('This invitation has been cancelled.') }}
+                    </h2>
+
+                    <p class="mt-2 text-sm text-zinc-600">
+                        {{ __('This property owner feedback invitation is no longer available.') }}
                     </p>
 
                 </div>
