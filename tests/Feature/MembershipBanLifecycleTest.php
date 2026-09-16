@@ -3,7 +3,12 @@
 use App\Models\BanIdentifier;
 use App\Models\MembershipEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipProbationNotification;
+use App\Notifications\MembershipReinstatedNotification;
+use App\Notifications\MembershipReinstatementDeniedNotification;
+use App\Notifications\MembershipReinstatementPetitionSubmittedNotification;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 
 function banLifecycleUser(array $attributes = []): User
@@ -80,6 +85,7 @@ test('super administrator can make a ban permanently ineligible', function () {
 });
 
 test('eligible banned member can submit one reinstatement petition', function () {
+    Notification::fake();
     $member = banLifecycleUser(['membership_status' => 'banned']);
     $ban = activeBan($member);
 
@@ -94,6 +100,10 @@ test('eligible banned member can submit one reinstatement petition', function ()
 
     expect($ban->review_requested_at)->not->toBeNull()
         ->and($ban->member_response)->toContain('requesting reinstatement');
+    Notification::assertSentTo(
+        $member,
+        MembershipReinstatementPetitionSubmittedNotification::class,
+    );
 });
 
 test('banned member cannot petition before three year eligibility date', function () {
@@ -143,6 +153,7 @@ test('member cannot petition against another members ban', function () {
 });
 
 test('super administrator can deny pending reinstatement petition', function () {
+    Notification::fake();
     $superAdmin = banLifecycleUser(['is_super_admin' => true]);
     $member = banLifecycleUser(['membership_status' => 'banned']);
     $ban = activeBan($member, [
@@ -166,9 +177,17 @@ test('super administrator can deny pending reinstatement petition', function () 
         'action' => 'reinstatement_denied',
         'status' => 'resolved',
     ]);
+    Notification::assertSentTo(
+        $member,
+        MembershipReinstatementDeniedNotification::class,
+        function (MembershipReinstatementDeniedNotification $notification): bool {
+            return $notification->reason === 'The current record does not support reinstatement at this time.';
+        }
+    );
 });
 
 test('super administrator can reinstate banned member on probation', function () {
+    Notification::fake();
     $superAdmin = banLifecycleUser(['is_super_admin' => true]);
     $member = banLifecycleUser(['membership_status' => 'banned']);
     $ban = activeBan($member, [
@@ -204,9 +223,15 @@ test('super administrator can reinstate banned member on probation', function ()
         ->and($ban->status)->toBe('resolved');
 
     expect(BanIdentifier::query()->where('user_id', $member->id)->exists())->toBeFalse();
+
+    Notification::assertSentTo(
+        $member,
+        MembershipProbationNotification::class,
+    );
 });
 
 test('super administrator can exceptionally reinstate directly to active membership', function () {
+    Notification::fake();
     $superAdmin = banLifecycleUser(['is_super_admin' => true]);
     $member = banLifecycleUser(['membership_status' => 'banned']);
     $ban = activeBan($member, [
@@ -227,6 +252,14 @@ test('super administrator can exceptionally reinstate directly to active members
     expect($member->membership_status)->toBe('active')
         ->and($member->isInGoodStanding())->toBeTrue()
         ->and($ban->fresh()->status)->toBe('resolved');
+
+    Notification::assertSentTo(
+        $member,
+        MembershipReinstatedNotification::class,
+        function (MembershipReinstatedNotification $notification): bool {
+            return $notification->reason === 'Exceptional evidence supports direct reinstatement without a probation period.';
+        }
+    );
 });
 
 test('administrator cannot decide reinstatement petition', function () {

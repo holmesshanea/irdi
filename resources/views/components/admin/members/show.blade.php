@@ -5,6 +5,8 @@ use App\Models\MembershipEnforcement;
 use App\Models\MessageReport;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipReinstatedNotification;
+use App\Notifications\MembershipReinstatementDeniedNotification;
 use App\Notifications\MembershipProbationContinuedNotification;
 use App\Notifications\MembershipProbationResolvedNotification;
 use App\Notifications\MembershipWarningWithdrawnNotification;
@@ -2001,6 +2003,12 @@ class extends Component
             ],
         );
 
+        $this->user->notify(
+            new MembershipReinstatementDeniedNotification(
+                reason: $denial->reason,
+            )
+        );
+
         $this->reinstatementDenialReason = '';
         $this->loadUser();
 
@@ -2177,7 +2185,7 @@ class extends Component
             return;
         }
 
-        DB::transaction(function () use ($ban): void {
+        $enforcement = DB::transaction(function () use ($ban): MembershipEnforcement {
             $ban->update([
                 'status' => 'resolved',
                 'resolved_at' => now(),
@@ -2210,7 +2218,14 @@ class extends Component
                     'reason' => $this->unbanReason,
                 ],
             );
+            return $enforcement;
         });
+
+        $this->user->notify(
+            new MembershipReinstatedNotification(
+                reason: $enforcement->reason,
+            )
+        );
 
         $this->unbanReason = '';
         $this->loadUser();

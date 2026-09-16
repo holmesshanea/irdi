@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\MembershipEnforcement;
+use App\Notifications\MembershipReinstatementPetitionSubmittedNotification;
 use Livewire\Component;
 
 new class extends Component
@@ -68,6 +69,10 @@ new class extends Component
             'member_responded_at' => now(),
             'review_requested_at' => now(),
         ]);
+
+        $user->notify(
+            new MembershipReinstatementPetitionSubmittedNotification
+        );
 
         $this->petitionStatement = '';
 
