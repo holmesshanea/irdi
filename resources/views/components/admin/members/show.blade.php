@@ -72,6 +72,16 @@ class extends Component
     public function disableMessaging(): void
     {
         $this->ensureCanEnforceTarget();
+
+        if ($this->user->messaging_disabled_at !== null) {
+            $this->addError(
+                'restrictionType',
+                'This member already has a messaging restriction.'
+            );
+
+            return;
+        }
+
         $this->validate([
             'restrictionType' => ['required', 'in:7_days,30_days,permanent'],
             'enforcementReason' => ['required', 'string', 'min:10', 'max:1000'],
@@ -131,6 +141,14 @@ class extends Component
     public function restoreMessaging(): void
     {
         $this->ensureCanEnforceTarget();
+        if ($this->user->messaging_disabled_at === null) {
+            $this->addError(
+                'restoreReason',
+                'This member does not currently have a messaging restriction.'
+            );
+
+            return;
+        }
         $this->validate([
             'restoreReason' => ['required', 'string', 'min:10', 'max:1000'],
         ], [
