@@ -4,6 +4,8 @@ use App\Models\MessageReport;
 use App\Models\MessageReportModeration;
 use App\Models\MessagingEnforcement;
 use App\Models\User;
+use App\Notifications\MessagingRestoredNotification;
+use App\Notifications\MessagingRestrictedNotification;
 use App\Support\StaffActivity;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -27,6 +29,15 @@ class extends Component
 
     public function markReviewed(): void
     {
+        if ($this->report->status !== 'pending') {
+            $this->addError(
+                'reportStatus',
+                'Only a pending message report can be marked as reviewed.'
+            );
+
+            return;
+        }
+
         DB::transaction(function (): void {
             $this->report->update([
                 'status' => 'reviewed',
@@ -57,6 +68,15 @@ class extends Component
 
     public function dismissReport(): void
     {
+        if ($this->report->status !== 'pending') {
+            $this->addError(
+                'reportStatus',
+                'Only a pending message report can be dismissed.'
+            );
+
+            return;
+        }
+
         DB::transaction(function (): void {
             $this->report->update([
                 'status' => 'dismissed',
@@ -136,6 +156,17 @@ class extends Component
             return;
         }
 
+        $this->ensureCanEnforceTarget($reportedUser);
+
+        if ($reportedUser->messaging_disabled_at !== null) {
+            $this->addError(
+                'restrictionType',
+                'This member already has a messaging restriction.'
+            );
+
+            return;
+        }
+
         $expiresAt = match ($this->restrictionType) {
             '7_days' => now()->addDays(7),
             '30_days' => now()->addDays(30),
@@ -170,6 +201,10 @@ class extends Component
             );
         });
 
+        $reportedUser->notify(
+            new MessagingRestrictedNotification($expiresAt)
+        );
+
         $this->enforcementReason = '';
         $this->restrictionType = '7_days';
 
@@ -192,6 +227,17 @@ class extends Component
 
         if (! $reportedUser) {
             $this->addError('restoreReason', 'The reported member could not be found.');
+
+            return;
+        }
+
+        $this->ensureCanEnforceTarget($reportedUser);
+
+        if ($reportedUser->messaging_disabled_at === null) {
+            $this->addError(
+                'restoreReason',
+                'This member does not currently have a messaging restriction.'
+            );
 
             return;
         }
@@ -222,11 +268,34 @@ class extends Component
             );
         });
 
+        $reportedUser->notify(
+            new MessagingRestoredNotification
+        );
+
         $this->restoreReason = '';
 
         $this->loadReport();
 
         session()->flash('status', 'Member messaging has been restored.');
+    }
+
+    private function ensureCanEnforceTarget(User $target): void
+    {
+        $actor = auth()->user();
+
+        if ($actor === null || $this->staffRank($actor) <= $this->staffRank($target)) {
+            abort(403);
+        }
+    }
+
+    private function staffRank(User $user): int
+    {
+        return match (true) {
+            $user->is_super_admin => 3,
+            $user->is_admin => 2,
+            $user->is_moderator => 1,
+            default => 0,
+        };
     }
 
     private function reportedUser(): ?User
