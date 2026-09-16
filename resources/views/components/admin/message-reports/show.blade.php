@@ -107,6 +107,15 @@ class extends Component
 
     public function reopenReport(): void
     {
+        if (! in_array($this->report->status, ['reviewed', 'dismissed'], true)) {
+            $this->addError(
+                'reportStatus',
+                'Only a reviewed or dismissed message report can be returned to pending.'
+            );
+
+            return;
+        }
+
         DB::transaction(function (): void {
             $this->report->update([
                 'status' => 'pending',

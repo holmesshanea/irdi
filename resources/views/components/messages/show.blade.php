@@ -139,10 +139,21 @@ class extends Component
             abort(403);
         }
 
-        MemberBlock::query()
+        $block = MemberBlock::query()
             ->where('blocker_id', $userId)
             ->where('blocked_id', $this->otherUser->id)
-            ->delete();
+            ->first();
+
+        if ($block === null) {
+            $this->addError(
+                'blockStatus',
+                'This member is not currently blocked.'
+            );
+
+            return;
+        }
+
+        $block->delete();
 
         session()->flash(
             'status',

@@ -768,3 +768,283 @@ test('moderator can review report but cannot restrict equal rank moderator', fun
         MessagingRestrictedNotification::class,
     );
 });
+
+test('administrator can reopen reviewed message report', function () {
+    $administrator = messageReportEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message is being used to test reopening a reviewed report.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for administrative review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.message-reports.show', ['report' => $report])
+        ->call('markReviewed')
+        ->assertHasNoErrors()
+        ->call('reopenReport')
+        ->assertHasNoErrors();
+
+    expect($report->fresh()->status)->toBe('pending');
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('action', 'reviewed')
+            ->count()
+    )->toBe(1);
+
+    $moderation = MessageReportModeration::query()
+        ->where('message_report_id', $report->id)
+        ->where('user_id', $administrator->id)
+        ->where('action', 'reopened')
+        ->sole();
+
+    $activity = StaffActivityLog::query()
+        ->where('actor_id', $administrator->id)
+        ->where('target_user_id', $reportedMember->id)
+        ->where('action', 'message_report_reopened')
+        ->sole();
+
+    expect($activity->subject_type)
+        ->toBe($moderation->getMorphClass())
+        ->and($activity->subject_id)
+        ->toBe($moderation->id)
+        ->and($activity->description)
+        ->toBe('Returned message report #'.$report->id.' to pending.')
+        ->and($activity->metadata['message_report_id'])
+        ->toBe($report->id)
+        ->and($activity->metadata['reporter_id'])
+        ->toBe($reporter->id);
+});
+
+test('administrator can reopen dismissed message report', function () {
+    $administrator = messageReportEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message is being used to test reopening a dismissed report.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for administrative review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.message-reports.show', ['report' => $report])
+        ->call('dismissReport')
+        ->assertHasNoErrors()
+        ->call('reopenReport')
+        ->assertHasNoErrors();
+
+    expect($report->fresh()->status)->toBe('pending');
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('action', 'dismissed')
+            ->count()
+    )->toBe(1);
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('user_id', $administrator->id)
+            ->where('action', 'reopened')
+            ->count()
+    )->toBe(1);
+
+    expect(
+        StaffActivityLog::query()
+            ->where('actor_id', $administrator->id)
+            ->where('target_user_id', $reportedMember->id)
+            ->where('action', 'message_report_reopened')
+            ->count()
+    )->toBe(1);
+});
+
+test('pending message report cannot be reopened', function () {
+    $administrator = messageReportEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message is being used to test invalid reopening of a pending report.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for administrative review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.message-reports.show', ['report' => $report])
+        ->call('reopenReport')
+        ->assertHasErrors(['reportStatus']);
+
+    expect($report->fresh()->status)->toBe('pending');
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('action', 'reopened')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $reportedMember->id)
+            ->where('action', 'message_report_reopened')
+            ->exists()
+    )->toBeFalse();
+});
+
+test('message report can complete multiple moderation cycles through reopening', function () {
+    $administrator = messageReportEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message is being used to test repeated report moderation cycles.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for administrative review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.message-reports.show', ['report' => $report]);
+
+    $component
+        ->call('markReviewed')
+        ->assertHasNoErrors()
+        ->call('reopenReport')
+        ->assertHasNoErrors()
+        ->call('dismissReport')
+        ->assertHasNoErrors()
+        ->call('reopenReport')
+        ->assertHasNoErrors();
+
+    expect($report->fresh()->status)->toBe('pending');
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('action', 'reviewed')
+            ->count()
+    )->toBe(1);
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('action', 'dismissed')
+            ->count()
+    )->toBe(1);
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('action', 'reopened')
+            ->count()
+    )->toBe(2);
+
+    expect(
+        StaffActivityLog::query()
+            ->where('actor_id', $administrator->id)
+            ->where('target_user_id', $reportedMember->id)
+            ->where('action', 'message_report_reopened')
+            ->count()
+    )->toBe(2);
+});
+
+test('moderator can reopen resolved message report', function () {
+    $moderator = messageReportEnforcementUser([
+        'is_moderator' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message is being used to test moderator report reopening.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for moderator review.',
+        'status' => 'reviewed',
+    ]);
+
+    $this->actingAs($moderator);
+
+    Livewire::test('admin.message-reports.show', ['report' => $report])
+        ->call('reopenReport')
+        ->assertHasNoErrors();
+
+    expect($report->fresh()->status)->toBe('pending');
+
+    $this->assertDatabaseHas('message_report_moderations', [
+        'message_report_id' => $report->id,
+        'user_id' => $moderator->id,
+        'action' => 'reopened',
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'actor_id' => $moderator->id,
+        'target_user_id' => $reportedMember->id,
+        'action' => 'message_report_reopened',
+    ]);
+});

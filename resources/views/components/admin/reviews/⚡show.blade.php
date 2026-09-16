@@ -63,6 +63,15 @@ class extends Component
 
     public function hideReview(): void
     {
+        if ($this->review->hidden_at !== null) {
+            $this->addError(
+                'reviewStatus',
+                'Only a visible review can be hidden.'
+            );
+
+            return;
+        }
+
         $this->validate([
             'moderationNote' => ['required', 'string', 'min:10', 'max:1000'],
         ], [
@@ -105,6 +114,15 @@ class extends Component
 
     public function restoreReview(): void
     {
+        if ($this->review->hidden_at === null) {
+            $this->addError(
+                'reviewStatus',
+                'Only a hidden review can be restored.'
+            );
+
+            return;
+        }
+
         $this->validate([
             'restoreNote' => ['required', 'string', 'min:10', 'max:1000'],
         ], [
