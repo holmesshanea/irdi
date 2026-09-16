@@ -667,3 +667,104 @@ test('dismissed message report cannot later be marked as reviewed', function () 
             ->exists()
     )->toBeFalse();
 });
+
+test('moderator can mark pending message report as reviewed', function () {
+    $moderator = messageReportEnforcementUser([
+        'is_moderator' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message is being used to test moderator report resolution.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for moderator review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($moderator);
+
+    Livewire::test('admin.message-reports.show', ['report' => $report])
+        ->call('markReviewed')
+        ->assertHasNoErrors();
+
+    expect($report->fresh()->status)->toBe('reviewed');
+
+    $this->assertDatabaseHas('message_report_moderations', [
+        'message_report_id' => $report->id,
+        'user_id' => $moderator->id,
+        'action' => 'reviewed',
+    ]);
+});
+
+test('moderator can review report but cannot restrict equal rank moderator', function () {
+    Notification::fake();
+
+    $moderator = messageReportEnforcementUser([
+        'is_moderator' => true,
+    ]);
+
+    $reportedModerator = messageReportEnforcementUser([
+        'is_moderator' => true,
+    ]);
+
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedModerator->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message tests separation between report moderation and member enforcement.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for moderator review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($moderator);
+
+    Livewire::test('admin.message-reports.show', ['report' => $report])
+        ->call('markReviewed')
+        ->assertHasNoErrors();
+
+    expect($report->fresh()->status)->toBe('reviewed');
+
+    Livewire::test('admin.message-reports.show', ['report' => $report->fresh()])
+        ->set('restrictionType', '7_days')
+        ->set(
+            'enforcementReason',
+            'Equal-rank enforcement must not be permitted through a message report.'
+        )
+        ->call('disableMessaging')
+        ->assertForbidden();
+
+    $reportedModerator->refresh();
+
+    expect($reportedModerator->messaging_disabled_at)->toBeNull()
+        ->and($reportedModerator->messaging_disabled_until)->toBeNull();
+
+    expect(
+        MessagingEnforcement::query()
+            ->where('user_id', $reportedModerator->id)
+            ->where('message_report_id', $report->id)
+            ->exists()
+    )->toBeFalse();
+
+    Notification::assertNotSentTo(
+        $reportedModerator,
+        MessagingRestrictedNotification::class,
+    );
+});
