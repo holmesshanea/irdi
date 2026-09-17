@@ -30,15 +30,15 @@ class MembershipAdministrativeReviewStartedNotification extends Notification imp
         $notifiable = $notifiable;
 
         return (new MailMessage)
-            ->subject('IRDI Membership Administrative Review')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your IRDI membership has been placed under Administrative Review.')
-            ->line('While the review is active, your membership is not considered to be in Good Standing.')
-            ->line('Reason:')
+            ->subject(__('IRDI Membership Administrative Review'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your IRDI membership has been placed under Administrative Review.'))
+            ->line(__('While the review is active, your membership is not considered to be in Good Standing.'))
+            ->line(__('Reason:'))
             ->line($this->reason)
-            ->line('Administrative Review does not by itself suspend or terminate your membership. IRDI staff will review the matter and determine whether any further accountability action is appropriate.')
-            ->action('View Your Account', url('/account'))
-            ->line('You will be notified when the Administrative Review is resolved or if further action is taken.');
+            ->line(__('Administrative Review does not by itself suspend or terminate your membership. IRDI staff will review the matter and determine whether any further accountability action is appropriate.'))
+            ->action(__('View Your Account'), url('/account'))
+            ->line(__('You will be notified when the Administrative Review is resolved or if further action is taken.'));
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,35 +31,37 @@ class MembershipSuspensionContinuedNotification extends Notification implements 
     {
         /** @var User $notifiable */
         $mail = (new MailMessage)
-            ->subject('IRDI Membership Suspension Continued')
-            ->greeting('Hello '.$notifiable->name.',')
+            ->subject(__('IRDI Membership Suspension Continued'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
             ->line(
-                'Following a formal review, your IRDI membership suspension will remain in effect.'
+                __('Following a formal review, your IRDI membership suspension will remain in effect.')
             )
-            ->line('Reason for continuation:')
+            ->line(__('Reason for continuation:'))
             ->line($this->reason);
 
         if ($this->eligibleForReviewAt !== null) {
             $mail
                 ->line(
-                    'Your membership will become eligible for another formal review on '
-                    .$this->eligibleForReviewAt->format('F j, Y').'.'
+                    __('Your membership will become eligible for another formal review on :date.', [
+                        'date' => Carbon::instance($this->eligibleForReviewAt)
+                            ->translatedFormat('F j, Y'),
+                    ])
                 )
                 ->line(
-                    'You may request another formal review once that date has been reached.'
+                    __('You may request another formal review once that date has been reached.')
                 );
         } else {
             $mail->line(
-                'Your suspension is now indefinite and does not currently have a scheduled formal review date.'
+                __('Your suspension is now indefinite and does not currently have a scheduled formal review date.')
             );
         }
 
         return $mail
             ->line(
-                'Your IRDI membership remains suspended until IRDI formally changes your membership status.'
+                __('Your IRDI membership remains suspended until IRDI formally changes your membership status.')
             )
             ->line(
-                'If you have questions about this decision, please contact IRDI.'
+                __('If you have questions about this decision, please contact IRDI.')
             );
     }
 

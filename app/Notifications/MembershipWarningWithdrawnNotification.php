@@ -27,13 +27,13 @@ class MembershipWarningWithdrawnNotification extends Notification implements Sho
         /** @var User $notifiable */
 
         return (new MailMessage)
-            ->subject('IRDI Membership Warning Withdrawn')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your Formal Membership Warning has been withdrawn.')
-            ->line('The warning is no longer an active membership enforcement action.')
-            ->line('Your IRDI membership remains active.')
-            ->action('View Your Account', url('/account'))
-            ->line('Thank you for your continued commitment to IRDI and responsible metal detecting.');
+            ->subject(__('IRDI Membership Warning Withdrawn'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your Formal Membership Warning has been withdrawn.'))
+            ->line(__('The warning is no longer an active membership enforcement action.'))
+            ->line(__('Your IRDI membership remains active.'))
+            ->action(__('View Your Account'), url('/account'))
+            ->line(__('Thank you for your continued commitment to IRDI and responsible metal detecting.'));
     }
 
     /**

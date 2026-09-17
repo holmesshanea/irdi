@@ -29,14 +29,14 @@ class MembershipReinstatedNotification extends Notification implements ShouldQue
         /** @var User $notifiable */
 
         return (new MailMessage)
-            ->subject('IRDI Membership Reinstated')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your IRDI membership has been reinstated.')
-            ->line('Your membership ban is no longer active, and your membership status has been restored to active.')
-            ->line('Reason:')
+            ->subject(__('IRDI Membership Reinstated'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your IRDI membership has been reinstated.'))
+            ->line(__('Your membership ban is no longer active, and your membership status has been restored to active.'))
+            ->line(__('Reason:'))
             ->line($this->reason)
-            ->action('View Your Account', url('/account'))
-            ->line('Thank you for your continued commitment to IRDI standards and responsible detecting.');
+            ->action(__('View Your Account'), url('/account'))
+            ->line(__('Thank you for your continued commitment to IRDI standards and responsible detecting.'));
     }
 
     /**

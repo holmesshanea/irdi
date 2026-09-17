@@ -28,22 +28,24 @@ class MembershipProbationResolvedNotification extends Notification implements Sh
     {
         /** @var User $notifiable */
         $mail = (new MailMessage)
-            ->subject('IRDI Membership Probation Resolved')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your IRDI Membership Probation has been reviewed and is now resolved.')
-            ->line('The probation is no longer an active membership enforcement action.');
+            ->subject(__('IRDI Membership Probation Resolved'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your IRDI Membership Probation has been reviewed and is now resolved.'))
+            ->line(__('The probation is no longer an active membership enforcement action.'));
 
         if ($this->inGoodStanding) {
-            $mail->line('Your membership is now considered to be in Good Standing.');
+            $mail->line(
+                __('Your membership is now considered to be in Good Standing.')
+            );
         } else {
             $mail->line(
-                'Another active membership accountability action remains in effect, so your membership is not currently considered to be in Good Standing.'
+                __('Another active membership accountability action remains in effect, so your membership is not currently considered to be in Good Standing.')
             );
         }
 
         return $mail
-            ->action('View Your Account', url('/account'))
-            ->line('Thank you for your continued commitment to IRDI and responsible metal detecting.');
+            ->action(__('View Your Account'), url('/account'))
+            ->line(__('Thank you for your continued commitment to IRDI and responsible metal detecting.'));
     }
 
     /**

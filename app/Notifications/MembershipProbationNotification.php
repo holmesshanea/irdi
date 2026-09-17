@@ -42,7 +42,7 @@ class MembershipProbationNotification extends Notification
 
         if ($this->eligibleForReviewAt !== null) {
             $message->line(__('Your probation becomes eligible for formal review on :date.', [
-                'date' => $this->eligibleForReviewAt->format('F j, Y'),
+                'date' => $this->eligibleForReviewAt->translatedFormat('F j, Y'),
             ]));
         }
 

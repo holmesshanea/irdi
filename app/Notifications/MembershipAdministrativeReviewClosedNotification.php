@@ -27,13 +27,13 @@ class MembershipAdministrativeReviewClosedNotification extends Notification impl
         /** @var User $notifiable */
 
         return (new MailMessage)
-            ->subject('IRDI Membership Administrative Review Closed')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('The Administrative Review of your IRDI membership has been completed.')
-            ->line('The review has been closed with no further membership action.')
-            ->line('Your membership remains active and is no longer under Administrative Review.')
-            ->action('View Your Account', url('/account'))
-            ->line('Thank you for your continued commitment to IRDI and responsible metal detecting.');
+            ->subject(__('IRDI Membership Administrative Review Closed'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('The Administrative Review of your IRDI membership has been completed.'))
+            ->line(__('The review has been closed with no further membership action.'))
+            ->line(__('Your membership remains active and is no longer under Administrative Review.'))
+            ->action(__('View Your Account'), url('/account'))
+            ->line(__('Thank you for your continued commitment to IRDI and responsible metal detecting.'));
     }
 
     /**

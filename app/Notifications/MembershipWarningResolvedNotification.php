@@ -27,13 +27,13 @@ class MembershipWarningResolvedNotification extends Notification implements Shou
         /** @var User $notifiable */
 
         return (new MailMessage)
-            ->subject('IRDI Membership Warning Resolved')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your Formal Membership Warning has been reviewed and is now resolved.')
-            ->line('The warning is no longer an active membership enforcement action.')
-            ->line('Your IRDI membership remains active.')
-            ->action('View Your Account', url('/account'))
-            ->line('Thank you for your continued commitment to IRDI and responsible metal detecting.');
+            ->subject(__('IRDI Membership Warning Resolved'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your Formal Membership Warning has been reviewed and is now resolved.'))
+            ->line(__('The warning is no longer an active membership enforcement action.'))
+            ->line(__('Your IRDI membership remains active.'))
+            ->action(__('View Your Account'), route('account'))
+            ->line(__('Thank you for your continued commitment to IRDI and responsible metal detecting.'));
     }
 
     /**

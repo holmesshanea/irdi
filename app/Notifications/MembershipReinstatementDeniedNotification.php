@@ -29,14 +29,14 @@ class MembershipReinstatementDeniedNotification extends Notification implements 
         /** @var User $notifiable */
 
         return (new MailMessage)
-            ->subject('IRDI Membership Reinstatement Petition Decision')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your petition for reinstatement to IRDI membership has been reviewed.')
-            ->line('Your reinstatement petition has been denied, and your membership ban remains active.')
-            ->line('Reason:')
+            ->subject(__('IRDI Membership Reinstatement Petition Decision'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your petition for reinstatement to IRDI membership has been reviewed.'))
+            ->line(__('Your reinstatement petition has been denied, and your membership ban remains active.'))
+            ->line(__('Reason:'))
             ->line($this->reason)
-            ->action('View Your Account', url('/account'))
-            ->line('Any future eligibility for reinstatement remains subject to the terms of your active membership ban and IRDI membership policies.');
+            ->action(__('View Your Account'), url('/account'))
+            ->line(__('Any future eligibility for reinstatement remains subject to the terms of your active membership ban and IRDI membership policies.'));
     }
 
     /**

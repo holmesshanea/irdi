@@ -32,22 +32,26 @@ class MembershipBannedNotification extends Notification implements ShouldQueue
         $notifiable = $notifiable;
 
         $mail = (new MailMessage)
-            ->subject('IRDI Membership Ban')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your IRDI membership has been terminated and your account has been banned.')
-            ->line('Reason:')
+            ->subject(__('IRDI Membership Ban'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your IRDI membership has been terminated and your account has been banned.'))
+            ->line(__('Reason:'))
             ->line($this->reason);
 
         if ($this->permanentlyIneligible) {
-            $mail->line('You are permanently ineligible for reinstatement.');
+            $mail->line(
+                __('You are permanently ineligible for reinstatement.')
+            );
         } elseif ($this->reinstatementEligibleAt !== null) {
             $mail->line(
-                'You may become eligible to request reinstatement on '.$this->reinstatementEligibleAt.'.'
+                __('You may become eligible to request reinstatement on :date.', [
+                    'date' => $this->reinstatementEligibleAt,
+                ])
             );
         }
 
         return $mail
-            ->line('This action concludes the current Administrative Review.');
+            ->line(__('This action concludes the current Administrative Review.'));
     }
 
     /**

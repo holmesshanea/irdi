@@ -30,13 +30,15 @@ class MembershipProbationContinuedNotification extends Notification implements S
         /** @var User $notifiable */
 
         return (new MailMessage)
-            ->subject('IRDI Membership Probation Continued')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('Your IRDI Membership Probation has been reviewed and will remain active.')
-            ->line('Your next eligibility date for formal review is '.$this->eligibleForReviewAt->format('F j, Y').'.')
-            ->line('Until the probation is resolved, your membership is not considered to be in Good Standing.')
-            ->action('View Your Account', url('/account'))
-            ->line('You will be notified when your probation is reviewed again or if further membership action is taken.');
+            ->subject(__('IRDI Membership Probation Continued'))
+            ->greeting(__('Hello :name,', ['name' => $notifiable->name]))
+            ->line(__('Your IRDI Membership Probation has been reviewed and will remain active.'))
+            ->line(__('Your next eligibility date for formal review is :date.', [
+                'date' => $this->eligibleForReviewAt->translatedFormat('F j, Y'),
+            ]))
+            ->line(__('Until the probation is resolved, your membership is not considered to be in Good Standing.'))
+            ->action(__('View Your Account'), url('/account'))
+            ->line(__('You will be notified when your probation is reviewed again or if further membership action is taken.'));
     }
 
     /**
