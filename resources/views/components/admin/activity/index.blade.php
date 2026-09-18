@@ -139,10 +139,35 @@ class extends Component
                     'messaging_restored_from_report',
                 ],
                 'membership' => [
+                    'membership_warning_issued',
+                    'membership_warning_resolved',
+                    'membership_warning_withdrawn',
+
+                    'membership_probation_started',
+                    'membership_probation_continued',
+                    'membership_probation_resolved',
+                    'membership_probation_escalated',
+
+                    'membership_administrative_hold_started',
+                    'membership_administrative_hold_resolved_no_action',
+                    'membership_administrative_hold_resolved_warning',
+                    'membership_administrative_hold_resolved_probation',
+                    'membership_administrative_hold_resolved_suspension',
+                    'membership_administrative_hold_resolved_ban',
+
                     'membership_suspended',
-                    'membership_restored',
+                    'membership_suspension_continued',
+                    'membership_suspension_resolved_good_standing',
+                    'membership_suspension_resolved_probation',
+                    'membership_suspension_resolved_ban',
+
                     'member_banned',
+
+                    'membership_reinstatement_denied',
+                    'membership_reinstated_probation',
                     'membership_reinstated_good_standing',
+
+                    'membership_restored',
                 ],
                 'reviews' => [
                     'review_marked_reviewed',

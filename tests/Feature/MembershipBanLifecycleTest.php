@@ -279,3 +279,58 @@ test('administrator cannot decide reinstatement petition', function () {
 
     expect($member->fresh()->membership_status)->toBe('banned');
 });
+
+test('direct ban resolves an active membership probation', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'active',
+        'email' => 'probation-member@example.com',
+    ]);
+
+    $probation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'The member is on formal probation before escalation.',
+        'starts_at' => now()->subDays(30),
+        'eligible_for_review_at' => now()->addDays(60),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'banReason',
+            'The documented conduct warrants escalation from probation to an IRDI ban.'
+        )
+        ->call('banMember')
+        ->assertHasNoErrors();
+
+    $member->refresh();
+    $probation->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($probation->status)->toBe('resolved')
+        ->and($probation->resolved_at)->not->toBeNull()
+        ->and($probation->resolved_by)->toBe($superAdmin->id);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_escalated',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $probation->id,
+    ]);
+
+    $this->assertDatabaseHas('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'banned',
+        'status' => 'active',
+    ]);
+});
