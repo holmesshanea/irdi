@@ -1345,6 +1345,8 @@ class extends Component
 
         $this->banReason = '';
 
+        $this->banPermanentlyIneligible = false;
+
         $this->loadUser();
 
         session()->flash(
@@ -1677,6 +1679,153 @@ class extends Component
         );
     }
 
+    public function resolveSuspensionWithBan(int $suspensionId): void
+    {
+        $actor = auth()->user();
+
+        if (
+            $actor === null
+            || ! MembershipEnforcementAuthorization::canRestoreSuspension($actor, $this->user)
+            || ! MembershipEnforcementAuthorization::canBan($actor, $this->user)
+        ) {
+            abort(403);
+        }
+
+        if ($this->user->membership_status !== 'suspended') {
+            $this->addError(
+                'banReason',
+                'Only a suspended membership can be banned through a suspension review.'
+            );
+
+            return;
+        }
+
+        $this->validate([
+            'banReason' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'banReason.required' => 'Please enter a reason for banning this member.',
+            'banReason.min' => 'The ban reason must be at least 10 characters.',
+            'banReason.max' => 'The ban reason must be 1,000 characters or fewer.',
+        ]);
+
+        $suspension = MembershipEnforcement::query()
+            ->whereKey($suspensionId)
+            ->where('user_id', $this->user->id)
+            ->where('action', 'suspended')
+            ->where('status', 'active')
+            ->whereNull('resolved_at')
+            ->firstOrFail();
+
+        $enforcement = DB::transaction(function () use ($suspension): MembershipEnforcement {
+            $suspension->update([
+                'status' => 'resolved',
+                'resolved_at' => now(),
+                'resolved_by' => Auth::id(),
+            ]);
+
+            StaffActivity::record(
+                action: 'membership_suspension_resolved_ban',
+                description: 'Resolved membership suspension for '.$this->user->name.' with an IRDI ban.',
+                targetUserId: $this->user->id,
+                subject: $suspension,
+                metadata: [
+                    'suspension_id' => $suspension->id,
+                    'resolution' => 'ban',
+                    'reason' => $this->banReason,
+                    'original_reason' => $suspension->reason,
+                ],
+            );
+
+            $this->user->membership_status = 'banned';
+            $this->user->save();
+
+            $enforcement = MembershipEnforcement::create([
+                'user_id' => $this->user->id,
+                'admin_id' => Auth::id(),
+                'action' => 'banned',
+                'status' => 'active',
+                'reason' => $this->banReason,
+                'starts_at' => now(),
+                'reinstatement_eligible_at' => $this->banPermanentlyIneligible
+                    ? null
+                    : now()->addYears(3),
+                'permanently_ineligible' => $this->banPermanentlyIneligible,
+            ]);
+
+            BanIdentifier::updateOrCreate(
+                [
+                    'type' => 'email',
+                    'value' => strtolower(trim($this->user->email)),
+                ],
+                [
+                    'user_id' => $this->user->id,
+                    'membership_enforcement_id' => $enforcement->id,
+                    'created_by' => Auth::id(),
+                    'reason' => $this->banReason,
+                ]
+            );
+
+            collect([
+                $this->user->registration_ip,
+                $this->user->last_login_ip,
+            ])
+                ->filter()
+                ->map(fn ($ip) => trim((string) $ip))
+                ->unique()
+                ->filter(fn (string $ip) => $this->shouldStoreBanIp($ip))
+                ->each(function (string $ip) use ($enforcement): void {
+                    BanIdentifier::updateOrCreate(
+                        [
+                            'type' => 'ip',
+                            'value' => $ip,
+                        ],
+                        [
+                            'user_id' => $this->user->id,
+                            'membership_enforcement_id' => $enforcement->id,
+                            'created_by' => Auth::id(),
+                            'reason' => $this->banReason,
+                        ]
+                    );
+                });
+
+            StaffActivity::record(
+                action: 'member_banned',
+                description: 'Banned '.$this->user->name.' from IRDI.',
+                targetUserId: $this->user->id,
+                subject: $enforcement,
+                metadata: [
+                    'reason' => $this->banReason,
+                    'email_banned' => strtolower(trim($this->user->email)),
+                    'registration_ip' => $this->user->registration_ip,
+                    'last_login_ip' => $this->user->last_login_ip,
+                    'permanently_ineligible' => $this->banPermanentlyIneligible,
+                    'reinstatement_eligible_at' => $enforcement->reinstatement_eligible_at?->toIso8601String(),
+                    'suspension_id' => $suspension->id,
+                ],
+            );
+
+            return $enforcement;
+        });
+
+        $this->user->notify(
+            new MembershipBannedNotification(
+                reason: $enforcement->reason,
+                permanentlyIneligible: $enforcement->permanently_ineligible,
+                reinstatementEligibleAt: $enforcement->reinstatement_eligible_at?->format('F j, Y'),
+            )
+        );
+
+        $this->banReason = '';
+        $this->banPermanentlyIneligible = false;
+
+        $this->loadUser();
+
+        session()->flash(
+            'status',
+            'Suspension has been resolved and the member has been banned from IRDI.'
+        );
+    }
+
     public function restoreMembership(): void
     {
         $actor = auth()->user();
@@ -1784,8 +1933,11 @@ class extends Component
         }
 
 
-        if (! in_array($this->user->membership_status, ['active', 'suspended'], true)) {
-            $this->addError('banReason', 'Only an active or suspended membership can be banned.');
+        if ($this->user->membership_status !== 'active') {
+            $this->addError(
+                'banReason',
+                'Only an active membership can be banned through this action.'
+            );
 
             return;
         }
@@ -1798,38 +1950,9 @@ class extends Component
             'banReason.max' => 'The ban reason must be 1,000 characters or fewer.',
         ]);
 
-        $wasSuspended = $this->user->membership_status === 'suspended';
 
-        $enforcement = DB::transaction(function () use ($wasSuspended): MembershipEnforcement {
-            if ($wasSuspended) {
-                $activeSuspensions = MembershipEnforcement::query()
-                    ->where('user_id', $this->user->id)
-                    ->where('action', 'suspended')
-                    ->where('status', 'active')
-                    ->whereNull('resolved_at')
-                    ->get();
+        $enforcement = DB::transaction(function (): MembershipEnforcement {
 
-                foreach ($activeSuspensions as $suspension) {
-                    $suspension->update([
-                        'status' => 'resolved',
-                        'resolved_at' => now(),
-                        'resolved_by' => Auth::id(),
-                    ]);
-
-                    StaffActivity::record(
-                        action: 'membership_suspension_escalated',
-                        description: 'Closed membership suspension for '.$this->user->name.' due to ban.',
-                        targetUserId: $this->user->id,
-                        subject: $suspension,
-                        metadata: [
-                            'suspension_id' => $suspension->id,
-                            'original_reason' => $suspension->reason,
-                            'outcome' => 'ban',
-                            'reason' => $this->banReason,
-                        ],
-                    );
-                }
-            }
 
             $this->user->membership_status = 'banned';
             $this->user->save();
@@ -4305,20 +4428,28 @@ $canSuspendMembership = $membershipEnforcementActor !== null
                                         can ban a member. Ban identifiers and the complete enforcement history are preserved.
                                     </p>
 
-                                    <div class="mt-4">
+                                    <div class="mt-4 grid gap-4">
                                         <flux:textarea
                                             wire:model="banReason"
                                             label="Reason for ban"
                                             placeholder="Document why the suspension review warrants an IRDI ban..."
                                             rows="3"
                                         />
+
+                                        <div class="rounded-lg border border-red-200 bg-white p-4">
+                                            <flux:switch
+                                                wire:model="banPermanentlyIneligible"
+                                                label="Permanently ineligible for reinstatement"
+                                                description="Use only when this ban should never be eligible for a future reinstatement petition. Otherwise, petition eligibility begins after three years."
+                                            />
+                                        </div>
                                     </div>
 
                                     <div class="mt-4 flex justify-end">
                                         <flux:button
                                             type="button"
                                             variant="danger"
-                                            wire:click="banMember"
+                                            wire:click="resolveSuspensionWithBan({{ $activeSuspension->id }})"
                                             wire:confirm="Resolve this suspension with an IRDI ban? The member's email address and any known non-loopback IP addresses will be added to the ban list."
                                         >
                                             Ban Member
@@ -4454,41 +4585,6 @@ $canSuspendMembership = $membershipEnforcementActor !== null
                     </div>
                 @endif
 
-            @elseif ($user->membership_status === 'banned')
-
-                <div class="mt-6 rounded-lg border border-red-300 bg-red-50 p-5">
-                    <div class="font-medium text-red-900">
-                        This member is banned from IRDI.
-                    </div>
-
-                    <p class="mt-1 text-sm leading-6 text-red-700">
-                        The account is preserved for enforcement history, and the member's email address
-                        and any known IP ban identifiers are on the ban list. Unbanning restores the membership to
-                        active and removes this account's ban identifiers.
-                    </p>
-                </div>
-
-                @if ($canUnbanMember)
-                    <div class="mt-6 border-t border-zinc-200 pt-6">
-                        <flux:textarea
-                            wire:model="unbanReason"
-                            label="Reason for unbanning member"
-                            placeholder="Explain why this member should be allowed to return to IRDI..."
-                            rows="4"
-                        />
-
-                        <div class="mt-4 flex justify-end">
-                            <flux:button
-                                type="button"
-                                variant="primary"
-                                wire:click="unbanMember"
-                                wire:confirm="Unban this member and restore their IRDI membership to active?"
-                            >
-                                Unban Member
-                            </flux:button>
-                        </div>
-                    </div>
-                @endif
 
             @else
 

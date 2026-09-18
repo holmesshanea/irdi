@@ -502,7 +502,7 @@ test('super administrator can resolve suspension with a ban', function () {
             'banReason',
             'The completed suspension review supports an indefinite termination of IRDI membership.'
         )
-        ->call('banMember')
+        ->call('resolveSuspensionWithBan', $suspension->id)
         ->assertHasNoErrors();
 
     $member->refresh();
@@ -543,7 +543,7 @@ test('super administrator can resolve suspension with a ban', function () {
 
     $this->assertDatabaseHas('staff_activity_logs', [
         'target_user_id' => $member->id,
-        'action' => 'membership_suspension_escalated',
+        'action' => 'membership_suspension_resolved_ban',
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $suspension->id,
     ]);
