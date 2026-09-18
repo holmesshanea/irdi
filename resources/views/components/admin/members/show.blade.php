@@ -771,35 +771,11 @@ class extends Component
                 'resolved_by' => Auth::id(),
             ]);
 
-            $supersededProbation = $hold->supersededEnforcement;
-
-            if (
-                $supersededProbation !== null
-                && $supersededProbation->action === 'probation'
-                && $supersededProbation->user_id === $this->user->id
-                && $supersededProbation->status === 'resolved'
-            ) {
-                $supersededProbation->update([
-                    'status' => 'active',
-                    'resolved_at' => null,
-                    'resolved_by' => null,
-                    'eligible_for_review_at' => $hold->superseded_probation_remaining_days !== null
-                        ? now()->addDays($hold->superseded_probation_remaining_days)
-                        : null,
-                ]);
-
-                StaffActivity::record(
-                    action: 'membership_probation_restored',
-                    description: 'Restored membership probation for '.$this->user->name.' after administrative review closed with no further action.',
-                    targetUserId: $this->user->id,
-                    subject: $supersededProbation,
-                    metadata: [
-                        'probation_id' => $supersededProbation->id,
-                        'administrative_hold_id' => $hold->id,
-                        'reason' => $this->administrativeHoldResolutionReason,
-                    ],
-                );
-            }
+            $this->restoreSupersededProbation(
+                hold: $hold,
+                resolution: 'no_action',
+                reason: $this->administrativeHoldResolutionReason,
+            );
 
             StaffActivity::record(
                 action: 'membership_administrative_hold_resolved_no_action',
@@ -882,6 +858,12 @@ class extends Component
                 'resolved_at' => now(),
                 'resolved_by' => Auth::id(),
             ]);
+
+            $this->restoreSupersededProbation(
+                hold: $hold,
+                resolution: 'warning',
+                reason: $this->warningReason,
+            );
 
             StaffActivity::record(
                 action: 'membership_administrative_hold_resolved_warning',
@@ -2380,6 +2362,54 @@ class extends Component
         );
 
         return true;
+    }
+
+    private function restoreSupersededProbation(
+        MembershipEnforcement $hold,
+        string $resolution,
+        ?string $reason = null,
+    ): ?MembershipEnforcement {
+        $supersededProbation = $hold->supersededEnforcement;
+
+        if (
+            $supersededProbation === null
+            || $supersededProbation->action !== 'probation'
+            || $supersededProbation->user_id !== $this->user->id
+            || $supersededProbation->status !== 'resolved'
+        ) {
+            return null;
+        }
+
+        $supersededProbation->update([
+            'status' => 'active',
+            'resolved_at' => null,
+            'resolved_by' => null,
+            'eligible_for_review_at' => $hold->superseded_probation_remaining_days !== null
+                ? now()->addDays($hold->superseded_probation_remaining_days)
+                : null,
+        ]);
+
+        $resolutionLabel = match ($resolution) {
+            'warning' => 'with a formal warning',
+            default => 'with no further action',
+        };
+
+        StaffActivity::record(
+            action: 'membership_probation_restored',
+            description: 'Restored membership probation for '.$this->user->name.' after administrative review closed '.$resolutionLabel.'.',
+            targetUserId: $this->user->id,
+            subject: $supersededProbation,
+            metadata: [
+                'probation_id' => $supersededProbation->id,
+                'administrative_hold_id' => $hold->id,
+                'resolution' => $resolution,
+                'reason' => $reason,
+                'remaining_review_days' => $hold->superseded_probation_remaining_days,
+                'restored_eligible_for_review_at' => $supersededProbation->eligible_for_review_at?->toIso8601String(),
+            ],
+        );
+
+        return $supersededProbation;
     }
 
     private function resolveActiveProbationsForEscalation(

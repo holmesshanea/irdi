@@ -1182,3 +1182,498 @@ test('closing administrative review with no action restores the superseded proba
         'subject_id' => $hold->id,
     ]);
 });
+
+test('closing administrative review with warning restores the superseded probation', function () {
+    $superAdmin = administrativeHoldUser([
+        'is_super_admin' => true,
+        'email' => 'warning-super-admin@example.com',
+    ]);
+
+    $member = administrativeHoldUser([
+        'membership_status' => 'active',
+        'email' => 'probation-warning-member@example.com',
+    ]);
+
+    $probation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'The member is serving an active probation before administrative review.',
+        'starts_at' => now()->subDays(30),
+        'eligible_for_review_at' => now()->addDays(60),
+        'restoration_requirements' => 'Complete the existing probation requirements.',
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'administrativeHoldReason',
+            'New information requires formal administrative review while the existing probation is paused.'
+        )
+        ->call('placeOnAdministrativeHold')
+        ->assertHasNoErrors();
+
+    $probation->refresh();
+
+    expect($probation->status)->toBe('resolved');
+
+    $hold = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'administrative_hold')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->superseded_enforcement_id)->toBe($probation->id)
+        ->and($hold->superseded_probation_remaining_days)->toBe(60);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'warningReason',
+            'The review supports a formal warning while the existing probation remains appropriate.'
+        )
+        ->set(
+            'warningDetails',
+            'The administrative review identified conduct requiring a formal warning but not a higher sanction.'
+        )
+        ->set(
+            'warningRequirements',
+            'Follow all existing probation requirements and avoid repeating the conduct identified in this warning.'
+        )
+        ->call('resolveAdministrativeHoldWithWarning', $hold->id)
+        ->assertHasNoErrors();
+
+    $hold->refresh();
+    $probation->refresh();
+    $member->refresh();
+
+    $warning = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'warning')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->status)->toBe('resolved')
+        ->and($hold->resolved_at)->not->toBeNull()
+        ->and($hold->resolved_by)->toBe($superAdmin->id)
+
+        ->and($probation->status)->toBe('active')
+        ->and($probation->resolved_at)->toBeNull()
+        ->and($probation->resolved_by)->toBeNull()
+        ->and($probation->eligible_for_review_at?->toDateString())
+        ->toBe(now()->addDays(60)->toDateString())
+
+        ->and($warning->status)->toBe('active')
+        ->and($warning->reason)->toBe(
+            'The review supports a formal warning while the existing probation remains appropriate.'
+        )
+
+        ->and($member->membership_status)->toBe('active')
+        ->and($member->isUnderAdministrativeReview())->toBeFalse()
+        ->and($member->isOnProbation())->toBeTrue()
+        ->and($member->hasActiveMembershipWarning())->toBeTrue()
+        ->and($member->isInGoodStanding())->toBeFalse();
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_restored',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $probation->id,
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_warning',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $hold->id,
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_warning_issued',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $warning->id,
+    ]);
+});
+
+test('closing administrative review with probation replaces the superseded probation', function () {
+    $superAdmin = administrativeHoldUser([
+        'is_super_admin' => true,
+        'email' => 'probation-replacement-super-admin@example.com',
+    ]);
+
+    $member = administrativeHoldUser([
+        'membership_status' => 'active',
+        'email' => 'probation-replacement-member@example.com',
+    ]);
+
+    $originalProbation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'The member is serving the original probation before administrative review.',
+        'starts_at' => now()->subDays(30),
+        'eligible_for_review_at' => now()->addDays(60),
+        'restoration_requirements' => 'Complete the requirements of the original probation.',
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'administrativeHoldReason',
+            'New information requires formal administrative review while the original probation is paused.'
+        )
+        ->call('placeOnAdministrativeHold')
+        ->assertHasNoErrors();
+
+    $originalProbation->refresh();
+
+    expect($originalProbation->status)->toBe('resolved');
+
+    $hold = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'administrative_hold')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->superseded_enforcement_id)->toBe($originalProbation->id)
+        ->and($hold->superseded_probation_remaining_days)->toBe(60);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'probationReason',
+            'The completed administrative review supports a new period of formal membership probation.'
+        )
+        ->set(
+            'probationDetails',
+            'The new probation replaces the probation that existed before administrative review.'
+        )
+        ->set(
+            'probationRequirements',
+            'Complete all requirements established by the new probation before Good Standing can be restored.'
+        )
+        ->set('probationReviewDays', '90')
+        ->call('resolveAdministrativeHoldWithProbation', $hold->id)
+        ->assertHasNoErrors();
+
+    $hold->refresh();
+    $originalProbation->refresh();
+    $member->refresh();
+
+    $newProbation = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'probation')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->status)->toBe('resolved')
+        ->and($hold->resolved_at)->not->toBeNull()
+        ->and($hold->resolved_by)->toBe($superAdmin->id)
+
+        ->and($originalProbation->status)->toBe('resolved')
+        ->and($originalProbation->resolved_at)->not->toBeNull()
+        ->and($originalProbation->resolved_by)->toBe($superAdmin->id)
+
+        ->and($newProbation->id)->not->toBe($originalProbation->id)
+        ->and($newProbation->status)->toBe('active')
+        ->and($newProbation->reason)->toBe(
+            'The completed administrative review supports a new period of formal membership probation.'
+        )
+        ->and($newProbation->eligible_for_review_at?->toDateString())
+        ->toBe(now()->addDays(90)->toDateString())
+
+        ->and($member->membership_status)->toBe('active')
+        ->and($member->isUnderAdministrativeReview())->toBeFalse()
+        ->and($member->isOnProbation())->toBeTrue()
+        ->and($member->isInGoodStanding())->toBeFalse();
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'probation')
+            ->where('status', 'active')
+            ->count()
+    )->toBe(1);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_probation',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $hold->id,
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_started',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $newProbation->id,
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_restored',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $originalProbation->id,
+    ]);
+});
+
+test('closing administrative review with suspension leaves the superseded probation resolved', function () {
+    $superAdmin = administrativeHoldUser([
+        'is_super_admin' => true,
+        'email' => 'suspension-super-admin@example.com',
+    ]);
+
+    $member = administrativeHoldUser([
+        'membership_status' => 'active',
+        'email' => 'probation-suspension-member@example.com',
+    ]);
+
+    $originalProbation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'The member is serving an active probation before administrative review.',
+        'starts_at' => now()->subDays(30),
+        'eligible_for_review_at' => now()->addDays(60),
+        'restoration_requirements' => 'Complete the requirements of the original probation.',
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'administrativeHoldReason',
+            'New information requires formal administrative review while the existing probation is paused.'
+        )
+        ->call('placeOnAdministrativeHold')
+        ->assertHasNoErrors();
+
+    $originalProbation->refresh();
+
+    expect($originalProbation->status)->toBe('resolved');
+
+    $hold = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'administrative_hold')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->superseded_enforcement_id)->toBe($originalProbation->id)
+        ->and($hold->superseded_probation_remaining_days)->toBe(60);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'suspensionReason',
+            'The completed administrative review supports suspension rather than restoration of the prior probation.'
+        )
+        ->set('suspensionReviewPeriod', '90')
+        ->call('resolveAdministrativeHoldWithSuspension', $hold->id)
+        ->assertHasNoErrors();
+
+    $hold->refresh();
+    $originalProbation->refresh();
+    $member->refresh();
+
+    $suspension = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'suspended')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->status)->toBe('resolved')
+        ->and($hold->resolved_at)->not->toBeNull()
+        ->and($hold->resolved_by)->toBe($superAdmin->id)
+
+        ->and($originalProbation->status)->toBe('resolved')
+        ->and($originalProbation->resolved_at)->not->toBeNull()
+        ->and($originalProbation->resolved_by)->toBe($superAdmin->id)
+
+        ->and($suspension->status)->toBe('active')
+        ->and($suspension->reason)->toBe(
+            'The completed administrative review supports suspension rather than restoration of the prior probation.'
+        )
+        ->and($suspension->eligible_for_review_at?->toDateString())
+        ->toBe(now()->addDays(90)->toDateString())
+
+        ->and($member->membership_status)->toBe('suspended')
+        ->and($member->isUnderAdministrativeReview())->toBeFalse()
+        ->and($member->isOnProbation())->toBeFalse()
+        ->and($member->isInGoodStanding())->toBeFalse();
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'probation')
+            ->where('status', 'active')
+            ->count()
+    )->toBe(0);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_suspension',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $hold->id,
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_suspended',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $suspension->id,
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_restored',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $originalProbation->id,
+    ]);
+});
+
+test('closing administrative review with ban leaves the superseded probation resolved', function () {
+    Notification::fake();
+
+    $superAdmin = administrativeHoldUser([
+        'is_super_admin' => true,
+        'email' => 'ban-super-admin@example.com',
+    ]);
+
+    $member = administrativeHoldUser([
+        'membership_status' => 'active',
+        'email' => 'probation-ban-member@example.com',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => '1.1.1.1',
+    ]);
+
+    $originalProbation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'The member is serving an active probation before administrative review.',
+        'starts_at' => now()->subDays(30),
+        'eligible_for_review_at' => now()->addDays(60),
+        'restoration_requirements' => 'Complete the requirements of the original probation.',
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'administrativeHoldReason',
+            'New information requires formal administrative review while the existing probation is paused.'
+        )
+        ->call('placeOnAdministrativeHold')
+        ->assertHasNoErrors();
+
+    $originalProbation->refresh();
+
+    expect($originalProbation->status)->toBe('resolved');
+
+    $hold = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'administrative_hold')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->superseded_enforcement_id)->toBe($originalProbation->id)
+        ->and($hold->superseded_probation_remaining_days)->toBe(60);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'banReason',
+            'The completed administrative review supports an indefinite termination of IRDI membership.'
+        )
+        ->call('resolveAdministrativeHoldWithBan', $hold->id)
+        ->assertHasNoErrors();
+
+    $hold->refresh();
+    $originalProbation->refresh();
+    $member->refresh();
+
+    $ban = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'banned')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->status)->toBe('resolved')
+        ->and($hold->resolved_at)->not->toBeNull()
+        ->and($hold->resolved_by)->toBe($superAdmin->id)
+
+        ->and($originalProbation->status)->toBe('resolved')
+        ->and($originalProbation->resolved_at)->not->toBeNull()
+        ->and($originalProbation->resolved_by)->toBe($superAdmin->id)
+
+        ->and($ban->status)->toBe('active')
+        ->and($ban->reason)->toBe(
+            'The completed administrative review supports an indefinite termination of IRDI membership.'
+        )
+
+        ->and($member->membership_status)->toBe('banned')
+        ->and($member->isUnderAdministrativeReview())->toBeFalse()
+        ->and($member->isOnProbation())->toBeFalse()
+        ->and($member->isInGoodStanding())->toBeFalse();
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'probation')
+            ->where('status', 'active')
+            ->count()
+    )->toBe(0);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => 'probation-ban-member@example.com',
+    ]);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+    ]);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'type' => 'ip',
+        'value' => '1.1.1.1',
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_ban',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $hold->id,
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'member_banned',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $ban->id,
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_restored',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $originalProbation->id,
+    ]);
+});
