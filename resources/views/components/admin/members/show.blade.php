@@ -660,6 +660,34 @@ class extends Component
         ]);
 
         $enforcement = DB::transaction(function (): MembershipEnforcement {
+            $activeProbations = MembershipEnforcement::query()
+                ->where('user_id', $this->user->id)
+                ->where('action', 'probation')
+                ->where('status', 'active')
+                ->whereNull('resolved_at')
+                ->get();
+
+            foreach ($activeProbations as $probation) {
+                $probation->update([
+                    'status' => 'resolved',
+                    'resolved_at' => now(),
+                    'resolved_by' => Auth::id(),
+                ]);
+
+                StaffActivity::record(
+                    action: 'membership_probation_escalated',
+                    description: 'Closed membership probation for '.$this->user->name.' due to administrative review.',
+                    targetUserId: $this->user->id,
+                    subject: $probation,
+                    metadata: [
+                        'probation_id' => $probation->id,
+                        'original_reason' => $probation->reason,
+                        'outcome' => 'administrative_review',
+                        'reason' => $this->administrativeHoldReason,
+                    ],
+                );
+            }
+
             $enforcement = MembershipEnforcement::create([
                 'user_id' => $this->user->id,
                 'admin_id' => Auth::id(),

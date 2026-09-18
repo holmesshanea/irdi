@@ -1051,3 +1051,54 @@ test('administrative hold ban closes an active probation if both states coexist'
         'subject_id' => $probation->id,
     ]);
 });
+
+test('starting administrative review resolves an active membership probation', function () {
+    $superAdmin = administrativeHoldUser([
+        'is_super_admin' => true,
+        'email' => 'super-admin@example.com',
+    ]);
+
+    $member = administrativeHoldUser([
+        'membership_status' => 'active',
+        'email' => 'probation-member@example.com',
+    ]);
+
+    $probation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'The member is on formal probation before escalation.',
+        'starts_at' => now()->subDays(30),
+        'eligible_for_review_at' => now()->addDays(60),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'administrativeHoldReason',
+            'The documented conduct requires escalation from probation to formal administrative review.'
+        )
+        ->call('placeOnAdministrativeHold')
+        ->assertHasNoErrors();
+
+    $probation->refresh();
+
+    expect($probation->status)->toBe('resolved')
+        ->and($probation->resolved_at)->not->toBeNull()
+        ->and($probation->resolved_by)->toBe($superAdmin->id);
+
+    $this->assertDatabaseHas('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_escalated',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $probation->id,
+    ]);
+});
