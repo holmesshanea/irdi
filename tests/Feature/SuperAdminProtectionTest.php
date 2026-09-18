@@ -294,7 +294,7 @@ test('administrator cannot unban member', function () {
             'unbanReason',
             'Administrators must not be allowed to unban members.'
         )
-        ->call('unbanMember')
+        ->call('reinstateToGoodStanding')
         ->assertStatus(403);
 
     expect($member->fresh()->membership_status)->toBe('banned');

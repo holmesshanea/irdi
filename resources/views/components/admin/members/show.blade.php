@@ -2281,7 +2281,7 @@ class extends Component
         session()->flash('status', 'The member has been reinstated to IRDI on membership probation.');
     }
 
-    public function unbanMember(): void
+    public function reinstateToGoodStanding(): void
     {
         $actor = auth()->user();
 
@@ -2341,7 +2341,7 @@ class extends Component
             $enforcement = MembershipEnforcement::create([
                 'user_id' => $this->user->id,
                 'admin_id' => Auth::id(),
-                'action' => 'unbanned',
+                'action' => 'reinstated_good_standing',
                 'status' => 'resolved',
                 'reason' => $this->unbanReason,
                 'starts_at' => now(),
@@ -2834,7 +2834,7 @@ class extends Component
                                         <flux:button
                                             type="button"
                                             variant="primary"
-                                            wire:click="unbanMember"
+                                            wire:click="reinstateToGoodStanding"
                                             wire:confirm="Exceptionally reinstate this member directly to active IRDI membership?"
                                         >
                                             Reinstate Directly
@@ -3593,7 +3593,7 @@ $canSuspendMembership = $membershipEnforcementActor !== null
                                             <flux:button
                                                 type="button"
                                                 variant="primary"
-                                                wire:click="unbanMember"
+                                                wire:click="reinstateToGoodStanding"
                                                 wire:confirm="Exceptionally reinstate this member directly to active IRDI membership?"
                                             >
                                                 Reinstate Directly
@@ -4919,9 +4919,9 @@ $canSuspendMembership = $membershipEnforcementActor !== null
                                     <flux:badge color="red">
                                         Banned
                                     </flux:badge>
-                                @elseif ($enforcement->action === 'unbanned')
+                                @elseif (in_array($enforcement->action, ['unbanned', 'reinstated_good_standing'], true))
                                     <flux:badge color="green">
-                                        Unbanned
+                                        Reinstated to Good Standing
                                     </flux:badge>
                                 @endif
 

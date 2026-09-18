@@ -142,7 +142,7 @@ class extends Component
                     'membership_suspended',
                     'membership_restored',
                     'member_banned',
-                    'member_unbanned',
+                    'membership_reinstated_good_standing',
                 ],
                 'reviews' => [
                     'review_marked_reviewed',

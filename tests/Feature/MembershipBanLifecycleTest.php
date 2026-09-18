@@ -244,7 +244,7 @@ test('super administrator can exceptionally reinstate directly to active members
 
     Livewire::test('admin.members.show', ['user' => $member])
         ->set('unbanReason', 'Exceptional evidence supports direct reinstatement without a probation period.')
-        ->call('unbanMember')
+        ->call('reinstateToGoodStanding')
         ->assertHasNoErrors();
 
     $member->refresh();
