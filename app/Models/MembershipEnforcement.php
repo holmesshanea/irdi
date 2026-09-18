@@ -24,6 +24,8 @@ class MembershipEnforcement extends Model
         'reinstatement_eligible_at',
         'permanently_ineligible',
         'review_requested_at',
+        'superseded_enforcement_id',
+        'superseded_probation_remaining_days',
     ];
 
     /**
@@ -41,6 +43,7 @@ class MembershipEnforcement extends Model
             'reinstatement_eligible_at' => 'datetime',
             'permanently_ineligible' => 'boolean',
             'review_requested_at' => 'datetime',
+            'superseded_probation_remaining_days' => 'integer',
         ];
     }
 
@@ -72,5 +75,16 @@ class MembershipEnforcement extends Model
     public function resolver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resolved_by');
+    }
+
+    /**
+     * @return BelongsTo<MembershipEnforcement, $this>
+     */
+    public function supersededEnforcement(): BelongsTo
+    {
+        return $this->belongsTo(
+            MembershipEnforcement::class,
+            'superseded_enforcement_id'
+        );
     }
 }

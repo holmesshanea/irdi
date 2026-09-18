@@ -1102,3 +1102,83 @@ test('starting administrative review resolves an active membership probation', f
         'subject_id' => $probation->id,
     ]);
 });
+
+test('closing administrative review with no action restores the superseded probation', function () {
+    $superAdmin = administrativeHoldUser([
+        'is_super_admin' => true,
+        'email' => 'super-admin@example.com',
+    ]);
+
+    $member = administrativeHoldUser([
+        'membership_status' => 'active',
+        'email' => 'probation-review-member@example.com',
+    ]);
+
+    $probation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'The member is serving an active probation before administrative review.',
+        'starts_at' => now()->subDays(30),
+        'eligible_for_review_at' => now()->addDays(60),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'administrativeHoldReason',
+            'New information requires formal administrative review of this membership.'
+        )
+        ->call('placeOnAdministrativeHold')
+        ->assertHasNoErrors();
+
+    $probation->refresh();
+
+    expect($probation->status)->toBe('resolved');
+
+    $hold = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'administrative_hold')
+        ->where('status', 'active')
+        ->latest('id')
+        ->firstOrFail();
+
+    expect($hold->superseded_enforcement_id)->toBe($probation->id)
+        ->and($hold->superseded_probation_remaining_days)->toBe(60);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'administrativeHoldResolutionReason',
+            'The administrative review found no basis for additional action beyond the existing probation.'
+        )
+        ->call('resolveAdministrativeHoldNoAction', $hold->id)
+        ->assertHasNoErrors();
+
+    $hold->refresh();
+    $probation->refresh();
+
+    expect($hold->status)->toBe('resolved')
+        ->and($hold->resolved_at)->not->toBeNull()
+        ->and($hold->resolved_by)->toBe($superAdmin->id)
+        ->and($probation->status)->toBe('active')
+        ->and($probation->resolved_at)->toBeNull()
+        ->and($probation->resolved_by)->toBeNull()
+        ->and($probation->eligible_for_review_at?->toDateString())
+        ->toBe(now()->addDays(60)->toDateString());
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_restored',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $probation->id,
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_no_action',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $hold->id,
+    ]);
+});

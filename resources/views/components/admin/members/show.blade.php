@@ -660,15 +660,30 @@ class extends Component
         ]);
 
         $enforcement = DB::transaction(function (): MembershipEnforcement {
-            $this->resolveActiveProbationsForEscalation(
+            $supersededProbation = $this->resolveActiveProbationsForEscalation(
                 outcome: 'administrative_review',
                 outcomeLabel: 'administrative review',
                 reason: $this->administrativeHoldReason,
             );
 
+            $supersededProbationRemainingDays = null;
+
+            if ($supersededProbation?->eligible_for_review_at !== null) {
+                $supersededProbationRemainingDays = max(
+                    0,
+                    now()->startOfDay()->diffInDays(
+                        $supersededProbation->eligible_for_review_at->startOfDay(),
+                        false
+                    )
+                );
+            }
+
             $enforcement = MembershipEnforcement::create([
+
                 'user_id' => $this->user->id,
                 'admin_id' => Auth::id(),
+                'superseded_enforcement_id' => $supersededProbation?->id,
+                'superseded_probation_remaining_days' => $supersededProbationRemainingDays,
                 'action' => 'administrative_hold',
                 'status' => 'active',
                 'reason' => $this->administrativeHoldReason,
@@ -755,6 +770,36 @@ class extends Component
                 'resolved_at' => now(),
                 'resolved_by' => Auth::id(),
             ]);
+
+            $supersededProbation = $hold->supersededEnforcement;
+
+            if (
+                $supersededProbation !== null
+                && $supersededProbation->action === 'probation'
+                && $supersededProbation->user_id === $this->user->id
+                && $supersededProbation->status === 'resolved'
+            ) {
+                $supersededProbation->update([
+                    'status' => 'active',
+                    'resolved_at' => null,
+                    'resolved_by' => null,
+                    'eligible_for_review_at' => $hold->superseded_probation_remaining_days !== null
+                        ? now()->addDays($hold->superseded_probation_remaining_days)
+                        : null,
+                ]);
+
+                StaffActivity::record(
+                    action: 'membership_probation_restored',
+                    description: 'Restored membership probation for '.$this->user->name.' after administrative review closed with no further action.',
+                    targetUserId: $this->user->id,
+                    subject: $supersededProbation,
+                    metadata: [
+                        'probation_id' => $supersededProbation->id,
+                        'administrative_hold_id' => $hold->id,
+                        'reason' => $this->administrativeHoldResolutionReason,
+                    ],
+                );
+            }
 
             StaffActivity::record(
                 action: 'membership_administrative_hold_resolved_no_action',
@@ -2341,7 +2386,7 @@ class extends Component
         string $outcome,
         string $outcomeLabel,
         ?string $reason = null,
-    ): void {
+    ): ?MembershipEnforcement {
         $activeProbations = MembershipEnforcement::query()
             ->where('user_id', $this->user->id)
             ->where('action', 'probation')
@@ -2369,6 +2414,7 @@ class extends Component
                 ],
             );
         }
+        return $activeProbations->first();
     }
 
     private function ensureAdministrator(): void
