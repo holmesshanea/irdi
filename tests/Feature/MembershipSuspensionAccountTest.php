@@ -156,6 +156,24 @@ test('suspended member cannot request the same formal review twice', function ()
         ->toBe($originalRequest?->toDateTimeString());
 });
 
+test('suspended member cannot request review of a resolved suspension', function () {
+    $member = suspensionAccountUser();
+
+    $suspension = activeMemberSuspension($member, [
+        'status' => 'resolved',
+        'eligible_for_review_at' => now()->subDay(),
+        'resolved_at' => now()->subHour(),
+    ]);
+
+    $this->actingAs($member);
+
+    expect(fn () => Livewire::test('account.membership-suspension')
+        ->call('requestReview', $suspension->id))
+        ->toThrow(ModelNotFoundException::class);
+
+    expect($suspension->fresh()->review_requested_at)->toBeNull();
+});
+
 test('member cannot request review for another members suspension', function () {
     $member = suspensionAccountUser();
     $otherMember = suspensionAccountUser();

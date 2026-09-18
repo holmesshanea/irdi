@@ -1370,6 +1370,22 @@ class extends Component
             return;
         }
 
+        $hasActiveSuspension = MembershipEnforcement::query()
+            ->where('user_id', $this->user->id)
+            ->where('action', 'suspended')
+            ->where('status', 'active')
+            ->whereNull('resolved_at')
+            ->exists();
+
+        if ($hasActiveSuspension) {
+            $this->addError(
+                'suspensionReason',
+                'This member already has an active membership suspension.'
+            );
+
+            return;
+        }
+
         $this->validate([
             'suspensionReason' => ['required', 'string', 'min:10', 'max:1000'],
             'suspensionReviewPeriod' => ['required', 'in:30,90,180,indefinite'],

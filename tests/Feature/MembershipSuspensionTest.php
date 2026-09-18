@@ -8,6 +8,7 @@ use App\Notifications\MembershipProbationNotification;
 use App\Notifications\MembershipRestoredNotification;
 use App\Notifications\MembershipSuspendedNotification;
 use App\Notifications\MembershipSuspensionContinuedNotification;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
@@ -154,6 +155,41 @@ test('ordinary indefinite suspension has no formal review date', function () {
         ->and($suspension->eligible_for_review_at)->toBeNull();
 });
 
+test('member cannot receive duplicate active suspension', function () {
+    $admin = suspensionUser(['is_admin' => true]);
+    $member = suspensionUser();
+
+    MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'An existing suspension remains active for this member.',
+        'starts_at' => now()->subDay(),
+        'eligible_for_review_at' => now()->addDays(89),
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'suspensionReason',
+            'Attempting to create another active suspension record.'
+        )
+        ->set('suspensionReviewPeriod', '90')
+        ->call('suspendMembership')
+        ->assertHasErrors(['suspensionReason']);
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'suspended')
+            ->where('status', 'active')
+            ->whereNull('resolved_at')
+            ->count()
+    )->toBe(1);
+});
+
 test('moderator cannot suspend a membership', function () {
     $moderator = suspensionUser(['is_moderator' => true]);
     $member = suspensionUser();
@@ -221,6 +257,94 @@ test('administrator can restore a suspended membership', function () {
         $member,
         MembershipRestoredNotification::class,
     );
+});
+
+test('restoring membership resolves all active suspension records for the member', function () {
+    $admin = suspensionUser(['is_admin' => true]);
+    $member = suspensionUser(['membership_status' => 'suspended']);
+
+    $firstSuspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'The original suspension remains active.',
+        'starts_at' => now()->subDays(120),
+        'eligible_for_review_at' => now()->subDays(30),
+    ]);
+
+    $secondSuspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'A duplicate historical suspension record exists.',
+        'starts_at' => now()->subDays(90),
+        'eligible_for_review_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'membershipRestoreReason',
+            'The suspension review is complete and membership may be restored.'
+        )
+        ->call('restoreMembership')
+        ->assertHasNoErrors();
+
+    $member->refresh();
+    $firstSuspension->refresh();
+    $secondSuspension->refresh();
+
+    expect($member->membership_status)->toBe('active')
+        ->and($firstSuspension->status)->toBe('resolved')
+        ->and($firstSuspension->resolved_at)->not->toBeNull()
+        ->and($firstSuspension->resolved_by)->toBe($admin->id)
+        ->and($secondSuspension->status)->toBe('resolved')
+        ->and($secondSuspension->resolved_at)->not->toBeNull()
+        ->and($secondSuspension->resolved_by)->toBe($admin->id);
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'suspended')
+            ->where('status', 'active')
+            ->whereNull('resolved_at')
+            ->count()
+    )->toBe(0);
+});
+
+test('suspension cannot be restored through a different member component', function () {
+    $admin = suspensionUser(['is_admin' => true]);
+    $member = suspensionUser(['membership_status' => 'suspended']);
+    $otherMember = suspensionUser(['membership_status' => 'suspended']);
+
+    $suspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'This suspension belongs to a different member.',
+        'starts_at' => now()->subDays(90),
+        'eligible_for_review_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($admin);
+
+    Livewire::test('admin.members.show', ['user' => $otherMember])
+        ->set(
+            'membershipRestoreReason',
+            'Attempting to restore membership through the wrong member record.'
+        )
+        ->call('restoreMembership')
+        ->assertHasNoErrors();
+
+    $suspension->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('suspended')
+        ->and($suspension->status)->toBe('active')
+        ->and($suspension->resolved_at)->toBeNull();
 });
 
 test('administrator cannot restore membership without a valid reason', function () {
@@ -351,6 +475,39 @@ test('administrator can continue an active suspension with a new formal review d
     );
 });
 
+test('suspension cannot be continued through a different member component', function () {
+    $admin = suspensionUser(['is_admin' => true]);
+    $member = suspensionUser(['membership_status' => 'suspended']);
+    $otherMember = suspensionUser(['membership_status' => 'suspended']);
+
+    $suspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'This suspension belongs to a different member.',
+        'starts_at' => now()->subDays(90),
+        'eligible_for_review_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($admin);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $otherMember])
+        ->set(
+            'suspensionContinueReason',
+            'Attempting to continue another member suspension record.'
+        )
+        ->set('suspensionContinuePeriod', '90')
+        ->call('continueSuspension', $suspension->id))
+        ->toThrow(ModelNotFoundException::class);
+
+    $suspension->refresh();
+
+    expect($suspension->status)->toBe('active')
+        ->and($suspension->resolved_at)->toBeNull()
+        ->and($suspension->eligible_for_review_at?->isPast())->toBeTrue();
+});
+
 test('administrator can continue a suspension indefinitely', function () {
     Notification::fake();
     $admin = suspensionUser(['is_admin' => true]);
@@ -471,6 +628,52 @@ test('administrator can resolve suspension to probation', function () {
     );
 });
 
+test('suspension cannot be resolved to probation through a different member component', function () {
+    $admin = suspensionUser(['is_admin' => true]);
+    $member = suspensionUser(['membership_status' => 'suspended']);
+    $otherMember = suspensionUser(['membership_status' => 'suspended']);
+
+    $suspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'This suspension belongs to a different member.',
+        'starts_at' => now()->subDays(90),
+        'eligible_for_review_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($admin);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $otherMember])
+        ->set(
+            'probationReason',
+            'Attempting to resolve another member suspension to probation.'
+        )
+        ->set(
+            'probationRequirements',
+            'Complete all documented corrective requirements before restoration.'
+        )
+        ->set('probationReviewDays', '90')
+        ->call('resolveSuspensionWithProbation', $suspension->id))
+        ->toThrow(ModelNotFoundException::class);
+
+    $member->refresh();
+    $otherMember->refresh();
+    $suspension->refresh();
+
+    expect($member->membership_status)->toBe('suspended')
+        ->and($otherMember->membership_status)->toBe('suspended')
+        ->and($suspension->status)->toBe('active')
+        ->and($suspension->resolved_at)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $otherMember->id,
+        'action' => 'probation',
+        'status' => 'active',
+    ]);
+});
+
 test('super administrator can resolve suspension with a ban', function () {
     Notification::fake();
     $superAdmin = suspensionUser([
@@ -558,6 +761,66 @@ test('super administrator can resolve suspension with a ban', function () {
         $member,
         MembershipBannedNotification::class,
     );
+});
+
+test('suspension cannot be resolved with a ban through a different member component', function () {
+    $superAdmin = suspensionUser([
+        'is_super_admin' => true,
+        'email' => 'super-admin@example.com',
+    ]);
+
+    $member = suspensionUser([
+        'membership_status' => 'suspended',
+        'email' => 'suspended-member@example.com',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => '1.1.1.1',
+    ]);
+
+    $otherMember = suspensionUser([
+        'membership_status' => 'suspended',
+        'email' => 'other-suspended-member@example.com',
+    ]);
+
+    $suspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'This suspension belongs to a different member.',
+        'starts_at' => now()->subDays(180),
+        'eligible_for_review_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $otherMember])
+        ->set(
+            'banReason',
+            'Attempting to resolve another member suspension with an IRDI ban.'
+        )
+        ->call('resolveSuspensionWithBan', $suspension->id))
+        ->toThrow(ModelNotFoundException::class);
+
+    $member->refresh();
+    $otherMember->refresh();
+    $suspension->refresh();
+
+    expect($member->membership_status)->toBe('suspended')
+        ->and($otherMember->membership_status)->toBe('suspended')
+        ->and($suspension->status)->toBe('active')
+        ->and($suspension->resolved_at)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $otherMember->id,
+        'action' => 'banned',
+    ]);
+
+    expect(
+        BanIdentifier::query()
+            ->where('user_id', $member->id)
+            ->orWhere('user_id', $otherMember->id)
+            ->exists()
+    )->toBeFalse();
 });
 
 test('administrator cannot resolve a suspension with a ban', function () {
