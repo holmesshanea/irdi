@@ -1,4 +1,3 @@
-
 <?php
 
 use App\Models\MembershipEnforcement;
@@ -511,16 +510,21 @@ test('suspending member closes active probation as escalation', function () {
 
     $member = probationStaffUser();
 
+    $originalStartsAt = now()->subDays(100);
+    $originalEligibleForReviewAt = now()->subDays(10);
+    $originalReviewRequestedAt = now()->subDay();
+
     $probation = MembershipEnforcement::create([
         'user_id' => $member->id,
         'admin_id' => $admin->id,
         'action' => 'probation',
         'status' => 'active',
         'reason' => 'Probation requires escalation because the concern remains unresolved.',
-        'starts_at' => now()->subDays(100),
-        'eligible_for_review_at' => now()->subDays(10),
+        'details' => 'The member was given additional context about the conduct concerns.',
+        'starts_at' => $originalStartsAt,
+        'eligible_for_review_at' => $originalEligibleForReviewAt,
         'restoration_requirements' => 'Complete the established corrective requirements.',
-        'review_requested_at' => now()->subDay(),
+        'review_requested_at' => $originalReviewRequestedAt,
     ]);
 
     $this->actingAs($admin);
@@ -545,7 +549,21 @@ test('suspending member closes active probation as escalation', function () {
         ->and($probation->resolved_by)
         ->toBe($admin->id)
         ->and($member->isOnProbation())
-        ->toBeFalse();
+        ->toBeFalse()
+        ->and($probation->admin_id)
+        ->toBe($admin->id)
+        ->and($probation->reason)
+        ->toBe('Probation requires escalation because the concern remains unresolved.')
+        ->and($probation->details)
+        ->toBe('The member was given additional context about the conduct concerns.')
+        ->and($probation->starts_at->format('Y-m-d H:i:s'))
+        ->toBe($originalStartsAt->format('Y-m-d H:i:s'))
+        ->and($probation->eligible_for_review_at->format('Y-m-d H:i:s'))
+        ->toBe($originalEligibleForReviewAt->format('Y-m-d H:i:s'))
+        ->and($probation->restoration_requirements)
+        ->toBe('Complete the established corrective requirements.')
+        ->and($probation->review_requested_at->format('Y-m-d H:i:s'))
+        ->toBe($originalReviewRequestedAt->format('Y-m-d H:i:s'));
 
     $this->assertDatabaseHas('membership_enforcements', [
         'user_id' => $member->id,

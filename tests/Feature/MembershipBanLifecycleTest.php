@@ -696,14 +696,25 @@ test('direct ban resolves all active membership probations', function () {
         'email' => 'probation-member@example.com',
     ]);
 
+    $firstStartsAt = now()->subDays(30);
+    $firstEligibleForReviewAt = now()->addDays(60);
+    $firstReviewRequestedAt = now()->subDay();
+
+    $secondStartsAt = now()->subDays(15);
+    $secondEligibleForReviewAt = now()->addDays(75);
+    $secondReviewRequestedAt = now()->subHours(12);
+
     $firstProbation = MembershipEnforcement::create([
         'user_id' => $member->id,
         'admin_id' => $superAdmin->id,
         'action' => 'probation',
         'status' => 'active',
         'reason' => 'The member is on formal probation before escalation.',
-        'starts_at' => now()->subDays(30),
-        'eligible_for_review_at' => now()->addDays(60),
+        'details' => 'First probation historical details must remain intact after direct ban.',
+        'starts_at' => $firstStartsAt,
+        'eligible_for_review_at' => $firstEligibleForReviewAt,
+        'restoration_requirements' => 'Complete the first probation corrective requirements.',
+        'review_requested_at' => $firstReviewRequestedAt,
     ]);
 
     $secondProbation = MembershipEnforcement::create([
@@ -712,8 +723,11 @@ test('direct ban resolves all active membership probations', function () {
         'action' => 'probation',
         'status' => 'active',
         'reason' => 'A second active probation record must also be resolved during escalation.',
-        'starts_at' => now()->subDays(15),
-        'eligible_for_review_at' => now()->addDays(75),
+        'details' => 'Second probation historical details must remain intact after direct ban.',
+        'starts_at' => $secondStartsAt,
+        'eligible_for_review_at' => $secondEligibleForReviewAt,
+        'restoration_requirements' => 'Complete the second probation corrective requirements.',
+        'review_requested_at' => $secondReviewRequestedAt,
     ]);
 
     $this->actingAs($superAdmin);
@@ -734,9 +748,23 @@ test('direct ban resolves all active membership probations', function () {
         ->and($firstProbation->status)->toBe('resolved')
         ->and($firstProbation->resolved_at?->toDateTimeString())->toBe(now()->toDateTimeString())
         ->and($firstProbation->resolved_by)->toBe($superAdmin->id)
+        ->and($firstProbation->admin_id)->toBe($superAdmin->id)
+        ->and($firstProbation->reason)->toBe('The member is on formal probation before escalation.')
+        ->and($firstProbation->details)->toBe('First probation historical details must remain intact after direct ban.')
+        ->and($firstProbation->starts_at?->toDateTimeString())->toBe($firstStartsAt->toDateTimeString())
+        ->and($firstProbation->eligible_for_review_at?->toDateTimeString())->toBe($firstEligibleForReviewAt->toDateTimeString())
+        ->and($firstProbation->restoration_requirements)->toBe('Complete the first probation corrective requirements.')
+        ->and($firstProbation->review_requested_at?->toDateTimeString())->toBe($firstReviewRequestedAt->toDateTimeString())
         ->and($secondProbation->status)->toBe('resolved')
         ->and($secondProbation->resolved_at?->toDateTimeString())->toBe(now()->toDateTimeString())
-        ->and($secondProbation->resolved_by)->toBe($superAdmin->id);
+        ->and($secondProbation->resolved_by)->toBe($superAdmin->id)
+        ->and($secondProbation->admin_id)->toBe($superAdmin->id)
+        ->and($secondProbation->reason)->toBe('A second active probation record must also be resolved during escalation.')
+        ->and($secondProbation->details)->toBe('Second probation historical details must remain intact after direct ban.')
+        ->and($secondProbation->starts_at?->toDateTimeString())->toBe($secondStartsAt->toDateTimeString())
+        ->and($secondProbation->eligible_for_review_at?->toDateTimeString())->toBe($secondEligibleForReviewAt->toDateTimeString())
+        ->and($secondProbation->restoration_requirements)->toBe('Complete the second probation corrective requirements.')
+        ->and($secondProbation->review_requested_at?->toDateTimeString())->toBe($secondReviewRequestedAt->toDateTimeString());
 
     expect(
         MembershipEnforcement::query()

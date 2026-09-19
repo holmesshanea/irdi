@@ -1114,14 +1114,21 @@ test('closing administrative review with no action restores the superseded proba
         'email' => 'probation-review-member@example.com',
     ]);
 
+    $originalStartsAt = now()->subDays(30);
+    $originalEligibleForReviewAt = now()->addDays(60);
+    $originalReviewRequestedAt = now()->subDay();
+
     $probation = MembershipEnforcement::create([
         'user_id' => $member->id,
         'admin_id' => $superAdmin->id,
         'action' => 'probation',
         'status' => 'active',
         'reason' => 'The member is serving an active probation before administrative review.',
-        'starts_at' => now()->subDays(30),
-        'eligible_for_review_at' => now()->addDays(60),
+        'details' => 'The original probation details must survive administrative review and restoration.',
+        'starts_at' => $originalStartsAt,
+        'eligible_for_review_at' => $originalEligibleForReviewAt,
+        'restoration_requirements' => 'Complete the original probation corrective requirements.',
+        'review_requested_at' => $originalReviewRequestedAt,
     ]);
 
     $this->actingAs($superAdmin);
@@ -1165,8 +1172,16 @@ test('closing administrative review with no action restores the superseded proba
         ->and($probation->status)->toBe('active')
         ->and($probation->resolved_at)->toBeNull()
         ->and($probation->resolved_by)->toBeNull()
+        ->and($probation->admin_id)->toBe($superAdmin->id)
+        ->and($probation->reason)->toBe('The member is serving an active probation before administrative review.')
+        ->and($probation->details)->toBe('The original probation details must survive administrative review and restoration.')
+        ->and($probation->starts_at?->toDateTimeString())->toBe($originalStartsAt->toDateTimeString())
+        ->and($probation->restoration_requirements)->toBe('Complete the original probation corrective requirements.')
+        ->and($probation->review_requested_at?->toDateTimeString())->toBe($originalReviewRequestedAt->toDateTimeString())
         ->and($probation->eligible_for_review_at?->toDateString())
-        ->toBe(now()->addDays(60)->toDateString());
+        ->toBe(now()->addDays(60)->toDateString())
+        ->and($probation->eligible_for_review_at?->toDateString())
+        ->toBe($originalEligibleForReviewAt->toDateString());
 
     $this->assertDatabaseHas('staff_activity_logs', [
         'target_user_id' => $member->id,
@@ -1309,15 +1324,21 @@ test('closing administrative review with probation replaces the superseded proba
         'email' => 'probation-replacement-member@example.com',
     ]);
 
+    $originalStartsAt = now()->subDays(30);
+    $originalEligibleForReviewAt = now()->addDays(60);
+    $originalReviewRequestedAt = now()->subDay();
+
     $originalProbation = MembershipEnforcement::create([
         'user_id' => $member->id,
         'admin_id' => $superAdmin->id,
         'action' => 'probation',
         'status' => 'active',
         'reason' => 'The member is serving the original probation before administrative review.',
-        'starts_at' => now()->subDays(30),
-        'eligible_for_review_at' => now()->addDays(60),
+        'details' => 'The original probation details must remain intact when a replacement probation is created.',
+        'starts_at' => $originalStartsAt,
+        'eligible_for_review_at' => $originalEligibleForReviewAt,
         'restoration_requirements' => 'Complete the requirements of the original probation.',
+        'review_requested_at' => $originalReviewRequestedAt,
     ]);
 
     $this->actingAs($superAdmin);
@@ -1379,14 +1400,29 @@ test('closing administrative review with probation replaces the superseded proba
         ->and($originalProbation->status)->toBe('resolved')
         ->and($originalProbation->resolved_at)->not->toBeNull()
         ->and($originalProbation->resolved_by)->toBe($superAdmin->id)
+        ->and($originalProbation->admin_id)->toBe($superAdmin->id)
+        ->and($originalProbation->reason)->toBe('The member is serving the original probation before administrative review.')
+        ->and($originalProbation->details)->toBe('The original probation details must remain intact when a replacement probation is created.')
+        ->and($originalProbation->starts_at?->toDateTimeString())->toBe($originalStartsAt->toDateTimeString())
+        ->and($originalProbation->eligible_for_review_at?->toDateTimeString())->toBe($originalEligibleForReviewAt->toDateTimeString())
+        ->and($originalProbation->restoration_requirements)->toBe('Complete the requirements of the original probation.')
+        ->and($originalProbation->review_requested_at?->toDateTimeString())->toBe($originalReviewRequestedAt->toDateTimeString())
 
         ->and($newProbation->id)->not->toBe($originalProbation->id)
         ->and($newProbation->status)->toBe('active')
         ->and($newProbation->reason)->toBe(
             'The completed administrative review supports a new period of formal membership probation.'
         )
+        ->and($newProbation->details)->toBe(
+            'The new probation replaces the probation that existed before administrative review.'
+        )
+        ->and($newProbation->restoration_requirements)->toBe(
+            'Complete all requirements established by the new probation before Good Standing can be restored.'
+        )
+        ->and($newProbation->starts_at)->not->toBeNull()
         ->and($newProbation->eligible_for_review_at?->toDateString())
         ->toBe(now()->addDays(90)->toDateString())
+        ->and($newProbation->review_requested_at)->toBeNull()
 
         ->and($member->membership_status)->toBe('active')
         ->and($member->isUnderAdministrativeReview())->toBeFalse()
