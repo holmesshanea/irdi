@@ -183,23 +183,63 @@ test('super administrator can make a ban permanently ineligible', function () {
 
 test('eligible banned member can submit one reinstatement petition', function () {
     Notification::fake();
-    $member = banLifecycleUser(['membership_status' => 'banned']);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+    ]);
+
     $ban = activeBan($member);
 
     $this->actingAs($member);
 
     Livewire::test('account.membership-ban')
-        ->set('petitionStatement', 'I am requesting reinstatement and have addressed the conduct that resulted in my ban.')
+        ->set(
+            'petitionStatement',
+            'I am requesting reinstatement and have addressed the conduct that resulted in my ban.'
+        )
         ->call('requestReinstatement', $ban->id)
         ->assertHasNoErrors();
 
     $ban->refresh();
 
     expect($ban->review_requested_at)->not->toBeNull()
-        ->and($ban->member_response)->toContain('requesting reinstatement');
-    Notification::assertSentTo(
+        ->and($ban->member_response)->toContain('requesting reinstatement')
+        ->and($ban->member_responded_at)->not->toBeNull();
+
+    $originalResponse = $ban->member_response;
+    $originalRespondedAt = $ban->member_responded_at;
+    $originalReviewRequestedAt = $ban->review_requested_at;
+
+    Notification::assertSentToTimes(
         $member,
         MembershipReinstatementPetitionSubmittedNotification::class,
+        1
+    );
+
+    /*
+     * A second submission against the same Ban must not overwrite
+     * the original petition or its submission timestamps.
+     */
+    Livewire::test('account.membership-ban')
+        ->set(
+            'petitionStatement',
+            'This replacement petition must never overwrite the original petition.'
+        )
+        ->call('requestReinstatement', $ban->id)
+        ->assertHasErrors(['petitionStatement']);
+
+    $ban->refresh();
+
+    expect($ban->member_response)->toBe($originalResponse)
+        ->and($ban->member_responded_at?->toDateTimeString())
+        ->toBe($originalRespondedAt?->toDateTimeString())
+        ->and($ban->review_requested_at?->toDateTimeString())
+        ->toBe($originalReviewRequestedAt?->toDateTimeString());
+
+    Notification::assertSentToTimes(
+        $member,
+        MembershipReinstatementPetitionSubmittedNotification::class,
+        1
     );
 });
 
@@ -1811,5 +1851,186 @@ test('reinstatement denial rolls back completely when staff activity creation fa
     Notification::assertNotSentTo(
         $member,
         MembershipReinstatementDeniedNotification::class,
+    );
+});
+
+test('reinstatement petition rechecks authoritative membership state inside the transaction', function () {
+    Notification::fake();
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'petition-concurrency-member@example.com',
+    ]);
+
+    $ban = activeBan($member);
+
+    $this->actingAs($member);
+
+    $component = Livewire::test('account.membership-ban');
+
+    /*
+     * Simulate another request changing the authoritative membership
+     * state after this Livewire component was loaded.
+     */
+    $member->update([
+        'membership_status' => 'active',
+    ]);
+
+    $component
+        ->set(
+            'petitionStatement',
+            'This stale request must not create a reinstatement petition.'
+        )
+        ->call('requestReinstatement', $ban->id)
+        ->assertHasErrors(['petitionStatement']);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('active')
+        ->and($ban->review_requested_at)->toBeNull()
+        ->and($ban->member_response)->toBeNull()
+        ->and($ban->member_responded_at)->toBeNull();
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatementPetitionSubmittedNotification::class,
+    );
+});
+
+test('reinstatement petition rechecks authoritative ban state inside the transaction', function () {
+    Notification::fake();
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'petition-stale-ban-member@example.com',
+    ]);
+
+    $ban = activeBan($member);
+
+    $this->actingAs($member);
+
+    $component = Livewire::test('account.membership-ban');
+
+    /*
+     * Simulate another request resolving the Ban after this component
+     * was loaded while deliberately leaving the User marked banned.
+     */
+    $ban->update([
+        'status' => 'resolved',
+        'resolved_at' => now(),
+        'resolved_by' => $member->id,
+    ]);
+
+    expect(fn () => $component
+        ->set(
+            'petitionStatement',
+            'This stale request must not create a reinstatement petition.'
+        )
+        ->call('requestReinstatement', $ban->id)
+    )->toThrow(ModelNotFoundException::class);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('resolved')
+        ->and($ban->resolved_at)->not->toBeNull()
+        ->and($ban->review_requested_at)->toBeNull()
+        ->and($ban->member_response)->toBeNull()
+        ->and($ban->member_responded_at)->toBeNull();
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatementPetitionSubmittedNotification::class,
+    );
+});
+
+test('reinstatement petition preserves historical ban evidence', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'petition-history-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'petition-history-member@example.com',
+    ]);
+
+    $startsAt = now()->subYear()->startOfSecond();
+    $eligibleAt = now()->subDay()->startOfSecond();
+
+    $ban = activeBan($member, [
+        'admin_id' => $superAdmin->id,
+        'reason' => 'Original permanent disciplinary reason that must remain intact.',
+        'starts_at' => $startsAt,
+        'permanently_ineligible' => false,
+        'reinstatement_eligible_at' => $eligibleAt,
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $ban->reason,
+    ]);
+
+    $originalBanId = $ban->id;
+    $originalAdminId = $ban->admin_id;
+    $originalReason = $ban->reason;
+    $originalStartsAt = $ban->starts_at;
+    $originalEligibleAt = $ban->reinstatement_eligible_at;
+
+    $this->actingAs($member);
+
+    Livewire::test('account.membership-ban')
+        ->set(
+            'petitionStatement',
+            'I am requesting reinstatement after addressing the conduct that resulted in this ban.'
+        )
+        ->call('requestReinstatement', $ban->id)
+        ->assertHasNoErrors();
+
+    $ban->refresh();
+
+    expect($ban->id)->toBe($originalBanId)
+        ->and($ban->admin_id)->toBe($originalAdminId)
+        ->and($ban->reason)->toBe($originalReason)
+        ->and($ban->starts_at?->toDateTimeString())
+        ->toBe($originalStartsAt?->toDateTimeString())
+        ->and($ban->reinstatement_eligible_at?->toDateTimeString())
+        ->toBe($originalEligibleAt?->toDateTimeString())
+        ->and($ban->permanently_ineligible)->toBeFalse()
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    expect($ban->member_response)
+        ->toBe('I am requesting reinstatement after addressing the conduct that resulted in this ban.')
+        ->and($ban->member_responded_at)->not->toBeNull()
+        ->and($ban->review_requested_at)->not->toBeNull();
+
+    expect(
+        BanIdentifier::query()
+            ->where('user_id', $member->id)
+            ->where('membership_enforcement_id', $ban->id)
+            ->count()
+    )->toBe(2);
+
+    Notification::assertSentToTimes(
+        $member,
+        MembershipReinstatementPetitionSubmittedNotification::class,
+        1
     );
 });

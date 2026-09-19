@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\MembershipEnforcement;
+use App\Models\User;
 use App\Notifications\MembershipReinstatementPetitionSubmittedNotification;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 new class extends Component
@@ -14,48 +16,6 @@ new class extends Component
 
         abort_unless($user, 403);
 
-        if ($user->membership_status !== 'banned') {
-            abort(404);
-        }
-
-        $ban = MembershipEnforcement::query()
-            ->whereKey($banId)
-            ->where('user_id', $user->id)
-            ->where('action', 'banned')
-            ->where('status', 'active')
-            ->whereNull('resolved_at')
-            ->firstOrFail();
-
-        if ($ban->permanently_ineligible) {
-            $this->addError(
-                'petitionStatement',
-                __('This ban is permanently ineligible for reinstatement.')
-            );
-
-            return;
-        }
-
-        if (
-            $ban->reinstatement_eligible_at === null
-            || now()->lt($ban->reinstatement_eligible_at)
-        ) {
-            $this->addError(
-                'petitionStatement',
-                __('This ban is not currently eligible for a reinstatement petition.')
-            );
-
-            return;
-        }
-
-        if ($ban->review_requested_at !== null) {
-            $this->addError(
-                'petitionStatement',
-                __('A reinstatement petition has already been submitted for this ban.')
-            );
-
-            return;
-        }
-
         $validated = $this->validate([
             'petitionStatement' => ['required', 'string', 'min:20', 'max:2000'],
         ], [
@@ -64,11 +24,74 @@ new class extends Component
             'petitionStatement.max' => __('Your petition statement may not be greater than 2,000 characters.'),
         ]);
 
-        $ban->update([
-            'member_response' => $validated['petitionStatement'],
-            'member_responded_at' => now(),
-            'review_requested_at' => now(),
-        ]);
+        $ban = DB::transaction(function () use ($banId, $user, $validated): ?MembershipEnforcement {
+            $lockedUser = User::query()
+                ->whereKey($user->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedUser->membership_status !== 'banned') {
+                $this->addError(
+                    'petitionStatement',
+                    __('Only a banned membership can submit a reinstatement petition.')
+                );
+
+                return null;
+            }
+
+            $ban = MembershipEnforcement::query()
+                ->whereKey($banId)
+                ->where('user_id', $lockedUser->id)
+                ->where('action', 'banned')
+                ->where('status', 'active')
+                ->whereNull('resolved_at')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($ban->permanently_ineligible) {
+                $this->addError(
+                    'petitionStatement',
+                    __('This ban is permanently ineligible for reinstatement.')
+                );
+
+                return null;
+            }
+
+            if (
+                $ban->reinstatement_eligible_at === null
+                || now()->lt($ban->reinstatement_eligible_at)
+            ) {
+                $this->addError(
+                    'petitionStatement',
+                    __('This ban is not currently eligible for a reinstatement petition.')
+                );
+
+                return null;
+            }
+
+            if ($ban->review_requested_at !== null) {
+                $this->addError(
+                    'petitionStatement',
+                    __('A reinstatement petition has already been submitted for this ban.')
+                );
+
+                return null;
+            }
+
+            $now = now();
+
+            $ban->update([
+                'member_response' => $validated['petitionStatement'],
+                'member_responded_at' => $now,
+                'review_requested_at' => $now,
+            ]);
+
+            return $ban;
+        });
+
+        if ($ban === null) {
+            return;
+        }
 
         $user->notify(
             new MembershipReinstatementPetitionSubmittedNotification
