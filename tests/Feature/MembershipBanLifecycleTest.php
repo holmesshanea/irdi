@@ -498,8 +498,9 @@ test('administrator cannot decide reinstatement petition', function () {
     expect($member->fresh()->membership_status)->toBe('banned');
 });
 
-test('direct ban resolves an active membership probation', function () {
+test('direct ban resolves all active membership probations', function () {
     Notification::fake();
+    $this->freezeTime();
 
     $superAdmin = banLifecycleUser([
         'is_super_admin' => true,
@@ -511,7 +512,7 @@ test('direct ban resolves an active membership probation', function () {
         'email' => 'probation-member@example.com',
     ]);
 
-    $probation = MembershipEnforcement::create([
+    $firstProbation = MembershipEnforcement::create([
         'user_id' => $member->id,
         'admin_id' => $superAdmin->id,
         'action' => 'probation',
@@ -519,6 +520,16 @@ test('direct ban resolves an active membership probation', function () {
         'reason' => 'The member is on formal probation before escalation.',
         'starts_at' => now()->subDays(30),
         'eligible_for_review_at' => now()->addDays(60),
+    ]);
+
+    $secondProbation = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'probation',
+        'status' => 'active',
+        'reason' => 'A second active probation record must also be resolved during escalation.',
+        'starts_at' => now()->subDays(15),
+        'eligible_for_review_at' => now()->addDays(75),
     ]);
 
     $this->actingAs($superAdmin);
@@ -532,24 +543,45 @@ test('direct ban resolves an active membership probation', function () {
         ->assertHasNoErrors();
 
     $member->refresh();
-    $probation->refresh();
+    $firstProbation->refresh();
+    $secondProbation->refresh();
 
     expect($member->membership_status)->toBe('banned')
-        ->and($probation->status)->toBe('resolved')
-        ->and($probation->resolved_at)->not->toBeNull()
-        ->and($probation->resolved_by)->toBe($superAdmin->id);
+        ->and($firstProbation->status)->toBe('resolved')
+        ->and($firstProbation->resolved_at?->toDateTimeString())->toBe(now()->toDateTimeString())
+        ->and($firstProbation->resolved_by)->toBe($superAdmin->id)
+        ->and($secondProbation->status)->toBe('resolved')
+        ->and($secondProbation->resolved_at?->toDateTimeString())->toBe(now()->toDateTimeString())
+        ->and($secondProbation->resolved_by)->toBe($superAdmin->id);
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'probation')
+            ->where('status', 'active')
+            ->count()
+    )->toBe(0);
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'banned')
+            ->where('status', 'active')
+            ->count()
+    )->toBe(1);
 
     $this->assertDatabaseHas('staff_activity_logs', [
         'target_user_id' => $member->id,
         'action' => 'membership_probation_escalated',
         'subject_type' => MembershipEnforcement::class,
-        'subject_id' => $probation->id,
+        'subject_id' => $firstProbation->id,
     ]);
 
-    $this->assertDatabaseHas('membership_enforcements', [
-        'user_id' => $member->id,
-        'action' => 'banned',
-        'status' => 'active',
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_probation_escalated',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $secondProbation->id,
     ]);
 });
 

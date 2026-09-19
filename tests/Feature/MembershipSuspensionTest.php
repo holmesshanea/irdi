@@ -763,6 +763,63 @@ test('super administrator can resolve suspension with a ban', function () {
     );
 });
 
+test('super administrator can resolve administrative review with a ban', function () {
+    Notification::fake();
+
+    $superAdmin = suspensionUser([
+        'is_super_admin' => true,
+        'email' => 'super-admin@example.com',
+    ]);
+
+    $member = suspensionUser([
+        'membership_status' => 'active',
+        'email' => 'administrative-review-member@example.com',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => '1.1.1.1',
+    ]);
+
+    $hold = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+        'reason' => 'Serious concerns require formal administrative review before a final membership decision.',
+        'starts_at' => now()->subDays(10),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'banReason',
+            'The completed administrative review supports permanent removal from IRDI.'
+        )
+        ->call('resolveAdministrativeHoldWithBan', $hold->id)
+        ->assertHasNoErrors();
+
+    $member->refresh();
+    $hold->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($hold->status)->toBe('resolved')
+        ->and($hold->resolved_at)->not->toBeNull()
+        ->and($hold->resolved_by)->toBe($superAdmin->id);
+
+    $this->assertDatabaseHas('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'banned',
+        'status' => 'active',
+        'reason' => 'The completed administrative review supports permanent removal from IRDI.',
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_ban',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $hold->id,
+    ]);
+});
+
 test('suspension cannot be resolved with a ban through a different member component', function () {
     $superAdmin = suspensionUser([
         'is_super_admin' => true,
