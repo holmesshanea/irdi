@@ -3,6 +3,7 @@
 use App\Models\BanIdentifier;
 use App\Models\MemberProfile;
 use App\Models\MembershipEnforcement;
+use App\Models\StaffActivityLog;
 use App\Models\User;
 use App\Notifications\MembershipBannedNotification;
 use App\Notifications\MembershipProbationNotification;
@@ -480,7 +481,145 @@ test('super administrator can exceptionally reinstate directly to active members
     );
 });
 
+test('direct reinstatement preserves historical ban evidence while removing active restriction artifacts', function () {
+    Notification::fake();
+    $this->freezeTime();
+
+    $originalAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'original-ban-admin@example.com',
+    ]);
+
+    $reinstatingAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'reinstating-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'historical-ban-member@example.com',
+    ]);
+
+    $startsAt = now()->subYears(4);
+    $eligibleAt = now()->subYear();
+    $reviewRequestedAt = now()->subDays(10);
+    $memberRespondedAt = now()->subDays(9);
+
+    $ban = activeBan($member, [
+        'admin_id' => $originalAdmin->id,
+        'reason' => 'Original permanent disciplinary reason that must remain intact.',
+        'starts_at' => $startsAt,
+        'reinstatement_eligible_at' => $eligibleAt,
+        'permanently_ineligible' => false,
+        'review_requested_at' => $reviewRequestedAt,
+        'member_response' => 'Original member reinstatement petition.',
+        'member_responded_at' => $memberRespondedAt,
+    ]);
+
+    $originalBanActivity = StaffActivityLog::create([
+        'actor_id' => $originalAdmin->id,
+        'target_user_id' => $member->id,
+        'action' => 'member_banned',
+        'subject_type' => $ban->getMorphClass(),
+        'subject_id' => $ban->id,
+        'description' => 'Original historical ban activity.',
+        'metadata' => [
+            'reason' => $ban->reason,
+        ],
+        'ip_address' => '127.0.0.1',
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $originalAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $originalAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $ban->reason,
+    ]);
+
+    $this->actingAs($reinstatingAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'unbanReason',
+            'New evidence supports exceptional reinstatement to good standing.'
+        )
+        ->call('reinstateToGoodStanding')
+        ->assertHasNoErrors();
+
+    $ban->refresh();
+    $originalBanActivity->refresh();
+    $member->refresh();
+
+    expect($member->membership_status)->toBe('active')
+        ->and($ban->status)->toBe('resolved')
+        ->and($ban->resolved_at?->toDateTimeString())->toBe(now()->toDateTimeString())
+        ->and($ban->resolved_by)->toBe($reinstatingAdmin->id);
+
+    expect($ban->admin_id)->toBe($originalAdmin->id)
+        ->and($ban->reason)->toBe('Original permanent disciplinary reason that must remain intact.')
+        ->and($ban->starts_at?->toDateTimeString())->toBe($startsAt->toDateTimeString())
+        ->and($ban->reinstatement_eligible_at?->toDateTimeString())->toBe($eligibleAt->toDateTimeString())
+        ->and($ban->permanently_ineligible)->toBeFalse()
+        ->and($ban->review_requested_at?->toDateTimeString())->toBe($reviewRequestedAt->toDateTimeString())
+        ->and($ban->member_response)->toBe('Original member reinstatement petition.')
+        ->and($ban->member_responded_at?->toDateTimeString())->toBe($memberRespondedAt->toDateTimeString());
+
+    expect(
+        BanIdentifier::query()
+            ->where('membership_enforcement_id', $ban->id)
+            ->exists()
+    )->toBeFalse();
+
+    expect($originalBanActivity->actor_id)->toBe($originalAdmin->id)
+        ->and($originalBanActivity->target_user_id)->toBe($member->id)
+        ->and($originalBanActivity->action)->toBe('member_banned')
+        ->and($originalBanActivity->subject_type)->toBe($ban->getMorphClass())
+        ->and($originalBanActivity->subject_id)->toBe($ban->id)
+        ->and($originalBanActivity->description)->toBe('Original historical ban activity.')
+        ->and($originalBanActivity->metadata['reason'])
+        ->toBe('Original permanent disciplinary reason that must remain intact.');
+
+    $reinstatement = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'reinstated_good_standing')
+        ->sole();
+
+    expect($reinstatement->id)->not->toBe($ban->id)
+        ->and($reinstatement->admin_id)->toBe($reinstatingAdmin->id)
+        ->and($reinstatement->status)->toBe('resolved')
+        ->and($reinstatement->reason)
+        ->toBe('New evidence supports exceptional reinstatement to good standing.');
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'actor_id' => $originalAdmin->id,
+        'target_user_id' => $member->id,
+        'action' => 'member_banned',
+        'subject_type' => $ban->getMorphClass(),
+        'subject_id' => $ban->id,
+    ]);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'actor_id' => $reinstatingAdmin->id,
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_good_standing',
+        'subject_type' => $reinstatement->getMorphClass(),
+        'subject_id' => $reinstatement->id,
+    ]);
+});
+
 test('administrator cannot decide reinstatement petition', function () {
+    Notification::fake();
     $administrator = banLifecycleUser(['is_admin' => true]);
     $member = banLifecycleUser(['membership_status' => 'banned']);
     activeBan($member, [
@@ -496,6 +635,11 @@ test('administrator cannot decide reinstatement petition', function () {
         ->assertForbidden();
 
     expect($member->fresh()->membership_status)->toBe('banned');
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatedNotification::class,
+    );
 });
 
 test('direct ban resolves all active membership probations', function () {
@@ -886,6 +1030,7 @@ test('direct reinstatement removes historical matching email ban identifier with
 });
 
 test('administrator cannot approve reinstatement petition', function () {
+    Notification::fake();
     $administrator = banLifecycleUser(['is_admin' => true]);
 
     $member = banLifecycleUser([
@@ -950,4 +1095,453 @@ test('administrator cannot approve reinstatement petition', function () {
         'user_id' => $member->id,
         'action' => 'reinstated_good_standing',
     ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatedNotification::class,
+    );
+
+});
+
+test('direct reinstatement rolls back completely when staff activity creation fails', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'rollback-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'rollback-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $ban->reason,
+    ]);
+
+    StaffActivityLog::creating(function (StaffActivityLog $activity): void {
+        if ($activity->action === 'membership_reinstated_good_standing') {
+            throw new RuntimeException(
+                'Forced staff activity failure during reinstatement.'
+            );
+        }
+    });
+
+    $this->actingAs($superAdmin);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'unbanReason',
+            'Exceptional evidence supports direct reinstatement.'
+        )
+        ->call('reinstateToGoodStanding')
+    )->toThrow(
+        RuntimeException::class,
+        'Forced staff activity failure during reinstatement.'
+    );
+
+    $member->refresh();
+    $ban->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    expect(
+        BanIdentifier::query()
+            ->where('user_id', $member->id)
+            ->count()
+    )->toBe(2);
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstated_good_standing',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_good_standing',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatedNotification::class,
+    );
+});
+
+test('direct reinstatement rechecks authoritative membership state inside the transaction', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'concurrency-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'concurrency-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', ['user' => $member]);
+
+    /*
+     * Simulate another request successfully changing the authoritative
+     * membership state after this Livewire component was loaded.
+     */
+    $member->update([
+        'membership_status' => 'active',
+    ]);
+
+    $component
+        ->set(
+            'unbanReason',
+            'This stale request must not create another reinstatement.'
+        )
+        ->call('reinstateToGoodStanding')
+        ->assertHasErrors(['unbanReason']);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('active')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstated_good_standing',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_good_standing',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatedNotification::class,
+    );
+});
+
+test('direct reinstatement rechecks authoritative ban state inside the transaction', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'stale-ban-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'stale-ban-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', ['user' => $member]);
+
+    /*
+     * Simulate another request resolving the active ban after this
+     * Livewire component was loaded.
+     */
+    $ban->update([
+        'status' => 'resolved',
+        'resolved_at' => now(),
+        'resolved_by' => $superAdmin->id,
+    ]);
+
+    $component
+        ->set(
+            'unbanReason',
+            'This stale request must not create another reinstatement.'
+        )
+        ->call('reinstateToGoodStanding')
+        ->assertHasErrors(['unbanReason']);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('resolved')
+        ->and($ban->resolved_at)->not->toBeNull()
+        ->and($ban->resolved_by)->toBe($superAdmin->id);
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstated_good_standing',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_good_standing',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatedNotification::class,
+    );
+});
+
+test('probation reinstatement rechecks authoritative membership state inside the transaction', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'probation-concurrency-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'probation-concurrency-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', ['user' => $member]);
+
+    /*
+     * Simulate another request changing the authoritative membership
+     * state after this Livewire component was loaded.
+     */
+    $member->update([
+        'membership_status' => 'active',
+    ]);
+
+    $component
+        ->set(
+            'reinstatementProbationReason',
+            'This stale request must not create probation.'
+        )
+        ->set(
+            'reinstatementProbationRequirements',
+            'The member must satisfy all probation requirements.'
+        )
+        ->set('reinstatementProbationReviewDays', '90')
+        ->call('reinstateWithProbation')
+        ->assertHasErrors(['reinstatementProbationReason']);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('active')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'probation',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_probation',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipProbationNotification::class,
+    );
+});
+
+test('probation reinstatement rechecks authoritative ban state inside the transaction', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'probation-stale-ban-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'probation-stale-ban-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', ['user' => $member]);
+
+    /*
+     * Simulate another request resolving the active ban while the
+     * stale component still believes that ban is actionable.
+     */
+    $ban->update([
+        'status' => 'resolved',
+        'resolved_at' => now(),
+        'resolved_by' => $superAdmin->id,
+    ]);
+
+    $component
+        ->set(
+            'reinstatementProbationReason',
+            'This stale request must not create probation.'
+        )
+        ->set(
+            'reinstatementProbationRequirements',
+            'The member must satisfy all probation requirements.'
+        )
+        ->set('reinstatementProbationReviewDays', '90')
+        ->call('reinstateWithProbation')
+        ->assertHasErrors(['reinstatementProbationReason']);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('resolved')
+        ->and($ban->resolved_at)->not->toBeNull()
+        ->and($ban->resolved_by)->toBe($superAdmin->id);
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'probation',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_probation',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipProbationNotification::class,
+    );
+});
+
+test('probation reinstatement rolls back completely when staff activity creation fails', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'probation-rollback-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'probation-rollback-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $ban->reason,
+    ]);
+
+    StaffActivityLog::creating(function (StaffActivityLog $activity): void {
+        if ($activity->action === 'membership_reinstated_probation') {
+            throw new RuntimeException(
+                'Forced staff activity failure during probation reinstatement.'
+            );
+        }
+    });
+
+    $this->actingAs($superAdmin);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'reinstatementProbationReason',
+            'Probation is appropriate following review of the petition.'
+        )
+        ->set(
+            'reinstatementProbationRequirements',
+            'The member must satisfy all probation requirements before restoration.'
+        )
+        ->set('reinstatementProbationReviewDays', '90')
+        ->call('reinstateWithProbation')
+    )->toThrow(
+        RuntimeException::class,
+        'Forced staff activity failure during probation reinstatement.'
+    );
+
+    $member->refresh();
+    $ban->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    expect(
+        BanIdentifier::query()
+            ->where('user_id', $member->id)
+            ->count()
+    )->toBe(2);
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'probation',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_probation',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipProbationNotification::class,
+    );
 });

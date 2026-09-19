@@ -2170,65 +2170,99 @@ class extends Component
             abort(403);
         }
 
-        if ($this->user->membership_status !== 'banned') {
-            $this->addError('reinstatementProbationReason', 'Only a banned membership can be reinstated.');
-
-            return;
-        }
-
         $this->validate([
             'reinstatementProbationReason' => ['required', 'string', 'min:10', 'max:1000'],
             'reinstatementProbationRequirements' => ['required', 'string', 'min:10', 'max:2000'],
             'reinstatementProbationReviewDays' => ['required', 'in:90,180'],
         ]);
 
-        $ban = $this->currentBanEnforcement();
-
-        if ($ban->permanently_ineligible) {
-            $this->addError(
-                'reinstatementProbationReason',
-                'This ban is permanently ineligible for reinstatement.'
-            );
-
-            return;
-        }
-
-        if ($ban->review_requested_at === null) {
-            $this->addError(
-                'reinstatementProbationReason',
-                'There is no pending reinstatement petition to approve.'
-            );
-
-            return;
-        }
-
-        if ($this->currentReinstatementPetitionWasDenied($ban)) {
-            $this->addError(
-                'reinstatementProbationReason',
-                'This reinstatement petition has already been denied.'
-            );
-
-            return;
-        }
-
         $reviewDays = (int) $this->reinstatementProbationReviewDays;
 
-        $probation = DB::transaction(function () use ($ban, $reviewDays): MembershipEnforcement {
+        $probation = DB::transaction(function () use ($reviewDays): ?MembershipEnforcement {
+            $user = User::query()
+                ->whereKey($this->user->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($user->membership_status !== 'banned') {
+                $this->addError(
+                    'reinstatementProbationReason',
+                    'Only a banned membership can be reinstated.'
+                );
+
+                return null;
+            }
+
+            $ban = MembershipEnforcement::query()
+                ->where('user_id', $user->id)
+                ->where('action', 'banned')
+                ->where('status', 'active')
+                ->whereNull('resolved_at')
+                ->latest('id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($ban === null) {
+                $this->addError(
+                    'reinstatementProbationReason',
+                    'There is no active ban to reinstate.'
+                );
+
+                return null;
+            }
+
+            if ($ban->permanently_ineligible) {
+                $this->addError(
+                    'reinstatementProbationReason',
+                    'This ban is permanently ineligible for reinstatement.'
+                );
+
+                return null;
+            }
+
+            if ($ban->review_requested_at === null) {
+                $this->addError(
+                    'reinstatementProbationReason',
+                    'There is no pending reinstatement petition to approve.'
+                );
+
+                return null;
+            }
+
+            if ($this->currentReinstatementPetitionWasDenied($ban)) {
+                $this->addError(
+                    'reinstatementProbationReason',
+                    'This reinstatement petition has already been denied.'
+                );
+
+                return null;
+            }
+
             $ban->update([
                 'status' => 'resolved',
                 'resolved_at' => now(),
                 'resolved_by' => Auth::id(),
             ]);
 
-            $this->user->membership_status = 'active';
-            $this->user->save();
+            $user->membership_status = 'active';
+            $user->save();
 
-            $this->removeBanIdentifiers();
+            BanIdentifier::query()
+                ->where(function ($query) use ($user) {
+                    $query
+                        ->where('user_id', $user->id)
+                        ->orWhere(function ($query) use ($user) {
+                            $query
+                                ->where('type', 'email')
+                                ->where('value', strtolower(trim($user->email)));
+                        });
+                })
+                ->delete();
 
             $startsAt = now();
 
             $probation = MembershipEnforcement::create([
-                'user_id' => $this->user->id,
+                'user_id' => $user->id,
                 'admin_id' => Auth::id(),
                 'action' => 'probation',
                 'status' => 'active',
@@ -2240,8 +2274,8 @@ class extends Component
 
             StaffActivity::record(
                 action: 'membership_reinstated_probation',
-                description: 'Reinstated '.$this->user->name.' to IRDI on membership probation.',
-                targetUserId: $this->user->id,
+                description: 'Reinstated '.$user->name.' to IRDI on membership probation.',
+                targetUserId: $user->id,
                 subject: $probation,
                 metadata: [
                     'ban_id' => $ban->id,
@@ -2253,6 +2287,12 @@ class extends Component
 
             return $probation;
         });
+
+        if ($probation === null) {
+            $this->loadUser();
+
+            return;
+        }
 
         $this->user->notify(
             new MembershipProbationNotification(
@@ -2267,7 +2307,10 @@ class extends Component
         $this->reinstatementProbationReviewDays = '90';
         $this->loadUser();
 
-        session()->flash('status', 'The member has been reinstated to IRDI on membership probation.');
+        session()->flash(
+            'status',
+            'The member has been reinstated to IRDI on membership probation.'
+        );
     }
 
     public function reinstateToGoodStanding(): void
@@ -2281,12 +2324,6 @@ class extends Component
             abort(403);
         }
 
-        if ($this->user->membership_status !== 'banned') {
-            $this->addError('unbanReason', 'Only a banned membership can be reinstated.');
-
-            return;
-        }
-
         $this->validate([
             'unbanReason' => ['required', 'string', 'min:10', 'max:1000'],
         ], [
@@ -2295,40 +2332,89 @@ class extends Component
             'unbanReason.max' => 'The reinstatement reason must be 1,000 characters or fewer.',
         ]);
 
-        $ban = $this->currentBanEnforcement();
+        $enforcement = DB::transaction(function (): ?MembershipEnforcement {
+            $user = User::query()
+                ->whereKey($this->user->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if ($ban->permanently_ineligible) {
-            $this->addError('unbanReason', 'This ban is permanently ineligible for reinstatement.');
+            if ($user->membership_status !== 'banned') {
+                $this->addError(
+                    'unbanReason',
+                    'Only a banned membership can be reinstated.'
+                );
 
-            return;
-        }
+                return null;
+            }
 
-        if ($ban->review_requested_at === null) {
-            $this->addError('unbanReason', 'There is no pending reinstatement petition to approve.');
+            $ban = MembershipEnforcement::query()
+                ->where('user_id', $user->id)
+                ->where('action', 'banned')
+                ->where('status', 'active')
+                ->whereNull('resolved_at')
+                ->latest('id')
+                ->lockForUpdate()
+                ->first();
 
-            return;
-        }
+            if ($ban === null) {
+                $this->addError(
+                    'unbanReason',
+                    'There is no active ban to reinstate.'
+                );
 
-        if ($this->currentReinstatementPetitionWasDenied($ban)) {
-            $this->addError('unbanReason', 'This reinstatement petition has already been denied.');
+                return null;
+            }
 
-            return;
-        }
+            if ($ban->permanently_ineligible) {
+                $this->addError(
+                    'unbanReason',
+                    'This ban is permanently ineligible for reinstatement.'
+                );
 
-        $enforcement = DB::transaction(function () use ($ban): MembershipEnforcement {
+                return null;
+            }
+
+            if ($ban->review_requested_at === null) {
+                $this->addError(
+                    'unbanReason',
+                    'There is no pending reinstatement petition to approve.'
+                );
+
+                return null;
+            }
+
+            if ($this->currentReinstatementPetitionWasDenied($ban)) {
+                $this->addError(
+                    'unbanReason',
+                    'This reinstatement petition has already been denied.'
+                );
+
+                return null;
+            }
+
             $ban->update([
                 'status' => 'resolved',
                 'resolved_at' => now(),
                 'resolved_by' => Auth::id(),
             ]);
 
-            $this->user->membership_status = 'active';
-            $this->user->save();
+            $user->membership_status = 'active';
+            $user->save();
 
-            $this->removeBanIdentifiers();
+            BanIdentifier::query()
+                ->where(function ($query) use ($user) {
+                    $query
+                        ->where('user_id', $user->id)
+                        ->orWhere(function ($query) use ($user) {
+                            $query
+                                ->where('type', 'email')
+                                ->where('value', strtolower(trim($user->email)));
+                        });
+                })
+                ->delete();
 
             $enforcement = MembershipEnforcement::create([
-                'user_id' => $this->user->id,
+                'user_id' => $user->id,
                 'admin_id' => Auth::id(),
                 'action' => 'reinstated_good_standing',
                 'status' => 'resolved',
@@ -2340,16 +2426,23 @@ class extends Component
 
             StaffActivity::record(
                 action: 'membership_reinstated_good_standing',
-                description: 'Exceptionally reinstated '.$this->user->name.' directly to active IRDI membership.',
-                targetUserId: $this->user->id,
+                description: 'Exceptionally reinstated '.$user->name.' directly to active IRDI membership.',
+                targetUserId: $user->id,
                 subject: $enforcement,
                 metadata: [
                     'ban_id' => $ban->id,
                     'reason' => $this->unbanReason,
                 ],
             );
+
             return $enforcement;
         });
+
+        if ($enforcement === null) {
+            $this->loadUser();
+
+            return;
+        }
 
         $this->user->notify(
             new MembershipReinstatedNotification(
