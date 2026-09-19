@@ -494,3 +494,83 @@ test('hiding and restoring review updates public property owner statistics', fun
         ->assertSet('wouldAllowReturnCount', 2)
         ->assertSet('propertyReviewRating', 4.0);
 });
+
+test('review index cannot hide an already hidden property review', function () {
+    $administrator = propertyReviewModerationUser([
+        'is_admin' => true,
+    ]);
+
+    $member = propertyReviewModerationUser();
+    $profile = propertyReviewModerationProfile($member);
+
+    $review = propertyReviewModerationReview($profile, [
+        'hidden_at' => now()->subHour(),
+        'moderation_note' => 'This review was already hidden.',
+    ]);
+
+    $originalHiddenAt = $review->hidden_at;
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.reviews.index')
+        ->call('startHidingReview', $review->id)
+        ->set(
+            'moderationNote',
+            'This duplicate hide action must not create another moderation event.'
+        )
+        ->call('hideReview');
+
+    $review->refresh();
+
+    expect($review->hidden_at?->toDateTimeString())
+        ->toBe($originalHiddenAt?->toDateTimeString());
+
+    expect(
+        PropertyReviewModeration::query()
+            ->where('property_review_id', $review->id)
+            ->where('action', 'hidden')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'review_hidden')
+            ->exists()
+    )->toBeFalse();
+});
+
+test('review index cannot restore an already visible property review', function () {
+    $administrator = propertyReviewModerationUser([
+        'is_admin' => true,
+    ]);
+
+    $member = propertyReviewModerationUser();
+    $profile = propertyReviewModerationProfile($member);
+    $review = propertyReviewModerationReview($profile);
+
+    expect($review->hidden_at)->toBeNull();
+
+    $this->actingAs($administrator);
+
+    Livewire::test('admin.reviews.index')
+        ->call('restoreReview', $review->id);
+
+    $review->refresh();
+
+    expect($review->hidden_at)->toBeNull();
+
+    expect(
+        PropertyReviewModeration::query()
+            ->where('property_review_id', $review->id)
+            ->where('action', 'restored')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'review_restored')
+            ->exists()
+    )->toBeFalse();
+});

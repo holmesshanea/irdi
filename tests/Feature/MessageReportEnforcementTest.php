@@ -1123,3 +1123,137 @@ test('moderator can reopen resolved message report', function () {
         'action' => 'message_report_reopened',
     ]);
 });
+
+test('stale component cannot dismiss message report that was reviewed elsewhere', function () {
+    $administrator = messageReportEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message tests authoritative report moderation state.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for administrative review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.message-reports.show', [
+        'report' => $report,
+    ]);
+
+    // Simulate another moderation action resolving the report after
+    // this component was initialized.
+    MessageReport::query()
+        ->whereKey($report->id)
+        ->update([
+            'status' => 'reviewed',
+        ]);
+
+    $component
+        ->call('dismissReport');
+
+    expect($report->fresh()->status)->toBe('reviewed');
+
+    expect(
+        MessageReportModeration::query()
+            ->where('message_report_id', $report->id)
+            ->where('action', 'dismissed')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $reportedMember->id)
+            ->where('action', 'message_report_dismissed')
+            ->exists()
+    )->toBeFalse();
+});
+
+test('message report cannot restore messaging after restriction was restored elsewhere', function () {
+    Notification::fake();
+
+    $administrator = messageReportEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser([
+        'messaging_disabled_at' => now()->subDay(),
+        'messaging_disabled_until' => now()->addDays(6),
+    ]);
+
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message tests cross-surface messaging restoration state.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for administrative review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.message-reports.show', [
+        'report' => $report,
+    ]);
+
+    // Simulate Member Management restoring messaging after this
+    // message-report component was initialized.
+    User::query()
+        ->whereKey($reportedMember->id)
+        ->update([
+            'messaging_disabled_at' => null,
+            'messaging_disabled_until' => null,
+        ]);
+
+    $component
+        ->set(
+            'restoreReason',
+            'This stale report action must not create a duplicate restoration.'
+        )
+        ->call('restoreMessaging');
+
+    $reportedMember->refresh();
+
+    expect($reportedMember->messaging_disabled_at)->toBeNull()
+        ->and($reportedMember->messaging_disabled_until)->toBeNull();
+
+    expect(
+        MessagingEnforcement::query()
+            ->where('user_id', $reportedMember->id)
+            ->where('message_report_id', $report->id)
+            ->where('action', 'restored')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $reportedMember->id)
+            ->where('action', 'messaging_restored_from_report')
+            ->exists()
+    )->toBeFalse();
+
+    Notification::assertNotSentTo(
+        $reportedMember,
+        MessagingRestoredNotification::class,
+    );
+});

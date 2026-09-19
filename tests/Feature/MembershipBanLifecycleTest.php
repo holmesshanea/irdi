@@ -2062,3 +2062,230 @@ test('reinstatement petition preserves historical ban evidence', function () {
         1
     );
 });
+
+test('reinstating member does not remove shared IP ban identifier belonging to another member', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'registration_ip' => '8.8.8.8',
+    ]);
+
+    $otherBannedMember = banLifecycleUser([
+        'membership_status' => 'banned',
+        'registration_ip' => '8.8.8.8',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $otherBan = activeBan($otherBannedMember);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $otherBannedMember->id,
+        'membership_enforcement_id' => $otherBan->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $otherBan->reason,
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'unbanReason',
+            'Exceptional evidence supports direct reinstatement without a probation period.'
+        )
+        ->call('reinstateToGoodStanding')
+        ->assertHasNoErrors();
+
+    expect($member->fresh()->membership_status)->toBe('active')
+        ->and($otherBannedMember->fresh()->membership_status)->toBe('banned');
+
+    expect(
+        BanIdentifier::query()
+            ->where('user_id', $member->id)
+            ->exists()
+    )->toBeFalse();
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $otherBannedMember->id,
+        'membership_enforcement_id' => $otherBan->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+    ]);
+});
+
+test('banning second member does not transfer shared IP ban identifier from first member', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+    ]);
+
+    $firstMember = banLifecycleUser([
+        'membership_status' => 'banned',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => null,
+    ]);
+
+    $secondMember = banLifecycleUser([
+        'membership_status' => 'suspended',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => null,
+    ]);
+
+    $firstBan = activeBan($firstMember);
+
+    $existingIdentifier = BanIdentifier::create([
+        'user_id' => $firstMember->id,
+        'membership_enforcement_id' => $firstBan->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $firstBan->reason,
+    ]);
+
+    $secondSuspension = MembershipEnforcement::create([
+        'user_id' => $secondMember->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'The membership is suspended pending permanent-removal review.',
+        'starts_at' => now()->subDays(180),
+        'eligible_for_review_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $secondMember])
+        ->set(
+            'banReason',
+            'Administrative review determined that permanent removal is required.'
+        )
+        ->call('resolveSuspensionWithBan', $secondSuspension->id);
+
+    $existingIdentifier->refresh();
+
+    expect($secondMember->fresh()->membership_status)->toBe('banned')
+        ->and($existingIdentifier->user_id)->toBe($firstMember->id)
+        ->and($existingIdentifier->membership_enforcement_id)->toBe($firstBan->id);
+});
+
+test('directly banning second member does not transfer shared IP ban identifier from first member', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+    ]);
+
+    $firstMember = banLifecycleUser([
+        'membership_status' => 'banned',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => null,
+    ]);
+
+    $secondMember = banLifecycleUser([
+        'membership_status' => 'active',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => null,
+    ]);
+
+    $firstBan = activeBan($firstMember);
+
+    $existingIdentifier = BanIdentifier::create([
+        'user_id' => $firstMember->id,
+        'membership_enforcement_id' => $firstBan->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $firstBan->reason,
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $secondMember])
+        ->set(
+            'banReason',
+            'Direct administrative ban for shared-IP ownership testing.'
+        )
+        ->call('banMember');
+
+    $existingIdentifier->refresh();
+
+    expect($secondMember->fresh()->membership_status)->toBe('banned')
+        ->and($existingIdentifier->user_id)->toBe($firstMember->id)
+        ->and($existingIdentifier->membership_enforcement_id)->toBe($firstBan->id);
+});
+
+test('administrative hold ban does not transfer shared IP ban identifier from first member', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+    ]);
+
+    $firstMember = banLifecycleUser([
+        'membership_status' => 'banned',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => null,
+    ]);
+
+    $secondMember = banLifecycleUser([
+        'membership_status' => 'active',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => null,
+    ]);
+
+    $firstBan = activeBan($firstMember);
+
+    $existingIdentifier = BanIdentifier::create([
+        'user_id' => $firstMember->id,
+        'membership_enforcement_id' => $firstBan->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $firstBan->reason,
+    ]);
+
+    $administrativeHold = MembershipEnforcement::create([
+        'user_id' => $secondMember->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+        'reason' => 'Administrative hold pending final determination.',
+        'starts_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $secondMember])
+        ->set(
+            'banReason',
+            'Administrative hold review determined that permanent removal is required.'
+        )
+        ->call('resolveAdministrativeHoldWithBan', $administrativeHold->id);
+
+    $existingIdentifier->refresh();
+
+    expect($secondMember->fresh()->membership_status)->toBe('banned')
+        ->and($existingIdentifier->user_id)->toBe($firstMember->id)
+        ->and($existingIdentifier->membership_enforcement_id)->toBe($firstBan->id);
+});

@@ -1360,11 +1360,11 @@ class extends Component
                 ->each(function (string $ip) use ($enforcement): void {
                     BanIdentifier::updateOrCreate(
                         [
+                            'user_id' => $this->user->id,
                             'type' => 'ip',
                             'value' => $ip,
                         ],
                         [
-                            'user_id' => $this->user->id,
                             'membership_enforcement_id' => $enforcement->id,
                             'created_by' => Auth::id(),
                             'reason' => $this->banReason,
@@ -1825,11 +1825,11 @@ class extends Component
                 ->each(function (string $ip) use ($enforcement): void {
                     BanIdentifier::updateOrCreate(
                         [
+                            'user_id' => $this->user->id,
                             'type' => 'ip',
                             'value' => $ip,
                         ],
                         [
-                            'user_id' => $this->user->id,
                             'membership_enforcement_id' => $enforcement->id,
                             'created_by' => Auth::id(),
                             'reason' => $this->banReason,
@@ -2049,11 +2049,11 @@ class extends Component
                 ->each(function (string $ip) use ($enforcement): void {
                     BanIdentifier::updateOrCreate(
                         [
+                            'user_id' => $this->user->id,
                             'type' => 'ip',
                             'value' => $ip,
                         ],
                         [
-                            'user_id' => $this->user->id,
                             'membership_enforcement_id' => $enforcement->id,
                             'created_by' => Auth::id(),
                             'reason' => $this->banReason,

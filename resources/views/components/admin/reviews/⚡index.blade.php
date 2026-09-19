@@ -70,6 +70,10 @@ class extends Component
 
         $review = PropertyReview::findOrFail($this->reviewBeingHidden);
 
+        if ($review->hidden_at !== null) {
+            return;
+        }
+
         DB::transaction(function () use ($review): void {
             $review->hidden_at = now();
 
