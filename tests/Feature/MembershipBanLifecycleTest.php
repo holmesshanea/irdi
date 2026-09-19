@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\BanIdentifier;
+use App\Models\MemberProfile;
 use App\Models\MembershipEnforcement;
 use App\Models\User;
+use App\Notifications\MembershipBannedNotification;
 use App\Notifications\MembershipProbationNotification;
 use App\Notifications\MembershipReinstatedNotification;
 use App\Notifications\MembershipReinstatementDeniedNotification;
@@ -61,6 +63,100 @@ test('ordinary ban establishes three year reinstatement eligibility', function (
         ->and($ban->starts_at?->toDateTimeString())->toBe(now()->toDateTimeString())
         ->and($ban->reinstatement_eligible_at?->toDateTimeString())->toBe(now()->addYears(3)->toDateTimeString())
         ->and($ban->permanently_ineligible)->toBeFalse();
+});
+
+test('direct ban creates linked identifiers activity and notification', function () {
+    Notification::fake();
+    $this->freezeTime();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'email' => 'BAN-MEMBER@example.com',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => '1.1.1.1',
+    ]);
+
+    $reason = 'Serious documented conduct requires termination of IRDI membership.';
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set('banReason', $reason)
+        ->call('banMember')
+        ->assertHasNoErrors();
+
+    $member->refresh();
+
+    $ban = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'banned')
+        ->sole();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($ban->admin_id)->toBe($superAdmin->id)
+        ->and($ban->status)->toBe('active')
+        ->and($ban->reason)->toBe($reason)
+        ->and($ban->starts_at?->toDateTimeString())->toBe(now()->toDateTimeString())
+        ->and($ban->reinstatement_eligible_at?->toDateTimeString())
+        ->toBe(now()->addYears(3)->toDateTimeString())
+        ->and($ban->permanently_ineligible)->toBeFalse();
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => 'ban-member@example.com',
+        'reason' => $reason,
+    ]);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => $reason,
+    ]);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'ip',
+        'value' => '1.1.1.1',
+        'reason' => $reason,
+    ]);
+
+    expect(
+        BanIdentifier::query()
+            ->where('user_id', $member->id)
+            ->where('membership_enforcement_id', $ban->id)
+            ->count()
+    )->toBe(3);
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'member_banned',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $ban->id,
+    ]);
+
+    Notification::assertSentTo(
+        $member,
+        MembershipBannedNotification::class,
+        function (MembershipBannedNotification $notification) use ($reason): bool {
+            return $notification->reason === $reason
+                && $notification->permanentlyIneligible === false
+                && $notification->reinstatementEligibleAt === now()
+                    ->addYears(3)
+                    ->format('F j, Y');
+        }
+    );
 });
 
 test('super administrator can make a ban permanently ineligible', function () {
@@ -332,5 +428,258 @@ test('direct ban resolves an active membership probation', function () {
         'user_id' => $member->id,
         'action' => 'banned',
         'status' => 'active',
+    ]);
+});
+
+test('direct ban deduplicates IP identifiers and excludes loopback addresses', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'email' => 'ban-member@example.com',
+        'registration_ip' => '8.8.8.8',
+        'last_login_ip' => '8.8.8.8',
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'banReason',
+            'Serious documented conduct requires termination of IRDI membership.'
+        )
+        ->call('banMember')
+        ->assertHasNoErrors();
+
+    $ban = MembershipEnforcement::query()
+        ->where('user_id', $member->id)
+        ->where('action', 'banned')
+        ->sole();
+
+    expect(
+        BanIdentifier::query()
+            ->where('membership_enforcement_id', $ban->id)
+            ->where('type', 'ip')
+            ->pluck('value')
+            ->all()
+    )->toBe(['8.8.8.8']);
+
+    $loopbackMember = banLifecycleUser([
+        'email' => 'loopback-member@example.com',
+        'registration_ip' => '127.0.0.1',
+        'last_login_ip' => '::1',
+    ]);
+
+    Livewire::test('admin.members.show', ['user' => $loopbackMember])
+        ->set(
+            'banReason',
+            'Serious documented conduct requires termination of IRDI membership.'
+        )
+        ->call('banMember')
+        ->assertHasNoErrors();
+
+    $loopbackBan = MembershipEnforcement::query()
+        ->where('user_id', $loopbackMember->id)
+        ->where('action', 'banned')
+        ->sole();
+
+    expect(
+        BanIdentifier::query()
+            ->where('membership_enforcement_id', $loopbackBan->id)
+            ->where('type', 'ip')
+            ->count()
+    )->toBe(0);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $loopbackMember->id,
+        'membership_enforcement_id' => $loopbackBan->id,
+        'type' => 'email',
+        'value' => 'loopback-member@example.com',
+    ]);
+});
+
+test('banned member is logged out on the next web request', function () {
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+    ]);
+
+    $this->actingAs($member);
+
+    $response = $this->get(route('account'));
+
+    $response
+        ->assertRedirect(route('login'))
+        ->assertSessionHasErrors([
+            'email' => 'This IRDI account has been banned. If you believe this is an error, please contact IRDI.',
+        ]);
+
+    $this->assertGuest();
+});
+
+test('banned member cannot authenticate with valid credentials', function () {
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'banned-login@example.com',
+        'password' => bcrypt('correct-password'),
+    ]);
+
+    $response = $this->post(route('login'), [
+        'email' => $member->email,
+        'password' => 'correct-password',
+    ]);
+
+    $response
+        ->assertRedirect()
+        ->assertSessionHasErrors([
+            'email' => 'This IRDI account has been banned. If you believe this is an error, please contact IRDI.',
+        ]);
+
+    $this->assertGuest();
+});
+
+test('banned member profile is excluded from the directory and cannot be accessed directly', function () {
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+    ]);
+
+    $profile = MemberProfile::factory()->create([
+        'user_id' => $member->id,
+        'profile_name' => 'Banned Detectorist',
+        'username' => 'banned-detectorist',
+        'directory_visible' => true,
+    ]);
+
+    $directoryResponse = $this->get(route('directory'));
+
+    $directoryResponse
+        ->assertOk()
+        ->assertDontSee('Banned Detectorist')
+        ->assertDontSee('banned-detectorist');
+
+    $this->get(route('member-profiles.show', [
+        'profile' => $profile,
+    ]))->assertNotFound();
+});
+
+test('banned member card cannot be accessed directly', function () {
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+    ]);
+
+    $profile = MemberProfile::factory()->create([
+        'user_id' => $member->id,
+        'profile_name' => 'Banned Detectorist',
+        'username' => 'banned-member-card',
+        'directory_visible' => true,
+    ]);
+
+    $this->get(route('member-profiles.card', [
+        'profile' => $profile,
+    ]))->assertNotFound();
+});
+
+test('banned email identifier prevents re-registration regardless of case', function () {
+    $bannedMember = banLifecycleUser([
+        'email' => 'banned-registration@example.com',
+        'membership_status' => 'banned',
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $bannedMember->id,
+        'created_by' => null,
+        'type' => 'email',
+        'value' => 'banned-registration@example.com',
+        'reason' => 'Membership permanently terminated.',
+    ]);
+
+    $response = $this
+        ->withServerVariables([
+            'REMOTE_ADDR' => '203.0.113.50',
+        ])
+        ->post(route('register'), [
+            'name' => 'Replacement Account',
+            'email' => '  BANNED-REGISTRATION@EXAMPLE.COM  ',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+
+    $response->assertSessionHasErrors([
+        'email' => 'This email address is not eligible to register for an IRDI account.',
+    ]);
+
+    $this->assertDatabaseMissing('users', [
+        'name' => 'Replacement Account',
+    ]);
+});
+
+test('banned IP identifier prevents registration with a different email address', function () {
+    $bannedMember = banLifecycleUser([
+        'email' => 'original-banned-member@example.com',
+        'membership_status' => 'banned',
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $bannedMember->id,
+        'created_by' => null,
+        'type' => 'ip',
+        'value' => '8.8.8.8',
+        'reason' => 'Membership permanently terminated.',
+    ]);
+
+    $response = $this
+        ->withServerVariables([
+            'REMOTE_ADDR' => '8.8.8.8',
+        ])
+        ->post(route('register'), [
+            'name' => 'Replacement Account',
+            'email' => 'completely-new-email@example.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+
+    $response->assertSessionHasErrors([
+        'email' => 'Registration is not available from this network. Please contact IRDI if you believe this is an error.',
+    ]);
+
+    $this->assertDatabaseMissing('users', [
+        'email' => 'completely-new-email@example.com',
+    ]);
+});
+
+test('loopback IP ban identifier does not block registration', function () {
+    $bannedMember = banLifecycleUser([
+        'email' => 'historical-banned-member@example.com',
+        'membership_status' => 'banned',
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $bannedMember->id,
+        'created_by' => null,
+        'type' => 'ip',
+        'value' => '127.0.0.1',
+        'reason' => 'Historical loopback identifier.',
+    ]);
+
+    $response = $this
+        ->withServerVariables([
+            'REMOTE_ADDR' => '127.0.0.1',
+        ])
+        ->post(route('register'), [
+            'name' => 'Allowed Registration',
+            'email' => 'allowed-registration@example.com',
+            'password' => 'Password123!',
+            'password_confirmation' => 'Password123!',
+        ]);
+
+    $response->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('users', [
+        'name' => 'Allowed Registration',
+        'email' => 'allowed-registration@example.com',
+        'registration_ip' => '127.0.0.1',
     ]);
 });
