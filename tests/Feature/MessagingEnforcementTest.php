@@ -659,3 +659,169 @@ test('administrator cannot restore messaging when member is not restricted', fun
         MessagingRestoredNotification::class,
     );
 });
+
+test('messaging restriction rolls back completely when staff activity creation fails', function () {
+    Notification::fake();
+    $this->freezeTime();
+
+    $administrator = messagingEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $member = messagingEnforcementUser();
+
+    StaffActivityLog::creating(function (StaffActivityLog $activity): void {
+        if ($activity->action === 'messaging_disabled') {
+            throw new RuntimeException('Forced messaging restriction activity failure.');
+        }
+    });
+
+    $this->actingAs($administrator);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $member])
+        ->set('restrictionType', '7_days')
+        ->set('enforcementReason', 'This restriction must roll back if its audit record cannot be created.')
+        ->call('disableMessaging'))
+        ->toThrow(RuntimeException::class, 'Forced messaging restriction activity failure.');
+
+    $member->refresh();
+
+    expect($member->messaging_disabled_at)->toBeNull()
+        ->and($member->messaging_disabled_until)->toBeNull()
+        ->and(
+            MessagingEnforcement::query()
+                ->where('user_id', $member->id)
+                ->where('action', 'disabled')
+                ->exists()
+        )->toBeFalse();
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'actor_id' => $administrator->id,
+        'target_user_id' => $member->id,
+        'action' => 'messaging_disabled',
+    ]);
+
+    Notification::assertNothingSent();
+});
+
+test('messaging restoration rolls back completely when staff activity creation fails', function () {
+    Notification::fake();
+    $this->freezeTime();
+
+    $administrator = messagingEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $originalDisabledAt = now()->subDay();
+    $originalDisabledUntil = now()->addDays(6);
+
+    $member = messagingEnforcementUser([
+        'messaging_disabled_at' => $originalDisabledAt,
+        'messaging_disabled_until' => $originalDisabledUntil,
+    ]);
+
+    $existingEnforcement = MessagingEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $administrator->id,
+        'message_report_id' => null,
+        'action' => 'disabled',
+        'reason' => 'Existing temporary messaging restriction.',
+        'expires_at' => $originalDisabledUntil,
+    ]);
+
+    StaffActivityLog::creating(function (StaffActivityLog $activity): void {
+        if ($activity->action === 'messaging_restored') {
+            throw new RuntimeException('Forced messaging restoration activity failure.');
+        }
+    });
+
+    $this->actingAs($administrator);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $member])
+        ->set('restoreReason', 'This restoration must roll back if its audit record cannot be created.')
+        ->call('restoreMessaging'))
+        ->toThrow(RuntimeException::class, 'Forced messaging restoration activity failure.');
+
+    $member->refresh();
+
+    expect($member->messaging_disabled_at?->toDateTimeString())
+        ->toBe($originalDisabledAt->toDateTimeString())
+        ->and($member->messaging_disabled_until?->toDateTimeString())
+        ->toBe($originalDisabledUntil->toDateTimeString())
+        ->and($existingEnforcement->fresh())->not->toBeNull()
+        ->and(
+            MessagingEnforcement::query()
+                ->where('user_id', $member->id)
+                ->where('action', 'disabled')
+                ->count()
+        )->toBe(1)
+        ->and(
+            MessagingEnforcement::query()
+                ->where('user_id', $member->id)
+                ->where('action', 'restored')
+                ->exists()
+        )->toBeFalse();
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'actor_id' => $administrator->id,
+        'target_user_id' => $member->id,
+        'action' => 'messaging_restored',
+    ]);
+
+    Notification::assertNothingSent();
+});
+
+test('automatic messaging restoration rolls back completely when restoration enforcement creation fails', function () {
+    Notification::fake();
+    $this->freezeTime();
+
+    $originalDisabledAt = now()->subDays(8);
+    $originalDisabledUntil = now()->subMinute();
+
+    $member = messagingEnforcementUser([
+        'messaging_disabled_at' => $originalDisabledAt,
+        'messaging_disabled_until' => $originalDisabledUntil,
+    ]);
+
+    MessagingEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => null,
+        'message_report_id' => null,
+        'action' => 'disabled',
+        'reason' => 'Temporary messaging restriction.',
+        'expires_at' => $originalDisabledUntil,
+    ]);
+
+    MessagingEnforcement::creating(function (MessagingEnforcement $enforcement): void {
+        if ($enforcement->action === 'restored') {
+            throw new RuntimeException('Forced automatic messaging restoration enforcement failure.');
+        }
+    });
+
+    expect(fn () => $this->artisan('messaging:restore-expired'))
+        ->toThrow(
+            RuntimeException::class,
+            'Forced automatic messaging restoration enforcement failure.'
+        );
+
+    $member->refresh();
+
+    expect($member->messaging_disabled_at?->toDateTimeString())
+        ->toBe($originalDisabledAt->toDateTimeString())
+        ->and($member->messaging_disabled_until?->toDateTimeString())
+        ->toBe($originalDisabledUntil->toDateTimeString())
+        ->and(
+            MessagingEnforcement::query()
+                ->where('user_id', $member->id)
+                ->where('action', 'disabled')
+                ->count()
+        )->toBe(1)
+        ->and(
+            MessagingEnforcement::query()
+                ->where('user_id', $member->id)
+                ->where('action', 'restored')
+                ->exists()
+        )->toBeFalse();
+
+    Notification::assertNothingSent();
+});

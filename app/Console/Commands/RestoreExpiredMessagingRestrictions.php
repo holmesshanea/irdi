@@ -6,6 +6,7 @@ use App\Models\MessagingEnforcement;
 use App\Models\User;
 use App\Notifications\MessagingRestoredNotification;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class RestoreExpiredMessagingRestrictions extends Command
 {
@@ -23,20 +24,20 @@ class RestoreExpiredMessagingRestrictions extends Command
             ->where('messaging_disabled_until', '<=', now())
             ->chunkById(100, function ($users) use (&$restoredCount) {
                 foreach ($users as $user) {
-                    $expiredAt = $user->messaging_disabled_until;
+                    DB::transaction(function () use ($user): void {
+                        $user->messaging_disabled_at = null;
+                        $user->messaging_disabled_until = null;
+                        $user->save();
 
-                    $user->messaging_disabled_at = null;
-                    $user->messaging_disabled_until = null;
-                    $user->save();
-
-                    MessagingEnforcement::create([
-                        'user_id' => $user->id,
-                        'admin_id' => null,
-                        'message_report_id' => null,
-                        'action' => 'restored',
-                        'reason' => 'Messaging access automatically restored after the temporary restriction expired.',
-                        'expires_at' => null,
-                    ]);
+                        MessagingEnforcement::create([
+                            'user_id' => $user->id,
+                            'admin_id' => null,
+                            'message_report_id' => null,
+                            'action' => 'restored',
+                            'reason' => 'Messaging access automatically restored after the temporary restriction expired.',
+                            'expires_at' => null,
+                        ]);
+                    });
 
                     $user->notify(
                         new MessagingRestoredNotification
