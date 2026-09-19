@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\MembershipEnforcement;
+use App\Models\StaffActivityLog;
 use App\Models\User;
 use App\Notifications\MembershipWarningIssuedNotification;
 use App\Notifications\MembershipWarningResolvedNotification;
@@ -178,13 +179,17 @@ test('administrator can resolve active formal warning', function () {
 
     $member = membershipWarningUser();
 
+    $originalStartsAt = now()->subDays(14);
+
     $warning = MembershipEnforcement::create([
         'user_id' => $member->id,
         'admin_id' => $administrator->id,
         'action' => 'warning',
         'status' => 'active',
         'reason' => 'This warning will be resolved after corrective action.',
-        'starts_at' => now(),
+        'details' => 'The member received documented guidance about the conduct that resulted in the warning.',
+        'starts_at' => $originalStartsAt,
+        'restoration_requirements' => 'Complete the documented corrective action and avoid repeating the conduct.',
     ]);
 
     $this->actingAs($administrator);
@@ -198,8 +203,21 @@ test('administrator can resolve active formal warning', function () {
     expect($warning->status)->toBe('resolved')
         ->and($warning->resolved_at)->not->toBeNull()
         ->and($warning->resolved_by)->toBe($administrator->id)
+        ->and($warning->admin_id)->toBe($administrator->id)
+        ->and($warning->reason)->toBe('This warning will be resolved after corrective action.')
+        ->and($warning->details)->toBe('The member received documented guidance about the conduct that resulted in the warning.')
+        ->and($warning->starts_at?->toDateTimeString())->toBe($originalStartsAt->toDateTimeString())
+        ->and($warning->restoration_requirements)->toBe('Complete the documented corrective action and avoid repeating the conduct.')
         ->and($member->fresh()->hasActiveMembershipWarning())->toBeFalse()
         ->and($member->fresh()->isInGoodStanding())->toBeTrue();
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'actor_id' => $administrator->id,
+        'target_user_id' => $member->id,
+        'action' => 'membership_warning_resolved',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $warning->id,
+    ]);
 
     Notification::assertSentTo(
         $member,
@@ -215,13 +233,17 @@ test('administrator can withdraw active formal warning', function () {
 
     $member = membershipWarningUser();
 
+    $originalStartsAt = now()->subDays(7);
+
     $warning = MembershipEnforcement::create([
         'user_id' => $member->id,
         'admin_id' => $administrator->id,
         'action' => 'warning',
         'status' => 'active',
         'reason' => 'This warning will be withdrawn after review.',
-        'starts_at' => now(),
+        'details' => 'The original warning details must remain intact after the warning is withdrawn.',
+        'starts_at' => $originalStartsAt,
+        'restoration_requirements' => 'Complete the originally documented corrective requirements.',
     ]);
 
     $this->actingAs($administrator);
@@ -235,13 +257,142 @@ test('administrator can withdraw active formal warning', function () {
     expect($warning->status)->toBe('withdrawn')
         ->and($warning->resolved_at)->not->toBeNull()
         ->and($warning->resolved_by)->toBe($administrator->id)
+        ->and($warning->admin_id)->toBe($administrator->id)
+        ->and($warning->reason)->toBe('This warning will be withdrawn after review.')
+        ->and($warning->details)->toBe('The original warning details must remain intact after the warning is withdrawn.')
+        ->and($warning->starts_at?->toDateTimeString())->toBe($originalStartsAt->toDateTimeString())
+        ->and($warning->restoration_requirements)->toBe('Complete the originally documented corrective requirements.')
         ->and($member->fresh()->hasActiveMembershipWarning())->toBeFalse()
         ->and($member->fresh()->isInGoodStanding())->toBeTrue();
+
+    $this->assertDatabaseHas('staff_activity_logs', [
+        'actor_id' => $administrator->id,
+        'target_user_id' => $member->id,
+        'action' => 'membership_warning_withdrawn',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $warning->id,
+    ]);
 
     Notification::assertSentTo(
         $member,
         MembershipWarningWithdrawnNotification::class,
     );
+});
+
+test('warning resolution rolls back completely when staff activity creation fails', function () {
+    Notification::fake();
+
+    $administrator = membershipWarningUser([
+        'is_admin' => true,
+    ]);
+
+    $member = membershipWarningUser();
+
+    $originalStartsAt = now()->subDays(14);
+
+    $warning = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $administrator->id,
+        'action' => 'warning',
+        'status' => 'active',
+        'reason' => 'This warning must remain active if its resolution audit record cannot be created.',
+        'details' => 'Historical warning details must survive a failed resolution transaction.',
+        'starts_at' => $originalStartsAt,
+        'restoration_requirements' => 'Complete the original corrective requirements.',
+    ]);
+
+    StaffActivityLog::creating(function (StaffActivityLog $activity): void {
+        if ($activity->action === 'membership_warning_resolved') {
+            throw new RuntimeException('Forced warning resolution activity failure.');
+        }
+    });
+
+    $this->actingAs($administrator);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $member])
+        ->call('resolveWarning', $warning->id))
+        ->toThrow(RuntimeException::class, 'Forced warning resolution activity failure.');
+
+    $warning->refresh();
+
+    expect($warning->status)->toBe('active')
+        ->and($warning->resolved_at)->toBeNull()
+        ->and($warning->resolved_by)->toBeNull()
+        ->and($warning->admin_id)->toBe($administrator->id)
+        ->and($warning->reason)->toBe('This warning must remain active if its resolution audit record cannot be created.')
+        ->and($warning->details)->toBe('Historical warning details must survive a failed resolution transaction.')
+        ->and($warning->starts_at?->toDateTimeString())->toBe($originalStartsAt->toDateTimeString())
+        ->and($warning->restoration_requirements)->toBe('Complete the original corrective requirements.')
+        ->and($member->fresh()->hasActiveMembershipWarning())->toBeTrue()
+        ->and($member->fresh()->isInGoodStanding())->toBeTrue();
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'actor_id' => $administrator->id,
+        'target_user_id' => $member->id,
+        'action' => 'membership_warning_resolved',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $warning->id,
+    ]);
+
+    Notification::assertNothingSent();
+});
+
+test('warning withdrawal rolls back completely when staff activity creation fails', function () {
+    Notification::fake();
+
+    $administrator = membershipWarningUser([
+        'is_admin' => true,
+    ]);
+
+    $member = membershipWarningUser();
+
+    $originalStartsAt = now()->subDays(7);
+
+    $warning = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $administrator->id,
+        'action' => 'warning',
+        'status' => 'active',
+        'reason' => 'This warning must remain active if its withdrawal audit record cannot be created.',
+        'details' => 'Historical warning details must survive a failed withdrawal transaction.',
+        'starts_at' => $originalStartsAt,
+        'restoration_requirements' => 'Complete the originally documented corrective requirements.',
+    ]);
+
+    StaffActivityLog::creating(function (StaffActivityLog $activity): void {
+        if ($activity->action === 'membership_warning_withdrawn') {
+            throw new RuntimeException('Forced warning withdrawal activity failure.');
+        }
+    });
+
+    $this->actingAs($administrator);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $member])
+        ->call('withdrawWarning', $warning->id))
+        ->toThrow(RuntimeException::class, 'Forced warning withdrawal activity failure.');
+
+    $warning->refresh();
+
+    expect($warning->status)->toBe('active')
+        ->and($warning->resolved_at)->toBeNull()
+        ->and($warning->resolved_by)->toBeNull()
+        ->and($warning->admin_id)->toBe($administrator->id)
+        ->and($warning->reason)->toBe('This warning must remain active if its withdrawal audit record cannot be created.')
+        ->and($warning->details)->toBe('Historical warning details must survive a failed withdrawal transaction.')
+        ->and($warning->starts_at?->toDateTimeString())->toBe($originalStartsAt->toDateTimeString())
+        ->and($warning->restoration_requirements)->toBe('Complete the originally documented corrective requirements.')
+        ->and($member->fresh()->hasActiveMembershipWarning())->toBeTrue()
+        ->and($member->fresh()->isInGoodStanding())->toBeTrue();
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'actor_id' => $administrator->id,
+        'target_user_id' => $member->id,
+        'action' => 'membership_warning_withdrawn',
+        'subject_type' => MembershipEnforcement::class,
+        'subject_id' => $warning->id,
+    ]);
+
+    Notification::assertNothingSent();
 });
 
 test('warning cannot be resolved through a different member component', function () {
