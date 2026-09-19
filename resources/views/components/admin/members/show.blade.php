@@ -481,15 +481,40 @@ class extends Component
             'probationRestoreReason.max' => 'The restoration reason must be 1,000 characters or fewer.',
         ]);
 
-        $probation = MembershipEnforcement::query()
-            ->whereKey($probationId)
-            ->where('user_id', $this->user->id)
-            ->where('action', 'probation')
-            ->where('status', 'active')
-            ->whereNull('resolved_at')
-            ->firstOrFail();
+        $resolved = DB::transaction(function () use ($probationId): bool {
+            $user = User::query()
+                ->whereKey($this->user->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        DB::transaction(function () use ($probation): void {
+            if ($user->membership_status !== 'active') {
+                $this->addError(
+                    'probationRestoreReason',
+                    'Only an active membership can have probation resolved.'
+                );
+
+                return false;
+            }
+
+            $probation = MembershipEnforcement::query()
+                ->whereKey($probationId)
+                ->where('user_id', $user->id)
+                ->where('action', 'probation')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (
+                $probation->status !== 'active'
+                || $probation->resolved_at !== null
+            ) {
+                $this->addError(
+                    'probationRestoreReason',
+                    'This probation is no longer active.'
+                );
+
+                return false;
+            }
+
             $probation->update([
                 'status' => 'resolved',
                 'resolved_at' => now(),
@@ -498,8 +523,8 @@ class extends Component
 
             StaffActivity::record(
                 action: 'membership_probation_resolved',
-                description: 'Resolved membership probation for '.$this->user->name.'.',
-                targetUserId: $this->user->id,
+                description: 'Resolved membership probation for '.$user->name.'.',
+                targetUserId: $user->id,
                 subject: $probation,
                 metadata: [
                     'probation_id' => $probation->id,
@@ -508,9 +533,14 @@ class extends Component
                 ],
             );
 
+            return true;
         });
 
+        if (! $resolved) {
+            $this->loadUser();
 
+            return;
+        }
 
         $this->probationRestoreReason = '';
 
@@ -528,7 +558,6 @@ class extends Component
                 ? 'Probation has been resolved and the member has been restored to Good Standing.'
                 : 'Probation has been resolved. The member is not currently in Good Standing because another active accountability action remains.'
         );
-
     }
 
     public function continueProbation(int $probationId): void
@@ -550,24 +579,53 @@ class extends Component
             'probationContinueReason.max' => 'The continuation reason must be 1,000 characters or fewer.',
         ]);
 
-        $probation = MembershipEnforcement::query()
-            ->whereKey($probationId)
-            ->where('user_id', $this->user->id)
-            ->where('action', 'probation')
-            ->where('status', 'active')
-            ->whereNull('resolved_at')
-            ->firstOrFail();
+        $probation = DB::transaction(function () use ($probationId): ?MembershipEnforcement {
+            $user = User::query()
+                ->whereKey($this->user->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        $previousReviewDate = $probation->eligible_for_review_at;
-        $previousReviewRequestedAt = $probation->review_requested_at;
-        $nextReviewDate = now()->addDays(90);
+            if ($user->membership_status !== 'active') {
+                $this->addError(
+                    'probationContinueReason',
+                    'Only an active membership can have probation continued.'
+                );
 
-        $probation = DB::transaction(function () use (
-            $probation,
-            $previousReviewDate,
-            $previousReviewRequestedAt,
-            $nextReviewDate
-        ): MembershipEnforcement {
+                return null;
+            }
+
+            /*
+             * Resolve identity/ownership first so an attempt to act on
+             * another member's probation retains the existing 404 behavior.
+             */
+            $probation = MembershipEnforcement::query()
+                ->whereKey($probationId)
+                ->where('user_id', $user->id)
+                ->where('action', 'probation')
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if (
+                $probation->status !== 'active'
+                || $probation->resolved_at !== null
+            ) {
+                $this->addError(
+                    'probationContinueReason',
+                    'This probation is no longer active.'
+                );
+
+                return null;
+            }
+
+            /*
+             * Capture the authoritative state only after the probation row
+             * has been locked. A stale Livewire component must not supply
+             * the dates used for the continuation history.
+             */
+            $previousReviewDate = $probation->eligible_for_review_at;
+            $previousReviewRequestedAt = $probation->review_requested_at;
+            $nextReviewDate = now()->addDays(90);
+
             $probation->update([
                 'eligible_for_review_at' => $nextReviewDate,
                 'review_requested_at' => null,
@@ -575,8 +633,8 @@ class extends Component
 
             StaffActivity::record(
                 action: 'membership_probation_continued',
-                description: 'Continued membership probation for '.$this->user->name.'.',
-                targetUserId: $this->user->id,
+                description: 'Continued membership probation for '.$user->name.'.',
+                targetUserId: $user->id,
                 subject: $probation,
                 metadata: [
                     'probation_id' => $probation->id,
@@ -586,8 +644,15 @@ class extends Component
                     'next_eligible_for_review_at' => $nextReviewDate->toIso8601String(),
                 ],
             );
+
             return $probation;
         });
+
+        if ($probation === null) {
+            $this->loadUser();
+
+            return;
+        }
 
         $this->user->notify(
             new MembershipProbationContinuedNotification(
@@ -595,13 +660,14 @@ class extends Component
             )
         );
 
-
-
         $this->probationContinueReason = '';
 
         $this->loadUser();
 
-        session()->flash('status', 'Probation has been continued. The next formal review will be available in 90 days.');
+        session()->flash(
+            'status',
+            'Probation has been continued. The next formal review will be available in 90 days.'
+        );
     }
 
     public function placeOnAdministrativeHold(): void
