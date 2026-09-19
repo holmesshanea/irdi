@@ -2088,50 +2088,95 @@ class extends Component
             abort(403);
         }
 
-        if ($this->user->membership_status !== 'banned') {
-            $this->addError('reinstatementDenialReason', 'Only a banned membership can have reinstatement denied.');
-
-            return;
-        }
-
         $this->validate([
             'reinstatementDenialReason' => ['required', 'string', 'min:10', 'max:1000'],
+        ], [
+            'reinstatementDenialReason.required' => 'Please enter a reason for denying reinstatement.',
+            'reinstatementDenialReason.min' => 'The denial reason must be at least 10 characters.',
+            'reinstatementDenialReason.max' => 'The denial reason must be 1,000 characters or fewer.',
         ]);
 
-        $ban = $this->currentBanEnforcement();
+        $denial = DB::transaction(function (): ?MembershipEnforcement {
+            $user = User::query()
+                ->whereKey($this->user->id)
+                ->lockForUpdate()
+                ->firstOrFail();
 
-        if ($ban->review_requested_at === null) {
-            $this->addError(
-                'reinstatementDenialReason',
-                'There is no pending reinstatement petition to deny.'
+            if ($user->membership_status !== 'banned') {
+                $this->addError(
+                    'reinstatementDenialReason',
+                    'Only a banned membership can have reinstatement denied.'
+                );
+
+                return null;
+            }
+
+            $ban = MembershipEnforcement::query()
+                ->where('user_id', $user->id)
+                ->where('action', 'banned')
+                ->where('status', 'active')
+                ->whereNull('resolved_at')
+                ->latest('id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($ban === null) {
+                $this->addError(
+                    'reinstatementDenialReason',
+                    'There is no active ban with a pending reinstatement petition.'
+                );
+
+                return null;
+            }
+
+            if ($ban->review_requested_at === null) {
+                $this->addError(
+                    'reinstatementDenialReason',
+                    'There is no pending reinstatement petition to deny.'
+                );
+
+                return null;
+            }
+
+            if ($this->currentReinstatementPetitionWasDenied($ban)) {
+                $this->addError(
+                    'reinstatementDenialReason',
+                    'This reinstatement petition has already been denied.'
+                );
+
+                return null;
+            }
+
+            $denial = MembershipEnforcement::create([
+                'user_id' => $user->id,
+                'admin_id' => Auth::id(),
+                'action' => 'reinstatement_denied',
+                'status' => 'resolved',
+                'reason' => $this->reinstatementDenialReason,
+                'starts_at' => now(),
+                'resolved_at' => now(),
+                'resolved_by' => Auth::id(),
+            ]);
+
+            StaffActivity::record(
+                action: 'membership_reinstatement_denied',
+                description: 'Denied the reinstatement petition for '.$user->name.'.',
+                targetUserId: $user->id,
+                subject: $denial,
+                metadata: [
+                    'ban_id' => $ban->id,
+                    'reason' => $this->reinstatementDenialReason,
+                ],
             );
+
+            return $denial;
+        });
+
+        if ($denial === null) {
+            $this->loadUser();
 
             return;
         }
-
-        $denial = MembershipEnforcement::create([
-            'user_id' => $this->user->id,
-            'admin_id' => Auth::id(),
-            'action' => 'reinstatement_denied',
-            'status' => 'resolved',
-            'reason' => $this->reinstatementDenialReason,
-            'details' => $ban->member_response,
-            'starts_at' => now(),
-            'resolved_at' => now(),
-            'resolved_by' => Auth::id(),
-        ]);
-
-        StaffActivity::record(
-            action: 'membership_reinstatement_denied',
-            description: 'Denied reinstatement petition for '.$this->user->name.'.',
-            targetUserId: $this->user->id,
-            subject: $denial,
-            metadata: [
-                'ban_id' => $ban->id,
-                'reason' => $this->reinstatementDenialReason,
-                'petition_requested_at' => $ban->review_requested_at?->toIso8601String(),
-            ],
-        );
 
         $this->user->notify(
             new MembershipReinstatementDeniedNotification(
@@ -2142,7 +2187,10 @@ class extends Component
         $this->reinstatementDenialReason = '';
         $this->loadUser();
 
-        session()->flash('status', 'The reinstatement petition has been denied. The IRDI ban remains active.');
+        session()->flash(
+            'status',
+            'The reinstatement petition has been denied.'
+        );
     }
 
     private function currentReinstatementPetitionWasDenied(MembershipEnforcement $ban): bool

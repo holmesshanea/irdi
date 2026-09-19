@@ -638,7 +638,7 @@ test('administrator cannot decide reinstatement petition', function () {
 
     Notification::assertNotSentTo(
         $member,
-        MembershipReinstatedNotification::class,
+        MembershipReinstatementDeniedNotification::class,
     );
 });
 
@@ -1543,5 +1543,273 @@ test('probation reinstatement rolls back completely when staff activity creation
     Notification::assertNotSentTo(
         $member,
         MembershipProbationNotification::class,
+    );
+});
+
+test('reinstatement petition cannot be denied more than once', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'duplicate-denial-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'duplicate-denial-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'reinstatementDenialReason',
+            'The petition does not demonstrate sufficient grounds for reinstatement.'
+        )
+        ->call('denyReinstatement')
+        ->assertHasNoErrors();
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'reinstatement_denied')
+            ->count()
+    )->toBe(1);
+
+    Notification::assertSentToTimes(
+        $member,
+        MembershipReinstatementDeniedNotification::class,
+        1
+    );
+
+    /*
+     * Submit another denial against the same still-active Ban.
+     * The original denial must make the petition no longer actionable.
+     */
+    Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'reinstatementDenialReason',
+            'A second denial must not create another disciplinary record.'
+        )
+        ->call('denyReinstatement')
+        ->assertHasErrors(['reinstatementDenialReason']);
+
+    expect($member->fresh()->membership_status)->toBe('banned')
+        ->and($ban->fresh()->status)->toBe('active');
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'reinstatement_denied')
+            ->count()
+    )->toBe(1);
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'membership_reinstatement_denied')
+            ->count()
+    )->toBe(1);
+
+    Notification::assertSentToTimes(
+        $member,
+        MembershipReinstatementDeniedNotification::class,
+        1
+    );
+});
+
+test('reinstatement denial rechecks authoritative membership state inside the transaction', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'denial-concurrency-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'denial-concurrency-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', ['user' => $member]);
+
+    /*
+     * Simulate another request changing the authoritative membership
+     * state after this Livewire component was loaded.
+     */
+    $member->update([
+        'membership_status' => 'active',
+    ]);
+
+    $component
+        ->set(
+            'reinstatementDenialReason',
+            'This stale request must not deny the reinstatement petition.'
+        )
+        ->call('denyReinstatement')
+        ->assertHasErrors(['reinstatementDenialReason']);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('active')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstatement_denied',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstatement_denied',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatementDeniedNotification::class,
+    );
+});
+
+test('reinstatement denial rechecks authoritative ban state inside the transaction', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'denial-stale-ban-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'denial-stale-ban-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', ['user' => $member]);
+
+    /*
+     * Simulate another request resolving the active ban while this
+     * Livewire component still holds stale petition state.
+     */
+    $ban->update([
+        'status' => 'resolved',
+        'resolved_at' => now(),
+        'resolved_by' => $superAdmin->id,
+    ]);
+
+    $component
+        ->set(
+            'reinstatementDenialReason',
+            'This stale request must not deny an already resolved petition.'
+        )
+        ->call('denyReinstatement')
+        ->assertHasErrors(['reinstatementDenialReason']);
+
+    $ban->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('resolved')
+        ->and($ban->resolved_at)->not->toBeNull()
+        ->and($ban->resolved_by)->toBe($superAdmin->id);
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstatement_denied',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstatement_denied',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatementDeniedNotification::class,
+    );
+});
+
+test('reinstatement denial rolls back completely when staff activity creation fails', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'denial-rollback-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'denial-rollback-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    StaffActivityLog::creating(function (StaffActivityLog $activity): void {
+        if ($activity->action === 'membership_reinstatement_denied') {
+            throw new RuntimeException(
+                'Forced staff activity failure during reinstatement denial.'
+            );
+        }
+    });
+
+    $this->actingAs($superAdmin);
+
+    expect(fn () => Livewire::test('admin.members.show', ['user' => $member])
+        ->set(
+            'reinstatementDenialReason',
+            'The petition does not establish sufficient grounds for reinstatement.'
+        )
+        ->call('denyReinstatement')
+    )->toThrow(
+        RuntimeException::class,
+        'Forced staff activity failure during reinstatement denial.'
+    );
+
+    $member->refresh();
+    $ban->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstatement_denied',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstatement_denied',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatementDeniedNotification::class,
     );
 });
