@@ -321,3 +321,36 @@ test('super administrator can ban ordinary member', function () {
 
     expect($member->fresh()->membership_status)->toBe('banned');
 });
+
+test('administrator cannot make a stale target moderator after the target becomes an administrator', function () {
+    $administrator = User::factory()->create([
+        'is_admin' => true,
+        'is_super_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $member = User::factory()->create([
+        'is_admin' => false,
+        'is_super_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate an authoritative state change after the Livewire
+    // component was initialized.
+    $member->forceFill([
+        'is_admin' => true,
+    ])->save();
+
+    $component->call('makeModerator');
+
+    $member->refresh();
+
+    expect($member->is_admin)->toBeTrue()
+        ->and($member->is_moderator)->toBeFalse();
+});

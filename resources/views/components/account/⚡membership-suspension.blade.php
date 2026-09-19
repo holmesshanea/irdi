@@ -13,9 +13,12 @@ new class extends Component
 
     public function submitResponse(int $suspensionId): void
     {
-        $user = auth()->user();
+        $user = auth()->user()->fresh();
 
-        abort_unless($user, 403);
+        abort_unless(
+            $user !== null && $user->membership_status === 'suspended',
+            403
+        );
 
         $suspension = $this->activeSuspensionQuery($user->id)
             ->whereKey($suspensionId)
@@ -58,9 +61,12 @@ new class extends Component
 
     public function requestReview(int $suspensionId): void
     {
-        $user = auth()->user();
+        $user = auth()->user()->fresh();
 
-        abort_unless($user, 403);
+        abort_unless(
+            $user !== null && $user->membership_status === 'suspended',
+            403
+        );
 
         $suspension = $this->activeSuspensionQuery($user->id)
             ->whereKey($suspensionId)

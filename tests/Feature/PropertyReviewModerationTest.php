@@ -175,6 +175,57 @@ test('administrator can restore hidden property review', function () {
         ->toBe($review->id);
 });
 
+test('stale component cannot hide property review that was already hidden elsewhere', function () {
+    $administrator = propertyReviewModerationUser([
+        'is_admin' => true,
+    ]);
+
+    $member = propertyReviewModerationUser();
+    $profile = propertyReviewModerationProfile($member);
+    $review = propertyReviewModerationReview($profile);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.reviews.show', [
+        'review' => $review,
+    ]);
+
+    // Simulate another moderation action changing the authoritative
+    // database state after this Livewire component was mounted.
+    $authoritativeReview = PropertyReview::query()->findOrFail($review->id);
+
+    $authoritativeReview->forceFill([
+        'hidden_at' => now(),
+        'moderation_note' => 'This review was already hidden by another moderation action.',
+    ])->save();
+
+    $component
+        ->set(
+            'moderationNote',
+            'This stale component must not create a second hide moderation action.'
+        )
+        ->call('hideReview');
+
+    $review->refresh();
+
+    expect($review->moderation_note)
+        ->toBe('This review was already hidden by another moderation action.');
+
+    expect(
+        PropertyReviewModeration::query()
+            ->where('property_review_id', $review->id)
+            ->where('action', 'hidden')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'review_hidden')
+            ->exists()
+    )->toBeFalse();
+});
+
 test('already hidden property review cannot be hidden again', function () {
     $administrator = propertyReviewModerationUser([
         'is_admin' => true,

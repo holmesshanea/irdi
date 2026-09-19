@@ -318,6 +318,81 @@ test('administrator cannot restrict reported member messaging when already restr
     );
 });
 
+test('administrator cannot restrict reported member after member becomes administrator', function () {
+    Notification::fake();
+
+    $administrator = messageReportEnforcementUser([
+        'is_admin' => true,
+    ]);
+
+    $reportedMember = messageReportEnforcementUser();
+
+    $reporter = messageReportEnforcementUser();
+
+    $message = Message::create([
+        'sender_id' => $reportedMember->id,
+        'recipient_id' => $reporter->id,
+        'subject' => 'Reported message',
+        'body' => 'This message tests authoritative staff rank during report enforcement.',
+    ]);
+
+    $report = MessageReport::create([
+        'message_id' => $message->id,
+        'reporter_id' => $reporter->id,
+        'reason' => 'harassment',
+        'details' => 'The reporter submitted this message for administrative review.',
+        'status' => 'pending',
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.message-reports.show', [
+        'report' => $report,
+    ]);
+
+    // Simulate the reported member gaining equal staff authority after
+    // the message-report component has already been initialized.
+    User::query()
+        ->whereKey($reportedMember->id)
+        ->update([
+            'is_admin' => true,
+        ]);
+
+    $component
+        ->set('restrictionType', '7_days')
+        ->set(
+            'enforcementReason',
+            'This stale report component must respect the current staff hierarchy.'
+        )
+        ->call('disableMessaging')
+        ->assertForbidden();
+
+    $reportedMember->refresh();
+
+    expect($reportedMember->is_admin)->toBeTrue()
+        ->and($reportedMember->messaging_disabled_at)->toBeNull()
+        ->and($reportedMember->messaging_disabled_until)->toBeNull();
+
+    expect(
+        MessagingEnforcement::query()
+            ->where('user_id', $reportedMember->id)
+            ->where('message_report_id', $report->id)
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $reportedMember->id)
+            ->where('action', 'messaging_disabled_from_report')
+            ->exists()
+    )->toBeFalse();
+
+    Notification::assertNotSentTo(
+        $reportedMember,
+        MessagingRestrictedNotification::class,
+    );
+});
+
 test('administrator cannot restrict another administrator through message report', function () {
     Notification::fake();
 

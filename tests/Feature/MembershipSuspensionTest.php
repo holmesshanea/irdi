@@ -2228,3 +2228,86 @@ test('continuing suspension preserves the original suspension history', function
         MembershipSuspensionContinuedNotification::class,
     );
 });
+
+test('restored member cannot submit a response to a previously active suspension', function () {
+    $administrator = suspensionUser([
+        'is_admin' => true,
+    ]);
+
+    $member = suspensionUser([
+        'membership_status' => 'suspended',
+    ]);
+
+    $suspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $administrator->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'Suspension under review.',
+        'starts_at' => now()->subDay(),
+        'eligible_for_review_at' => now()->addDays(29),
+    ]);
+
+    $this->actingAs($member);
+
+    $component = Livewire::test('account.membership-suspension');
+
+    // Simulate the membership being restored elsewhere after this
+    // suspension interface became available.
+    $member->forceFill([
+        'membership_status' => 'active',
+    ])->save();
+
+    $component
+        ->set(
+            "responses.{$suspension->id}",
+            'This response must not be accepted after my membership has been restored.'
+        )
+        ->call('submitResponse', $suspension->id)
+        ->assertForbidden();
+
+    $suspension->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('active')
+        ->and($suspension->member_response)->toBeNull()
+        ->and($suspension->member_responded_at)->toBeNull();
+});
+
+test('restored member cannot request review of a previously active suspension', function () {
+    $administrator = suspensionUser([
+        'is_admin' => true,
+    ]);
+
+    $member = suspensionUser([
+        'membership_status' => 'suspended',
+    ]);
+
+    $suspension = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $administrator->id,
+        'action' => 'suspended',
+        'status' => 'active',
+        'reason' => 'Suspension under review.',
+        'starts_at' => now()->subDays(31),
+        'eligible_for_review_at' => now()->subDay(),
+    ]);
+
+    $this->actingAs($member);
+
+    $component = Livewire::test('account.membership-suspension');
+
+    // Simulate the membership being restored elsewhere after this
+    // suspension interface became available.
+    $member->forceFill([
+        'membership_status' => 'active',
+    ])->save();
+
+    $component
+        ->call('requestReview', $suspension->id)
+        ->assertForbidden();
+
+    $suspension->refresh();
+
+    expect($member->fresh()->membership_status)->toBe('active')
+        ->and($suspension->review_requested_at)->toBeNull();
+});
