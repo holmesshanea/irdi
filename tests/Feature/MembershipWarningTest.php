@@ -505,3 +505,102 @@ test('formal warning cannot be issued to non active member', function (string $m
     'suspended',
     'banned',
 ]);
+
+test('stale administrator cannot issue formal warning after administrator access is revoked', function () {
+    Notification::fake();
+
+    $administrator = membershipWarningUser([
+        'is_admin' => true,
+    ]);
+
+    $member = membershipWarningUser();
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Revoke administrator authority after the component was initialized.
+    User::query()
+        ->whereKey($administrator->id)
+        ->update([
+            'is_admin' => false,
+        ]);
+
+    $component
+        ->set(
+            'warningReason',
+            'This stale administrator must not be able to issue a formal warning.'
+        )
+        ->call('issueWarning')
+        ->assertForbidden();
+
+    expect($administrator->fresh()->is_admin)->toBeFalse();
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'warning')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'membership_warning_issued')
+            ->exists()
+    )->toBeFalse();
+
+    Notification::assertNothingSent();
+});
+
+test('administrator cannot issue formal warning after mounted member becomes administrator', function () {
+    Notification::fake();
+
+    $administrator = membershipWarningUser([
+        'is_admin' => true,
+    ]);
+
+    $member = membershipWarningUser();
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate the target being promoted elsewhere after this
+    // component was initialized.
+    User::query()
+        ->whereKey($member->id)
+        ->update([
+            'is_admin' => true,
+        ]);
+
+    $component
+        ->set(
+            'warningReason',
+            'An administrator must not warn a member who has since become a peer administrator.'
+        )
+        ->call('issueWarning')
+        ->assertForbidden();
+
+    expect($member->fresh()->is_admin)->toBeTrue();
+
+    expect(
+        MembershipEnforcement::query()
+            ->where('user_id', $member->id)
+            ->where('action', 'warning')
+            ->exists()
+    )->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'membership_warning_issued')
+            ->exists()
+    )->toBeFalse();
+
+    Notification::assertNothingSent();
+});

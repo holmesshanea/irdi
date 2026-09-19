@@ -226,6 +226,66 @@ test('administrator can close administrative review with no action', function ()
     );
 });
 
+test('administrator who loses authority after component mount cannot close administrative review with no action', function () {
+    Notification::fake();
+
+    $admin = administrativeHoldUser([
+        'is_admin' => true,
+    ]);
+
+    $member = administrativeHoldUser();
+
+    $hold = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+        'reason' => 'A serious concern requires investigation before reaching a conclusion.',
+        'starts_at' => now()->subDays(7),
+    ]);
+
+    $this->actingAs($admin);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate another request removing Administrator authority
+    // after this Livewire component was mounted.
+    $admin->is_admin = false;
+    $admin->save();
+
+    expect($admin->fresh()->is_admin)->toBeFalse();
+
+    $component
+        ->set(
+            'administrativeHoldResolutionReason',
+            'This stale request must not close the administrative review.'
+        )
+        ->call('resolveAdministrativeHoldNoAction', $hold->id)
+        ->assertForbidden();
+
+    $hold->refresh();
+    $member->refresh();
+
+    expect($member->membership_status)->toBe('active')
+        ->and($hold->status)->toBe('active')
+        ->and($hold->resolved_at)->toBeNull()
+        ->and($hold->resolved_by)->toBeNull()
+        ->and($member->isUnderAdministrativeReview())->toBeTrue()
+        ->and($member->isInGoodStanding())->toBeFalse();
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_no_action',
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipAdministrativeReviewClosedNotification::class,
+    );
+});
+
 test('closing administrative review with no action requires documented reason', function () {
     $admin = administrativeHoldUser([
         'is_admin' => true,
@@ -388,6 +448,75 @@ test('administrator can resolve administrative hold with formal warning', functi
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $hold->id,
     ]);
+});
+
+test('administrator who loses authority after component mount cannot resolve administrative hold with warning', function () {
+    Notification::fake();
+
+    $admin = administrativeHoldUser([
+        'is_admin' => true,
+    ]);
+
+    $member = administrativeHoldUser();
+
+    $hold = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+        'reason' => 'A serious concern requires investigation before determining the appropriate outcome.',
+        'starts_at' => now()->subDays(7),
+    ]);
+
+    $this->actingAs($admin);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate another request removing Administrator authority
+    // after this Livewire component was mounted.
+    $admin->is_admin = false;
+    $admin->save();
+
+    expect($admin->fresh()->is_admin)->toBeFalse();
+
+    $component
+        ->set(
+            'warningReason',
+            'This stale request must not resolve the administrative hold with a warning.'
+        )
+        ->set(
+            'warningDetails',
+            'These warning details must never be persisted.'
+        )
+        ->set(
+            'warningRequirements',
+            'These warning requirements must never be applied.'
+        )
+        ->call('resolveAdministrativeHoldWithWarning', $hold->id)
+        ->assertForbidden();
+
+    $hold->refresh();
+    $member->refresh();
+
+    expect($member->membership_status)->toBe('active')
+        ->and($hold->status)->toBe('active')
+        ->and($hold->resolved_at)->toBeNull()
+        ->and($hold->resolved_by)->toBeNull()
+        ->and($member->hasActiveMembershipWarning())->toBeFalse();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'warning',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_warning',
+    ]);
+
+    Notification::assertNothingSent();
 });
 
 test('administrative hold warning outcome requires valid warning reason', function () {
@@ -562,6 +691,71 @@ test('administrator can resolve administrative hold with membership suspension',
         'subject_type' => MembershipEnforcement::class,
         'subject_id' => $suspension->id,
     ]);
+});
+
+test('administrator who loses authority after component mount cannot resolve administrative hold with suspension', function () {
+    Notification::fake();
+
+    $admin = administrativeHoldUser([
+        'is_admin' => true,
+    ]);
+
+    $member = administrativeHoldUser();
+
+    $hold = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $admin->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+        'reason' => 'A serious concern requires investigation before determining whether suspension is necessary.',
+        'starts_at' => now()->subDays(7),
+    ]);
+
+    $this->actingAs($admin);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate another request removing Administrator authority
+    // after this Livewire component was mounted.
+    $admin->is_admin = false;
+    $admin->save();
+
+    expect($admin->fresh()->is_admin)->toBeFalse();
+
+    $component
+        ->set(
+            'suspensionReason',
+            'This stale request must not resolve the administrative hold with suspension.'
+        )
+        ->call('resolveAdministrativeHoldWithSuspension', $hold->id)
+        ->assertForbidden();
+
+    $hold->refresh();
+    $member->refresh();
+
+    expect($member->membership_status)->toBe('active')
+        ->and($hold->status)->toBe('active')
+        ->and($hold->resolved_at)->toBeNull()
+        ->and($hold->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'suspended',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_suspension',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_suspended',
+    ]);
+
+    Notification::assertNothingSent();
 });
 
 test('administrative hold suspension outcome requires valid suspension reason', function () {
@@ -834,6 +1028,82 @@ test('super administrator can resolve administrative hold with membership ban', 
         'subject_id' => $ban->id,
     ]);
     Notification::assertSentTo(
+        $member,
+        MembershipBannedNotification::class,
+    );
+});
+
+test('super administrator who loses authority after component mount cannot resolve administrative hold with ban', function () {
+    Notification::fake();
+
+    $superAdmin = administrativeHoldUser([
+        'is_super_admin' => true,
+    ]);
+
+    $member = administrativeHoldUser([
+        'email' => 'stale-hold-ban-target@example.com',
+        'registration_ip' => '203.0.113.10',
+        'last_login_ip' => '198.51.100.25',
+    ]);
+
+    $hold = MembershipEnforcement::create([
+        'user_id' => $member->id,
+        'admin_id' => $superAdmin->id,
+        'action' => 'administrative_hold',
+        'status' => 'active',
+        'reason' => 'A serious concern requires investigation before a final membership decision is made.',
+        'starts_at' => now()->subDays(7),
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate another request removing Super Administrator authority
+    // after this Livewire component was mounted.
+    $superAdmin->is_super_admin = false;
+    $superAdmin->save();
+
+    expect($superAdmin->fresh()->is_super_admin)->toBeFalse();
+
+    $component
+        ->set(
+            'banReason',
+            'This stale request must not resolve the administrative hold with a ban.'
+        )
+        ->call('resolveAdministrativeHoldWithBan', $hold->id)
+        ->assertForbidden();
+
+    $hold->refresh();
+    $member->refresh();
+
+    expect($member->membership_status)->toBe('active')
+        ->and($hold->status)->toBe('active')
+        ->and($hold->resolved_at)->toBeNull()
+        ->and($hold->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'banned',
+    ]);
+
+    $this->assertDatabaseMissing('ban_identifiers', [
+        'user_id' => $member->id,
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_administrative_hold_resolved_ban',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'member_banned',
+    ]);
+
+    Notification::assertNotSentTo(
         $member,
         MembershipBannedNotification::class,
     );

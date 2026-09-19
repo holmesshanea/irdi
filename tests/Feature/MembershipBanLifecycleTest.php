@@ -289,6 +289,83 @@ test('member cannot petition against another members ban', function () {
         ->toThrow(ModelNotFoundException::class);
 });
 
+test('super administrator who loses authority after component mount cannot deny reinstatement petition', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate another request removing Super Administrator authority
+    // after this Livewire component was mounted.
+    $superAdmin->is_super_admin = false;
+    $superAdmin->save();
+
+    expect($superAdmin->fresh()->is_super_admin)->toBeFalse();
+
+    $component
+        ->set(
+            'reinstatementDenialReason',
+            'This stale request must not deny the reinstatement petition.'
+        )
+        ->call('denyReinstatement')
+        ->assertForbidden();
+
+    $member->refresh();
+    $ban->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstatement_denied',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstatement_denied',
+    ]);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatementDeniedNotification::class,
+    );
+});
+
 test('super administrator can deny pending reinstatement petition', function () {
     Notification::fake();
 
@@ -518,6 +595,90 @@ test('super administrator can exceptionally reinstate directly to active members
         function (MembershipReinstatedNotification $notification): bool {
             return $notification->reason === 'Exceptional evidence supports direct reinstatement without a probation period.';
         }
+    );
+});
+
+test('super administrator who loses authority after component mount cannot reinstate banned member on probation', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'stale-authority-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'stale-authority-banned-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', ['user' => $member]);
+
+    /*
+     * Simulate another request removing Super Administrator authority
+     * after this Livewire component was mounted.
+     */
+    $superAdmin->is_super_admin = false;
+    $superAdmin->save();
+    expect($superAdmin->fresh()->is_super_admin)->toBeFalse();
+
+    $component
+        ->set(
+            'reinstatementProbationReason',
+            'This stale request must not reinstate the banned member.'
+        )
+        ->set(
+            'reinstatementProbationRequirements',
+            'These probation requirements must never be applied.'
+        )
+        ->set('reinstatementProbationReviewDays', '90')
+        ->call('reinstateWithProbation')
+        ->assertForbidden();
+
+    $member->refresh();
+    $ban->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'probation',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_probation',
+    ]);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipProbationNotification::class,
     );
 });
 
@@ -2288,4 +2449,86 @@ test('administrative hold ban does not transfer shared IP ban identifier from fi
     expect($secondMember->fresh()->membership_status)->toBe('banned')
         ->and($existingIdentifier->user_id)->toBe($firstMember->id)
         ->and($existingIdentifier->membership_enforcement_id)->toBe($firstBan->id);
+});
+
+test('super administrator who loses authority after component mount cannot reinstate banned member to good standing', function () {
+    Notification::fake();
+
+    $superAdmin = banLifecycleUser([
+        'is_super_admin' => true,
+        'email' => 'stale-good-standing-super-admin@example.com',
+    ]);
+
+    $member = banLifecycleUser([
+        'membership_status' => 'banned',
+        'email' => 'stale-good-standing-member@example.com',
+    ]);
+
+    $ban = activeBan($member, [
+        'review_requested_at' => now()->subDay(),
+        'member_response' => 'Please consider my reinstatement petition.',
+        'member_responded_at' => now()->subDay(),
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'created_by' => $superAdmin->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+        'reason' => $ban->reason,
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    /*
+     * Simulate another request removing Super Administrator authority
+     * after this Livewire component was mounted.
+     */
+    $superAdmin->is_super_admin = false;
+    $superAdmin->save();
+
+    expect($superAdmin->fresh()->is_super_admin)->toBeFalse();
+
+    $component
+        ->set(
+            'unbanReason',
+            'This stale request must not directly reinstate the banned member.'
+        )
+        ->call('reinstateToGoodStanding')
+        ->assertForbidden();
+
+    $member->refresh();
+    $ban->refresh();
+
+    expect($member->membership_status)->toBe('banned')
+        ->and($ban->status)->toBe('active')
+        ->and($ban->resolved_at)->toBeNull()
+        ->and($ban->resolved_by)->toBeNull();
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'reinstated_good_standing',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_reinstated_good_standing',
+    ]);
+
+    $this->assertDatabaseHas('ban_identifiers', [
+        'user_id' => $member->id,
+        'membership_enforcement_id' => $ban->id,
+        'type' => 'email',
+        'value' => strtolower($member->email),
+    ]);
+
+    Notification::assertNotSentTo(
+        $member,
+        MembershipReinstatedNotification::class,
+    );
 });

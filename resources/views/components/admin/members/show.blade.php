@@ -195,7 +195,7 @@ class extends Component
 
     public function issueWarning(): void
     {
-        $actor = auth()->user();
+        $actor = auth()->user()?->fresh();
 
         if (
             $actor === null
@@ -1413,7 +1413,7 @@ class extends Component
     public function suspendMembership(): void
     {
 
-        $actor = auth()->user();
+        $actor = auth()->user()?->fresh();
 
         if (
             $actor === null
@@ -2274,7 +2274,7 @@ class extends Component
 
     public function reinstateWithProbation(): void
     {
-        $actor = auth()->user();
+        $actor = auth()->user()?->fresh();
 
         if (
             $actor === null
@@ -2672,7 +2672,9 @@ class extends Component
 
     private function ensureAdministrator(): void
     {
-        if (! auth()->user()?->isAdministrator()) {
+        $actor = auth()->user()?->fresh();
+
+        if ($actor === null || ! $actor->isAdministrator()) {
             abort(403);
         }
     }
@@ -2689,7 +2691,7 @@ class extends Component
 
     private function ensureCanEnforceTarget(): void
     {
-        $actor = auth()->user();
+        $actor = auth()->user()?->fresh();
 
         if ($actor === null || $this->staffRank($actor) <= $this->staffRank($this->user)) {
             abort(403);
@@ -2712,7 +2714,7 @@ class extends Component
 
     private function ensureCanManageAdministratorTarget(): void
     {
-        $actor = auth()->user();
+        $actor = auth()->user()?->fresh();
 
         if ($actor === null || ! $actor->is_super_admin || $this->user->is_super_admin) {
             abort(403);
@@ -5351,4 +5353,5 @@ $canSuspendMembership = $membershipEnforcementActor !== null
 
     </div>
 </section>
+
 

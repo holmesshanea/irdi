@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\StaffActivityLog;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
@@ -353,4 +354,136 @@ test('administrator cannot make a stale target moderator after the target become
 
     expect($member->is_admin)->toBeTrue()
         ->and($member->is_moderator)->toBeFalse();
+});
+
+test('stale administrator cannot make member moderator after administrator access is revoked', function () {
+    $administrator = User::factory()->create([
+        'is_admin' => true,
+        'is_super_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $member = User::factory()->create([
+        'is_admin' => false,
+        'is_super_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate another authorized actor revoking this administrator's
+    // access after the component was initialized.
+    User::query()
+        ->whereKey($administrator->id)
+        ->update([
+            'is_admin' => false,
+        ]);
+
+    $component
+        ->call('makeModerator')
+        ->assertForbidden();
+
+    expect($administrator->fresh()->is_admin)->toBeFalse()
+        ->and($member->fresh()->is_moderator)->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'moderator_assigned')
+            ->exists()
+    )->toBeFalse();
+});
+
+test('stale super administrator cannot make member administrator after super administrator access is revoked', function () {
+    $superAdmin = activeStaffUser([
+        'is_super_admin' => true,
+        'is_admin' => false,
+    ]);
+
+    $member = activeStaffUser([
+        'is_super_admin' => false,
+        'is_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $this->actingAs($superAdmin);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate Super Administrator access being revoked elsewhere
+    // after this component was initialized.
+    User::query()
+        ->whereKey($superAdmin->id)
+        ->update([
+            'is_super_admin' => false,
+        ]);
+
+    $component
+        ->call('makeAdministrator')
+        ->assertForbidden();
+
+    expect($superAdmin->fresh()->is_super_admin)->toBeFalse()
+        ->and($member->fresh()->is_admin)->toBeFalse();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'administrator_assigned')
+            ->exists()
+    )->toBeFalse();
+});
+
+test('stale administrator cannot disable messaging after administrator access is revoked', function () {
+    $administrator = activeStaffUser([
+        'is_admin' => true,
+        'is_super_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $member = activeStaffUser([
+        'is_admin' => false,
+        'is_super_admin' => false,
+        'is_moderator' => false,
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Revoke the actor's authority after the component was initialized.
+    User::query()
+        ->whereKey($administrator->id)
+        ->update([
+            'is_admin' => false,
+        ]);
+
+    $component
+        ->set('restrictionType', '7_days')
+        ->set(
+            'enforcementReason',
+            'This stale administrator must not be able to restrict messaging.'
+        )
+        ->call('disableMessaging')
+        ->assertForbidden();
+
+    $member->refresh();
+
+    expect($administrator->fresh()->is_admin)->toBeFalse()
+        ->and($member->messaging_disabled_at)->toBeNull()
+        ->and($member->messaging_disabled_until)->toBeNull();
+
+    expect(
+        StaffActivityLog::query()
+            ->where('target_user_id', $member->id)
+            ->where('action', 'messaging_disabled')
+            ->exists()
+    )->toBeFalse();
 });

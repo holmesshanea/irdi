@@ -2311,3 +2311,56 @@ test('restored member cannot request review of a previously active suspension', 
     expect($member->fresh()->membership_status)->toBe('active')
         ->and($suspension->review_requested_at)->toBeNull();
 });
+
+test('stale administrator cannot suspend member after administrator access is revoked', function () {
+    Notification::fake();
+
+    $administrator = suspensionUser([
+        'is_admin' => true,
+    ]);
+
+    $member = suspensionUser([
+        'membership_status' => 'active',
+    ]);
+
+    $this->actingAs($administrator);
+
+    $component = Livewire::test('admin.members.show', [
+        'user' => $member,
+    ]);
+
+    // Simulate the administrator losing authorization after the
+    // Livewire component was mounted.
+    $administrator->newQuery()
+        ->whereKey($administrator->id)
+        ->update([
+            'is_admin' => false,
+        ]);
+
+    // Prove the authenticated model held by this request is stale.
+    expect($administrator->is_admin)->toBeTrue();
+
+    $component
+        ->set(
+            'suspensionReason',
+            'This stale administrator must not be able to suspend an active membership.'
+        )
+        ->set('suspensionReviewPeriod', '90')
+        ->call('suspendMembership')
+        ->assertForbidden();
+
+    expect($administrator->fresh()->is_admin)->toBeFalse()
+        ->and($member->fresh()->membership_status)->toBe('active');
+
+    $this->assertDatabaseMissing('membership_enforcements', [
+        'user_id' => $member->id,
+        'action' => 'suspended',
+    ]);
+
+    $this->assertDatabaseMissing('staff_activity_logs', [
+        'target_user_id' => $member->id,
+        'action' => 'membership_suspended',
+    ]);
+
+    Notification::assertNothingSent();
+});
