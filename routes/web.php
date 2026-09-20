@@ -40,6 +40,9 @@ Route::livewire('/statistics', 'pages::statistics')
 Route::view('/faq', 'pages.faq')
     ->name('faq');
 
+Route::view('/member-manual', 'pages.member-manual')
+    ->name('member-manual');
+
 Route::view('/contact', 'pages.contact')
     ->name('contact');
 

@@ -1,4 +1,4 @@
-<x-layouts.public :noindex="true">
+<x-layouts.public>
 
     {{-- Hero --}}
     <section class="relative overflow-hidden bg-irdi-green">
@@ -164,7 +164,7 @@
                         <div class="mt-3 h-1 w-16 bg-irdi-gold"></div>
 
                         <p class="mt-5 text-lg leading-8 text-zinc-600">
-                            {{ __('This manual explains the member features available through your IRDI account and how to use them. It is designed to help you manage your membership, maintain your Member Profile, communicate with other members, request Property Owner Feedback, and understand the information associated with your IRDI membership.') }}
+                            {{ __('This public manual explains IRDI membership and the member features available through an IRDI account. You can read it before creating an account and return to it whenever you need help with membership, your Member Profile, the Member Directory, messaging, Property Owner Feedback, or member resources.') }}
                         </p>
 
                     </div>
@@ -305,27 +305,44 @@
 
                         <div class="mt-6 flex flex-wrap gap-3">
 
-                            <flux:button
-                                href="{{ route('membership.join') }}"
-                                variant="primary"
-                                icon="shield-check"
-                            >
-                                {{ __('Membership') }}
-                            </flux:button>
+                            @auth
+                                <flux:button
+                                    href="{{ route('membership.join') }}"
+                                    variant="primary"
+                                    icon="shield-check"
+                                >
+                                    {{ __('Membership') }}
+                                </flux:button>
 
-                            <flux:button
-                                href="{{ route('code-of-ethics') }}"
-                                variant="outline"
-                            >
-                                {{ __('Code of Ethics') }}
-                            </flux:button>
+                                <flux:button
+                                    href="{{ route('code-of-ethics') }}"
+                                    variant="outline"
+                                >
+                                    {{ __('Code of Ethics') }}
+                                </flux:button>
 
-                            <flux:button
-                                href="{{ route('best-practices') }}"
-                                variant="outline"
-                            >
-                                {{ __('Best Practices') }}
-                            </flux:button>
+                                <flux:button
+                                    href="{{ route('best-practices') }}"
+                                    variant="outline"
+                                >
+                                    {{ __('Best Practices') }}
+                                </flux:button>
+                            @else
+                                <flux:button
+                                    href="{{ route('register') }}"
+                                    variant="primary"
+                                    icon="user-plus"
+                                >
+                                    {{ __('Create an Account') }}
+                                </flux:button>
+
+                                <flux:button
+                                    href="{{ route('login') }}"
+                                    variant="outline"
+                                >
+                                    {{ __('Log In') }}
+                                </flux:button>
+                            @endauth
 
                         </div>
 
@@ -421,14 +438,31 @@
 
                         </div>
 
-                        <div class="mt-6">
-                            <flux:button
-                                href="{{ route('account') }}"
-                                variant="primary"
-                                icon="user"
-                            >
-                                {{ __('Go to My Account') }}
-                            </flux:button>
+                        <div class="mt-6 flex flex-wrap gap-3">
+                            @auth
+                                <flux:button
+                                    href="{{ route('account') }}"
+                                    variant="primary"
+                                    icon="user"
+                                >
+                                    {{ __('Go to My Account') }}
+                                </flux:button>
+                            @else
+                                <flux:button
+                                    href="{{ route('register') }}"
+                                    variant="primary"
+                                    icon="user-plus"
+                                >
+                                    {{ __('Create an Account') }}
+                                </flux:button>
+
+                                <flux:button
+                                    href="{{ route('login') }}"
+                                    variant="outline"
+                                >
+                                    {{ __('Log In') }}
+                                </flux:button>
+                            @endauth
                         </div>
 
                     </section>
@@ -484,27 +518,29 @@
                             {{ __('IRDI considers the profile complete when a profile image, city, state or province, country, and biography have been provided.') }}
                         </p>
 
-                        @if (! auth()->user()->memberProfile && auth()->user()->membership_status === 'active')
-                            <div class="mt-6">
-                                <flux:button
-                                    href="{{ route('member-profiles.create') }}"
-                                    variant="primary"
-                                    icon="user-plus"
-                                >
-                                    {{ __('Create My Member Profile') }}
-                                </flux:button>
-                            </div>
-                        @elseif (auth()->user()->memberProfile)
-                            <div class="mt-6">
-                                <flux:button
-                                    href="{{ route('account.profiles.edit', auth()->user()->memberProfile) }}"
-                                    variant="primary"
-                                    icon="pencil-square"
-                                >
-                                    {{ __('Edit My Profile') }}
-                                </flux:button>
-                            </div>
-                        @endif
+                        @auth
+                            @if (! auth()->user()->memberProfile && auth()->user()->membership_status === 'active')
+                                <div class="mt-6">
+                                    <flux:button
+                                        href="{{ route('member-profiles.create') }}"
+                                        variant="primary"
+                                        icon="user-plus"
+                                    >
+                                        {{ __('Create My Member Profile') }}
+                                    </flux:button>
+                                </div>
+                            @elseif (auth()->user()->memberProfile)
+                                <div class="mt-6">
+                                    <flux:button
+                                        href="{{ route('account.profiles.edit', auth()->user()->memberProfile) }}"
+                                        variant="primary"
+                                        icon="pencil-square"
+                                    >
+                                        {{ __('Edit My Profile') }}
+                                    </flux:button>
+                                </div>
+                            @endif
+                        @endauth
 
                     </section>
 
@@ -568,17 +604,19 @@
                             </p>
                         </div>
 
-                        @if (auth()->user()->memberProfile && auth()->user()->isInGoodStanding())
-                            <div class="mt-6">
-                                <flux:button
-                                    href="{{ route('member-profiles.card', auth()->user()->memberProfile) }}"
-                                    variant="outline"
-                                    icon="identification"
-                                >
-                                    {{ __('View My Member Card') }}
-                                </flux:button>
-                            </div>
-                        @endif
+                        @auth
+                            @if (auth()->user()->memberProfile && auth()->user()->isInGoodStanding())
+                                <div class="mt-6">
+                                    <flux:button
+                                        href="{{ route('member-profiles.card', auth()->user()->memberProfile) }}"
+                                        variant="outline"
+                                        icon="identification"
+                                    >
+                                        {{ __('View My Member Card') }}
+                                    </flux:button>
+                                </div>
+                            @endif
+                        @endauth
 
                     </section>
 
@@ -625,15 +663,17 @@
                             {{ __('The Messages area provides separate Inbox and Sent views for managing your IRDI member conversations.') }}
                         </p>
 
-                        <div class="mt-6">
-                            <flux:button
-                                href="{{ route('messages.index') }}"
-                                variant="primary"
-                                icon="envelope"
-                            >
-                                {{ __('Open Messages') }}
-                            </flux:button>
-                        </div>
+                        @auth
+                            <div class="mt-6">
+                                <flux:button
+                                    href="{{ route('messages.index') }}"
+                                    variant="primary"
+                                    icon="envelope"
+                                >
+                                    {{ __('Open Messages') }}
+                                </flux:button>
+                            </div>
+                        @endauth
 
                     </section>
 
@@ -698,15 +738,17 @@
                             {{ __('IRDI verifies the reviewer’s access to the submitted email address, but does not independently verify property ownership or guarantee the accuracy of a review.') }}
                         </p>
 
-                        <div class="mt-6">
-                            <flux:button
-                                href="{{ route('account.reviews') }}"
-                                variant="primary"
-                                icon="star"
-                            >
-                                {{ __('My Property Owner Feedback') }}
-                            </flux:button>
-                        </div>
+                        @auth
+                            <div class="mt-6">
+                                <flux:button
+                                    href="{{ route('account.reviews') }}"
+                                    variant="primary"
+                                    icon="star"
+                                >
+                                    {{ __('My Property Owner Feedback') }}
+                                </flux:button>
+                            </div>
+                        @endauth
 
                     </section>
 
@@ -729,17 +771,19 @@
                             {{ __('Active IRDI members have access to member resources covering IRDI standards, responsible detecting guidance, Good Standing, accountability, and member verification.') }}
                         </p>
 
-                        @if (auth()->user()->membership_status === 'active')
-                            <div class="mt-6">
-                                <flux:button
-                                    href="{{ route('resources') }}"
-                                    variant="primary"
-                                    icon="book-open"
-                                >
-                                    {{ __('Open Member Resources') }}
-                                </flux:button>
-                            </div>
-                        @endif
+                        @auth
+                            @if (auth()->user()->membership_status === 'active')
+                                <div class="mt-6">
+                                    <flux:button
+                                        href="{{ route('resources') }}"
+                                        variant="primary"
+                                        icon="book-open"
+                                    >
+                                        {{ __('Open Member Resources') }}
+                                    </flux:button>
+                                </div>
+                            @endif
+                        @endauth
 
                     </section>
 
@@ -843,15 +887,17 @@
 
                         </div>
 
-                        <div class="mt-6">
-                            <flux:button
-                                href="{{ route('account.delete') }}"
-                                variant="danger"
-                                icon="trash"
-                            >
-                                {{ __('Delete My Account') }}
-                            </flux:button>
-                        </div>
+                        @auth
+                            <div class="mt-6">
+                                <flux:button
+                                    href="{{ route('account.delete') }}"
+                                    variant="danger"
+                                    icon="trash"
+                                >
+                                    {{ __('Delete My Account') }}
+                                </flux:button>
+                            </div>
+                        @endauth
 
                     </section>
 
@@ -912,14 +958,31 @@
                                 {{ __('IRDI membership represents an ongoing commitment to ethical detecting, responsible stewardship, respect for landowners, and protecting our shared history.') }}
                             </p>
 
-                            <div class="mt-6">
-                                <flux:button
-                                    href="{{ route('account') }}"
-                                    variant="primary"
-                                    icon="user"
-                                >
-                                    {{ __('Return to My Account') }}
-                                </flux:button>
+                            <div class="mt-6 flex flex-wrap justify-center gap-3">
+                                @auth
+                                    <flux:button
+                                        href="{{ route('account') }}"
+                                        variant="primary"
+                                        icon="user"
+                                    >
+                                        {{ __('Return to My Account') }}
+                                    </flux:button>
+                                @else
+                                    <flux:button
+                                        href="{{ route('register') }}"
+                                        variant="primary"
+                                        icon="user-plus"
+                                    >
+                                        {{ __('Create an IRDI Account') }}
+                                    </flux:button>
+
+                                    <flux:button
+                                        href="{{ route('login') }}"
+                                        variant="outline"
+                                    >
+                                        {{ __('Log In') }}
+                                    </flux:button>
+                                @endauth
                             </div>
 
                         </div>
