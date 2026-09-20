@@ -221,6 +221,15 @@
             {{ __('common.faq') }}
         </flux:navbar.item>
 
+        @if (! auth()->check() || ! $isStaff)
+            <flux:navbar.item
+                href="{{ route('member-manual') }}"
+                :current="request()->routeIs('member-manual')"
+            >
+                {{ __('Member Manual') }}
+            </flux:navbar.item>
+        @endif
+
         <flux:navbar.item
             href="{{ route('contact') }}"
             :current="request()->routeIs('contact')"
@@ -332,15 +341,6 @@
                         >
                             {{ __('common.account') }}
                         </flux:navmenu.item>
-
-                        @if ($navUser->isMember())
-                            <flux:navmenu.item
-                                href="{{ route('member-manual') }}"
-                                icon="book-open"
-                            >
-                                {{ __('Member Manual') }}
-                            </flux:navmenu.item>
-                        @endif
 
                         @if ($navProfile)
                             <flux:navmenu.item
@@ -539,6 +539,16 @@
             {{ __('common.faq') }}
         </flux:sidebar.item>
 
+        @if (! auth()->check() || ! $isStaff)
+            <flux:sidebar.item
+                href="{{ route('member-manual') }}"
+                :current="request()->routeIs('member-manual')"
+                icon="book-open"
+            >
+                {{ __('Member Manual') }}
+            </flux:sidebar.item>
+        @endif
+
         <flux:sidebar.item
             href="{{ route('contact') }}"
             :current="request()->routeIs('contact')"
@@ -684,16 +694,6 @@
             >
                 {{ __('common.account') }}
             </flux:sidebar.item>
-
-            @if ($navUser->isMember())
-                <flux:sidebar.item
-                    href="{{ route('member-manual') }}"
-                    :current="request()->routeIs('member-manual')"
-                    icon="book-open"
-                >
-                    {{ __('Member Manual') }}
-                </flux:sidebar.item>
-            @endif
 
             @if ($navUser->membership_status === 'active')
 

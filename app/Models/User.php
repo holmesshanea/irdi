@@ -95,14 +95,6 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
             : (string) config('locales.default', 'en');
     }
 
-    public function isMember(): bool
-    {
-        return $this->membership_status === 'active'
-            && ! $this->is_super_admin
-            && ! $this->is_admin
-            && ! $this->is_moderator;
-    }
-
     public function isModerator(): bool
     {
         return (bool) $this->is_moderator;
