@@ -335,7 +335,11 @@
 
                     </div>
 
-                    <livewire:membership.best-practices-agreement />
+                    @auth
+                        @if (auth()->user()->hasVerifiedEmail())
+                            <livewire:membership.best-practices-agreement />
+                        @endif
+                    @endauth
 
                 </flux:card>
 
@@ -350,11 +354,11 @@
                     </flux:button>
 
                     <flux:button
-                        href="{{ route('account') }}"
+                        href="{{ route('resources') }}"
                         variant="outline"
                         icon="arrow-left"
                     >
-                        {{ __('Back to Account') }}
+                        {{ __('Back to Resources') }}
                     </flux:button>
 
                 </div>

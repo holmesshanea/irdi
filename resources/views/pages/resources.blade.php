@@ -1,6 +1,6 @@
 <x-layouts.public
     title="{{ __('Resources | IRDI') }}"
-    description="{{ __('Member resources from the International Responsible Detectorist Institute, including ethical standards, best practices, educational materials, and responsible detecting guidance.') }}"
+    description="{{ __('Resources from the International Responsible Detectorist Institute, including ethical standards, best practices, frequently asked questions, the IRDI Manual, and responsible detecting guidance.') }}"
 >
 
     {{-- Resources Hero --}}
@@ -56,7 +56,7 @@
                     <div class="mt-2 h-1 w-16 bg-irdi-gold"></div>
 
                     <p class="mt-4 text-zinc-600">
-                        {{ __('Standards and guidance that help IRDI members understand their commitments, maintain Good Standing, and practice responsible detecting.') }}
+                        {{ __('Explore IRDI standards, guidance, frequently asked questions, and practical information for members, prospective members, and the public.') }}
                     </p>
 
                 </div>
@@ -120,6 +120,62 @@
                         </div>
 
                     </flux:card>
+
+                    {{-- FAQ --}}
+                    <flux:card
+                        class="flex h-full flex-col p-6 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                    >
+                        <div class="flex size-11 items-center justify-center rounded-lg bg-irdi-green/10 text-irdi-green">
+                            <flux:icon.question-mark-circle class="size-6" />
+                        </div>
+
+                        <h3 class="mt-5 text-xl font-semibold text-irdi-green">
+                            {{ __('Frequently Asked Questions') }}
+                        </h3>
+
+                        <p class="mt-3 flex-1 text-sm leading-6 text-zinc-600">
+                            {{ __('Find answers to common questions about IRDI, membership, responsible detecting, profiles, and using the website.') }}
+                        </p>
+
+                        <div class="mt-6">
+                            <flux:button
+                                href="{{ route('faq') }}"
+                                variant="outline"
+                                icon="question-mark-circle"
+                            >
+                                {{ __('View FAQ') }}
+                            </flux:button>
+                        </div>
+                    </flux:card>
+
+                    {{-- IRDI Manual --}}
+                    @if (! auth()->check() || ! auth()->user()->isModeratorOrAdministrator())
+                        <flux:card
+                            class="flex h-full flex-col p-6 transition duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+                        >
+                            <div class="flex size-11 items-center justify-center rounded-lg bg-irdi-green/10 text-irdi-green">
+                                <flux:icon.book-open class="size-6" />
+                            </div>
+
+                            <h3 class="mt-5 text-xl font-semibold text-irdi-green">
+                                {{ __('IRDI Manual') }}
+                            </h3>
+
+                            <p class="mt-3 flex-1 text-sm leading-6 text-zinc-600">
+                                {{ __('Learn how to use IRDI, create and manage an account, become a member, build profiles, use member features, and understand the public directory.') }}
+                            </p>
+
+                            <div class="mt-6">
+                                <flux:button
+                                    href="{{ route('member-manual') }}"
+                                    variant="outline"
+                                    icon="book-open"
+                                >
+                                    {{ __('View IRDI Manual') }}
+                                </flux:button>
+                            </div>
+                        </flux:card>
+                    @endif
 
                     {{-- Membership and Good Standing --}}
                     <flux:card

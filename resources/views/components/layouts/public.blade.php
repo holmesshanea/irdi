@@ -214,21 +214,55 @@
             {{ __('common.statistics') }}
         </flux:navbar.item>
 
-        <flux:navbar.item
-            href="{{ route('faq') }}"
-            :current="request()->routeIs('faq')"
-        >
-            {{ __('common.faq') }}
-        </flux:navbar.item>
-
-        @if (! auth()->check() || ! $isStaff)
-            <flux:navbar.item
-                href="{{ route('member-manual') }}"
-                :current="request()->routeIs('member-manual')"
+        <flux:dropdown position="bottom" align="start">
+            <flux:button
+                variant="ghost"
+                icon-trailing="chevron-down"
             >
-                {{ __('Member Manual') }}
-            </flux:navbar.item>
-        @endif
+                {{ __('common.resources') }}
+            </flux:button>
+
+            <flux:navmenu class="min-w-56">
+                <flux:navmenu.item
+                    href="{{ route('resources') }}"
+                    icon="book-open"
+                >
+                    {{ __('common.resources') }}
+                </flux:navmenu.item>
+
+                <flux:navmenu.separator />
+
+                <flux:navmenu.item
+                    href="{{ route('code-of-ethics') }}"
+                    icon="document-text"
+                >
+                    {{ __('Code of Ethics') }}
+                </flux:navmenu.item>
+
+                <flux:navmenu.item
+                    href="{{ route('best-practices') }}"
+                    icon="check-badge"
+                >
+                    {{ __('Best Practices') }}
+                </flux:navmenu.item>
+
+                <flux:navmenu.item
+                    href="{{ route('faq') }}"
+                    icon="question-mark-circle"
+                >
+                    {{ __('common.faq') }}
+                </flux:navmenu.item>
+
+                @if (! auth()->check() || ! $isStaff)
+                    <flux:navmenu.item
+                        href="{{ route('member-manual') }}"
+                        icon="book-open"
+                    >
+                        {{ __('IRDI Manual') }}
+                    </flux:navmenu.item>
+                @endif
+            </flux:navmenu>
+        </flux:dropdown>
 
         <flux:navbar.item
             href="{{ route('contact') }}"
@@ -301,18 +335,6 @@
 
         {{-- Authenticated navigation --}}
         @auth
-
-            @if ($navUser->membership_status === 'active')
-
-                <flux:navbar.item
-                    href="{{ route('resources') }}"
-                    :current="request()->routeIs('resources')"
-                    icon="book-open"
-                >
-                    {{ __('common.resources') }}
-                </flux:navbar.item>
-
-            @endif
 
             <div class="ml-3 border-l border-zinc-300 pl-3">
                 <flux:dropdown position="bottom" align="end">
@@ -532,9 +554,40 @@
             {{ __('common.statistics') }}
         </flux:sidebar.item>
 
+        <div class="my-4 border-t border-zinc-200"></div>
+
+        <div class="px-3 pb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            {{ __('common.resources') }}
+        </div>
+
+        <flux:sidebar.item
+            href="{{ route('resources') }}"
+            :current="request()->routeIs('resources')"
+            icon="book-open"
+        >
+            {{ __('common.resources') }}
+        </flux:sidebar.item>
+
+        <flux:sidebar.item
+            href="{{ route('code-of-ethics') }}"
+            :current="request()->routeIs('code-of-ethics')"
+            icon="document-text"
+        >
+            {{ __('Code of Ethics') }}
+        </flux:sidebar.item>
+
+        <flux:sidebar.item
+            href="{{ route('best-practices') }}"
+            :current="request()->routeIs('best-practices')"
+            icon="check-badge"
+        >
+            {{ __('Best Practices') }}
+        </flux:sidebar.item>
+
         <flux:sidebar.item
             href="{{ route('faq') }}"
             :current="request()->routeIs('faq')"
+            icon="question-mark-circle"
         >
             {{ __('common.faq') }}
         </flux:sidebar.item>
@@ -545,7 +598,7 @@
                 :current="request()->routeIs('member-manual')"
                 icon="book-open"
             >
-                {{ __('Member Manual') }}
+                {{ __('IRDI Manual') }}
             </flux:sidebar.item>
         @endif
 
@@ -694,18 +747,6 @@
             >
                 {{ __('common.account') }}
             </flux:sidebar.item>
-
-            @if ($navUser->membership_status === 'active')
-
-                <flux:sidebar.item
-                    href="{{ route('resources') }}"
-                    :current="request()->routeIs('resources')"
-                    icon="document-text"
-                >
-                    {{ __('common.resources') }}
-                </flux:sidebar.item>
-
-            @endif
 
             @if ($navProfile)
                 <flux:sidebar.item

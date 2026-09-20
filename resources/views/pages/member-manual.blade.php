@@ -14,7 +14,7 @@
                 </p>
 
                 <h1 class="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-                    {{ __('Member Manual') }}
+                    {{ __('IRDI Manual') }}
                 </h1>
 
                 <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-zinc-200">
@@ -49,7 +49,7 @@
 
                             <nav
                                 class="mt-5 space-y-1 text-sm"
-                                aria-label="{{ __('Member Manual') }}"
+                                aria-label="{{ __('IRDI Manual') }}"
                             >
 
                                 <a
@@ -119,7 +119,7 @@
                                     href="#resources"
                                     class="block rounded-lg px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-irdi-green"
                                 >
-                                    {{ __('10. Member Resources') }}
+                                    {{ __('10. Resources') }}
                                 </a>
 
                                 <a
@@ -764,26 +764,22 @@
                         </p>
 
                         <h2 class="mt-2 text-2xl font-bold text-irdi-green">
-                            {{ __('Member Resources') }}
+                            {{ __('Resources') }}
                         </h2>
 
                         <p class="mt-4 leading-7 text-zinc-600">
-                            {{ __('Active IRDI members have access to member resources covering IRDI standards, responsible detecting guidance, Good Standing, accountability, and member verification.') }}
+                            {{ __('IRDI Resources provides public access to the Code of Ethics, Best Practices, frequently asked questions, the IRDI Manual, membership guidance, and member verification information.') }}
                         </p>
 
-                        @auth
-                            @if (auth()->user()->membership_status === 'active')
-                                <div class="mt-6">
-                                    <flux:button
-                                        href="{{ route('resources') }}"
-                                        variant="primary"
-                                        icon="book-open"
-                                    >
-                                        {{ __('Open Member Resources') }}
-                                    </flux:button>
-                                </div>
-                            @endif
-                        @endauth
+                        <div class="mt-6">
+                            <flux:button
+                                href="{{ route('resources') }}"
+                                variant="primary"
+                                icon="book-open"
+                            >
+                                {{ __('Open Resources') }}
+                            </flux:button>
+                        </div>
 
                     </section>
 

@@ -43,6 +43,12 @@ Route::view('/faq', 'pages.faq')
 Route::view('/member-manual', 'pages.member-manual')
     ->name('member-manual');
 
+Route::view('/code-of-ethics', 'pages.code-of-ethics')
+    ->name('code-of-ethics');
+
+Route::view('/best-practices', 'pages.best-practices')
+    ->name('best-practices');
+
 Route::view('/contact', 'pages.contact')
     ->name('contact');
 
@@ -164,12 +170,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::livewire('/membership/join', 'membership.join')
         ->name('membership.join');
-
-    Route::view('/code-of-ethics', 'pages.code-of-ethics')
-        ->name('code-of-ethics');
-
-    Route::view('/best-practices', 'pages.best-practices')
-        ->name('best-practices');
 
     /*
     |--------------------------------------------------------------------------
