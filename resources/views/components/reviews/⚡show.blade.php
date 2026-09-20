@@ -6,6 +6,7 @@ use App\Models\PropertyReviewInvitation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -96,6 +97,19 @@ class extends Component
             abort(404);
         }
 
+        $rateLimitKey = 'property-review-verification-send:'.$this->invitation->id;
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+
+            $this->addError(
+                'verificationCode',
+                'Too many verification codes have been requested. Please try again in '.$seconds.' seconds.'
+            );
+
+            return;
+        }
+
         $code = (string) random_int(100000, 999999);
 
         $this->invitation->update([
@@ -111,6 +125,8 @@ class extends Component
                 code: $code,
             ))->locale(app()->getLocale())
         );
+
+        RateLimiter::hit($rateLimitKey, 600);
 
         $this->verificationCode = '';
         $this->codeSent = true;
@@ -130,6 +146,21 @@ class extends Component
         }
 
         if ($this->invitation->isExpired()) {
+            return;
+        }
+
+        $rateLimitKey = 'property-review-verification-attempt:'.$this->invitation->id;
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+
+            $this->addError(
+                'verificationCode',
+                __('Too many incorrect verification attempts. Please try again in :seconds seconds.', [
+                    'seconds' => $seconds,
+                ])
+            );
+
             return;
         }
 
@@ -160,6 +191,8 @@ class extends Component
                 $this->invitation->verification_code_hash
             )
         ) {
+            RateLimiter::hit($rateLimitKey, 600);
+
             $this->addError(
                 'verificationCode',
                 __('The verification code is incorrect.')
@@ -167,6 +200,8 @@ class extends Component
 
             return;
         }
+
+        RateLimiter::clear($rateLimitKey);
 
         $this->invitation->update([
             'email_verified_at' => now(),

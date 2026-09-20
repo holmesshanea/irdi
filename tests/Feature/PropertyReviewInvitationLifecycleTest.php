@@ -472,3 +472,62 @@ test('expired invitation cannot send verification code', function () {
 
     Mail::assertNotSent(PropertyReviewVerificationCodeMail::class);
 });
+
+test('property review verification code sending is rate limited', function () {
+    Mail::fake();
+
+    $profile = propertyReviewInvitationProfile();
+
+    $invitation = propertyReviewInvitation($profile);
+
+    $component = Livewire::test('reviews.show', [
+        'token' => $invitation->token,
+    ]);
+
+    for ($attempt = 1; $attempt <= 3; $attempt++) {
+        $component->call('sendVerificationCode');
+    }
+
+    Mail::assertSent(
+        PropertyReviewVerificationCodeMail::class,
+        3
+    );
+
+    $component
+        ->call('sendVerificationCode')
+        ->assertHasErrors(['verificationCode']);
+
+    Mail::assertSent(
+        PropertyReviewVerificationCodeMail::class,
+        3
+    );
+});
+
+test('property review verification code guessing is rate limited', function () {
+    $profile = propertyReviewInvitationProfile();
+
+    $invitation = propertyReviewInvitation($profile, [
+        'verification_code_hash' => Hash::make('123456'),
+        'verification_expires_at' => now()->addMinutes(10),
+    ]);
+
+    $component = Livewire::test('reviews.show', [
+        'token' => $invitation->token,
+    ]);
+
+    for ($attempt = 1; $attempt <= 5; $attempt++) {
+        $component
+            ->set('verificationCode', '654321')
+            ->call('verifyCode')
+            ->assertHasErrors(['verificationCode']);
+    }
+
+    expect($invitation->fresh()->email_verified_at)->toBeNull();
+
+    $component
+        ->set('verificationCode', '123456')
+        ->call('verifyCode')
+        ->assertHasErrors(['verificationCode']);
+
+    expect($invitation->fresh()->email_verified_at)->toBeNull();
+});

@@ -142,7 +142,7 @@ class extends Component
                 },
             ],
             'bio' => ['nullable', 'string', 'max:1000'],
-            'website' => ['nullable', 'url', 'max:255'],
+            'website' => ['nullable', 'url:http,https', 'max:255'],
             'profileImage' => ['nullable', 'image', 'max:5120'],
         ], [
             'profileImage.max' => __('The profile image must be 5 MB or smaller.'),
