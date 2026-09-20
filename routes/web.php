@@ -38,7 +38,6 @@ Route::livewire('/statistics', 'pages::statistics')
     ->name('statistics');
 
 Route::view('/resources', 'pages.resources')
-    ->middleware('active-member')
     ->name('resources');
 
 Route::view('/faq', 'pages.faq')
