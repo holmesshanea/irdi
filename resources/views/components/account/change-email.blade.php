@@ -7,6 +7,8 @@ new class extends Component
 {
     public string $email = '';
 
+    public string $currentPassword = '';
+
     public function mount(): void
     {
         $this->email = auth()->user()->email;
@@ -24,6 +26,11 @@ new class extends Component
                 'email',
                 'max:255',
                 Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'currentPassword' => [
+                'required',
+                'string',
+                'current_password:web',
             ],
         ]);
 
@@ -43,6 +50,7 @@ new class extends Component
         $user->sendEmailVerificationNotification();
 
         $this->email = $email;
+        $this->currentPassword = '';
 
         session()->flash(
             'email-status',
@@ -81,6 +89,18 @@ new class extends Component
                 />
 
                 <flux:error name="email" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Current Password') }}</flux:label>
+
+                <flux:input
+                    wire:model="currentPassword"
+                    type="password"
+                    autocomplete="current-password"
+                />
+
+                <flux:error name="currentPassword" />
             </flux:field>
 
             <div>

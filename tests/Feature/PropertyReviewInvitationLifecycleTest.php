@@ -603,3 +603,49 @@ test('property review invitation resending is rate limited', function () {
         3
     );
 });
+
+test('rate limited property review invitation resend does not mutate invitation', function () {
+    Mail::fake();
+
+    $user = propertyReviewInvitationUser();
+    $profile = propertyReviewInvitationProfile($user);
+
+    $invitation = propertyReviewInvitation($profile, [
+        'reviewer_email' => 'property-owner@example.com',
+    ]);
+
+    $this->actingAs($user);
+
+    for ($attempt = 1; $attempt <= 3; $attempt++) {
+        $this->post(
+            route('account.review-invitations.resend', $invitation)
+        )->assertRedirect();
+    }
+
+    $invitation->refresh();
+
+    $token = $invitation->token;
+    $expiresAt = $invitation->expires_at?->toDateTimeString();
+    $verificationCodeHash = $invitation->verification_code_hash;
+    $verificationExpiresAt = $invitation->verification_expires_at?->toDateTimeString();
+    $emailVerifiedAt = $invitation->email_verified_at?->toDateTimeString();
+
+    $this->post(
+        route('account.review-invitations.resend', $invitation)
+    )->assertSessionHasErrors(['reviewer_email']);
+
+    $invitation->refresh();
+
+    expect($invitation->token)->toBe($token)
+        ->and($invitation->expires_at?->toDateTimeString())->toBe($expiresAt)
+        ->and($invitation->verification_code_hash)->toBe($verificationCodeHash)
+        ->and($invitation->verification_expires_at?->toDateTimeString())
+        ->toBe($verificationExpiresAt)
+        ->and($invitation->email_verified_at?->toDateTimeString())
+        ->toBe($emailVerifiedAt);
+
+    Mail::assertSent(
+        PropertyReviewInvitationMail::class,
+        3
+    );
+});

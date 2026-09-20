@@ -116,18 +116,6 @@ class PropertyReviewInvitationController extends Controller
             );
         }
 
-        $invitation->update([
-            'token' => Str::random(64),
-            'verification_code_hash' => null,
-            'verification_expires_at' => null,
-            'email_verified_at' => null,
-            'expires_at' => now()->addDays(30),
-        ]);
-
-        $reviewUrl = route('property-reviews.show', [
-            'token' => $invitation->token,
-        ]);
-
         $rateLimitKey = 'property-review-invitation-resend:'.$invitation->id;
 
         if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
@@ -139,6 +127,18 @@ class PropertyReviewInvitationController extends Controller
                 ]),
             ]);
         }
+
+        $invitation->update([
+            'token' => Str::random(64),
+            'verification_code_hash' => null,
+            'verification_expires_at' => null,
+            'email_verified_at' => null,
+            'expires_at' => now()->addDays(30),
+        ]);
+
+        $reviewUrl = route('property-reviews.show', [
+            'token' => $invitation->token,
+        ]);
 
         Mail::to($invitation->reviewer_email)->send(
             (new PropertyReviewInvitationMail(

@@ -22,6 +22,25 @@ class AddSecurityHeaders
             'camera=(), microphone=(), geolocation=()'
         );
 
+        $response->headers->set(
+            'Content-Security-Policy-Report-Only',
+            implode('; ', [
+                "default-src 'self'",
+                "base-uri 'self'",
+                "object-src 'none'",
+                "frame-ancestors 'self'",
+                "form-action 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+                "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
+                "font-src 'self' https://fonts.bunny.net data:",
+                "img-src 'self' data: blob:",
+                "connect-src 'self' ws: wss:",
+                "frame-src 'self'",
+                "media-src 'self'",
+                "worker-src 'self' blob:",
+            ])
+        );
+
         return $response;
     }
 }
