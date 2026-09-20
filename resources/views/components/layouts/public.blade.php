@@ -333,12 +333,14 @@
                             {{ __('common.account') }}
                         </flux:navmenu.item>
 
-                        <flux:navmenu.item
-                            href="{{ route('member-manual') }}"
-                            icon="book-open"
-                        >
-                            {{ __('Member Manual') }}
-                        </flux:navmenu.item>
+                        @if ($navUser->isMember())
+                            <flux:navmenu.item
+                                href="{{ route('member-manual') }}"
+                                icon="book-open"
+                            >
+                                {{ __('Member Manual') }}
+                            </flux:navmenu.item>
+                        @endif
 
                         @if ($navProfile)
                             <flux:navmenu.item
@@ -683,13 +685,15 @@
                 {{ __('common.account') }}
             </flux:sidebar.item>
 
-            <flux:sidebar.item
-                href="{{ route('member-manual') }}"
-                :current="request()->routeIs('member-manual')"
-                icon="book-open"
-            >
-                {{ __('Member Manual') }}
-            </flux:sidebar.item>
+            @if ($navUser->isMember())
+                <flux:sidebar.item
+                    href="{{ route('member-manual') }}"
+                    :current="request()->routeIs('member-manual')"
+                    icon="book-open"
+                >
+                    {{ __('Member Manual') }}
+                </flux:sidebar.item>
+            @endif
 
             @if ($navUser->membership_status === 'active')
 
