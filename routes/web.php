@@ -156,6 +156,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::view('/member-manual', 'pages.member-manual')
         ->name('member-manual');
+
+    Route::view('/member-manual', 'pages.member-manual')
+        ->name('member-manual');
     /*
     |--------------------------------------------------------------------------
     | Membership
