@@ -156,12 +156,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/resources', 'pages.resources')
         ->middleware('active-member')
         ->name('resources');
-
-    Route::view('/member-manual', 'pages.member-manual')
-        ->name('member-manual');
-
-    Route::view('/member-manual', 'pages.member-manual')
-        ->name('member-manual');
     /*
     |--------------------------------------------------------------------------
     | Membership
