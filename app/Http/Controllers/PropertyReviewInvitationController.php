@@ -9,6 +9,7 @@ use App\Models\PropertyReviewInvitation;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 
 class PropertyReviewInvitationController extends Controller
@@ -23,6 +24,18 @@ class PropertyReviewInvitationController extends Controller
 
         if (! $request->user()?->isInGoodStanding()) {
             abort(403);
+        }
+
+        $rateLimitKey = 'property-review-invitation-create:'.$request->user()->id;
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+
+            return back()->withErrors([
+                'reviewer_email' => __('Too many property owner feedback invitations have been sent. Please try again in :seconds seconds.', [
+                    'seconds' => $seconds,
+                ]),
+            ]);
         }
 
         $validated = $request->validate([
@@ -66,6 +79,8 @@ class PropertyReviewInvitationController extends Controller
                 expiresAt: $invitation->expires_at->translatedFormat('F j, Y'),
             ))->locale(app()->getLocale())
         );
+
+        RateLimiter::hit($rateLimitKey, 3600);
 
         return back()->with(
             'status',
@@ -113,6 +128,18 @@ class PropertyReviewInvitationController extends Controller
             'token' => $invitation->token,
         ]);
 
+        $rateLimitKey = 'property-review-invitation-resend:'.$invitation->id;
+
+        if (RateLimiter::tooManyAttempts($rateLimitKey, 3)) {
+            $seconds = RateLimiter::availableIn($rateLimitKey);
+
+            return back()->withErrors([
+                'reviewer_email' => __('Too many property owner feedback invitation resends have been requested. Please try again in :seconds seconds.', [
+                    'seconds' => $seconds,
+                ]),
+            ]);
+        }
+
         Mail::to($invitation->reviewer_email)->send(
             (new PropertyReviewInvitationMail(
                 profile: $profile,
@@ -120,6 +147,8 @@ class PropertyReviewInvitationController extends Controller
                 expiresAt: $invitation->expires_at->translatedFormat('F j, Y'),
             ))->locale(app()->getLocale())
         );
+
+        RateLimiter::hit($rateLimitKey, 3600);
 
         return back()->with(
             'status',

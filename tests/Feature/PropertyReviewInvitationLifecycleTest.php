@@ -531,3 +531,75 @@ test('property review verification code guessing is rate limited', function () {
 
     expect($invitation->fresh()->email_verified_at)->toBeNull();
 });
+
+test('member property review invitation creation is rate limited', function () {
+    Mail::fake();
+
+    $user = propertyReviewInvitationUser();
+    $profile = propertyReviewInvitationProfile($user);
+
+    $this->actingAs($user);
+
+    for ($attempt = 1; $attempt <= 5; $attempt++) {
+        $this->post(
+            route('account.review-invitations.store', $profile),
+            [
+                'reviewer_email' => "property-owner-{$attempt}@example.com",
+            ]
+        )->assertRedirect();
+    }
+
+    expect(PropertyReviewInvitation::count())->toBe(5);
+
+    Mail::assertSent(
+        PropertyReviewInvitationMail::class,
+        5
+    );
+
+    $this->post(
+        route('account.review-invitations.store', $profile),
+        [
+            'reviewer_email' => 'property-owner-6@example.com',
+        ]
+    )->assertSessionHasErrors(['reviewer_email']);
+
+    expect(PropertyReviewInvitation::count())->toBe(5);
+
+    Mail::assertSent(
+        PropertyReviewInvitationMail::class,
+        5
+    );
+});
+
+test('property review invitation resending is rate limited', function () {
+    Mail::fake();
+
+    $user = propertyReviewInvitationUser();
+    $profile = propertyReviewInvitationProfile($user);
+
+    $invitation = propertyReviewInvitation($profile, [
+        'reviewer_email' => 'property-owner@example.com',
+    ]);
+
+    $this->actingAs($user);
+
+    for ($attempt = 1; $attempt <= 3; $attempt++) {
+        $this->post(
+            route('account.review-invitations.resend', $invitation)
+        )->assertRedirect();
+    }
+
+    Mail::assertSent(
+        PropertyReviewInvitationMail::class,
+        3
+    );
+
+    $this->post(
+        route('account.review-invitations.resend', $invitation)
+    )->assertSessionHasErrors(['reviewer_email']);
+
+    Mail::assertSent(
+        PropertyReviewInvitationMail::class,
+        3
+    );
+});
