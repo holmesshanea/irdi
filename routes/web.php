@@ -156,7 +156,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('/account/reviews', 'pages::account.reviews')
         ->name('account.reviews');
 
-
     /*
     |--------------------------------------------------------------------------
     | Membership
