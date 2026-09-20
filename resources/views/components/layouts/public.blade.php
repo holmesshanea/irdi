@@ -333,6 +333,13 @@
                             {{ __('common.account') }}
                         </flux:navmenu.item>
 
+                        <flux:navmenu.item
+                            href="{{ route('member-manual') }}"
+                            icon="book-open"
+                        >
+                            {{ __('Member Manual') }}
+                        </flux:navmenu.item>
+
                         @if ($navProfile)
                             <flux:navmenu.item
                                 href="{{ route('member-profiles.show', $navProfile->username) }}"
@@ -445,7 +452,7 @@
             <img
                 src="{{ asset('irdi-logo.png') }}"
                 alt=""
-            aria-hidden="true"
+                aria-hidden="true"
                 class="h-12 w-12 rounded-full object-contain"
             >
 
@@ -668,18 +675,6 @@
                 {{ __('common.member') }}
             </div>
 
-            @if ($navUser->membership_status === 'active')
-
-                <flux:sidebar.item
-                    href="{{ route('resources') }}"
-                    :current="request()->routeIs('resources')"
-                    icon="book-open"
-                >
-                    {{ __('common.resources') }}
-                </flux:sidebar.item>
-
-            @endif
-
             <flux:sidebar.item
                 href="{{ route('account') }}"
                 :current="request()->routeIs('account') || request()->routeIs('account.*')"
@@ -687,6 +682,26 @@
             >
                 {{ __('common.account') }}
             </flux:sidebar.item>
+
+            <flux:sidebar.item
+                href="{{ route('member-manual') }}"
+                :current="request()->routeIs('member-manual')"
+                icon="book-open"
+            >
+                {{ __('Member Manual') }}
+            </flux:sidebar.item>
+
+            @if ($navUser->membership_status === 'active')
+
+                <flux:sidebar.item
+                    href="{{ route('resources') }}"
+                    :current="request()->routeIs('resources')"
+                    icon="document-text"
+                >
+                    {{ __('common.resources') }}
+                </flux:sidebar.item>
+
+            @endif
 
             @if ($navProfile)
                 <flux:sidebar.item

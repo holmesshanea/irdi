@@ -154,6 +154,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('active-member')
         ->name('resources');
 
+    Route::view('/member-manual', 'pages.member-manual')
+        ->name('member-manual');
     /*
     |--------------------------------------------------------------------------
     | Membership
