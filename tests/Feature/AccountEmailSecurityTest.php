@@ -1,6 +1,7 @@
 
 <?php
 
+use App\Models\BanIdentifier;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -52,4 +53,33 @@ test('account email change succeeds with the correct current password', function
 
     expect($user->email)->toBe('new-email@example.com')
         ->and($user->email_verified_at)->toBeNull();
+});
+
+test('account email cannot be changed to a banned email identifier', function () {
+    $user = User::factory()->create([
+        'email' => 'current@example.com',
+        'email_verified_at' => now(),
+        'password' => Hash::make('current-password'),
+    ]);
+
+    BanIdentifier::create([
+        'user_id' => null,
+        'created_by' => null,
+        'type' => 'email',
+        'value' => 'banned@example.com',
+        'reason' => 'Previously banned email address.',
+    ]);
+
+    $this->actingAs($user);
+
+    Livewire::test('account.change-email')
+        ->set('email', 'banned@example.com')
+        ->set('currentPassword', 'current-password')
+        ->call('updateEmail')
+        ->assertHasErrors(['email']);
+
+    $user->refresh();
+
+    expect($user->email)->toBe('current@example.com')
+        ->and($user->email_verified_at)->not->toBeNull();
 });

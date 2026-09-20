@@ -2,6 +2,7 @@
 
 use Illuminate\Validation\Rule;
 use Livewire\Component;
+use App\Models\BanIdentifier;
 
 new class extends Component
 {
@@ -38,6 +39,18 @@ new class extends Component
 
         if ($email === strtolower($user->email)) {
             $this->addError('email', __('This is already your current email address.'));
+
+            return;
+        }
+
+        if (BanIdentifier::query()
+            ->where('type', 'email')
+            ->whereRaw('LOWER(value) = ?', [strtolower($email)])
+            ->exists()) {
+            $this->addError(
+                'email',
+                'This email address is not eligible to be used for an IRDI account.'
+            );
 
             return;
         }
