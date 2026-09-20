@@ -37,6 +37,10 @@ Route::livewire('/directory', 'pages::directory')
 Route::livewire('/statistics', 'pages::statistics')
     ->name('statistics');
 
+Route::view('/resources', 'pages.resources')
+    ->middleware('active-member')
+    ->name('resources');
+
 Route::view('/faq', 'pages.faq')
     ->name('faq');
 
@@ -153,15 +157,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('/account/reviews', 'pages::account.reviews')
         ->name('account.reviews');
 
-    /*
-    |--------------------------------------------------------------------------
-    | Resources
-    |--------------------------------------------------------------------------
-    */
 
-    Route::view('/resources', 'pages.resources')
-        ->middleware('active-member')
-        ->name('resources');
     /*
     |--------------------------------------------------------------------------
     | Membership
