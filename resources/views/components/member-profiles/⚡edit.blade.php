@@ -91,6 +91,8 @@ class extends Component
 
     public function removeProfileImage(): void
     {
+        $this->authorizeProfileOwnership();
+
         if ($this->profile->profile_image) {
             Storage::disk($this->profileImageDisk())
                 ->delete($this->profile->profile_image);
@@ -122,8 +124,17 @@ class extends Component
         return empty($this->missingProfileFields());
     }
 
+    private function authorizeProfileOwnership(): void
+    {
+        if ($this->profile->fresh()->user_id !== auth()->id()) {
+            abort(403);
+        }
+    }
+
     public function save(): void
     {
+        $this->authorizeProfileOwnership();
+
         $validated = $this->validate([
             'profileName' => ['required', 'string', 'min:5', 'max:255'],
             'directoryVisible' => ['boolean'],
