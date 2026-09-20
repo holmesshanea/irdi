@@ -150,6 +150,7 @@ class extends Component
                     'membership_probation_started',
                     'membership_probation_continued',
                     'membership_probation_resolved',
+                    'membership_probation_restored',
                     'membership_probation_escalated',
 
                     'membership_administrative_hold_started',
