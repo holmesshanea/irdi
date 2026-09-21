@@ -116,6 +116,13 @@
                                 </a>
 
                                 <a
+                                    href="#private-property-permission"
+                                    class="block rounded-lg px-3 py-2 pl-6 text-zinc-600 hover:bg-zinc-100 hover:text-irdi-green"
+                                >
+                                    {{ __('Requesting Private Property Permission') }}
+                                </a>
+
+                                <a
                                     href="#resources"
                                     class="block rounded-lg px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-irdi-green"
                                 >
@@ -692,9 +699,77 @@
                             {{ __('Property Owner Feedback') }}
                         </h2>
 
-                        <p class="mt-4 leading-7 text-zinc-600">
-                            {{ __('Property Owner Feedback allows a property owner to provide feedback about their experience after allowing you to detect on their property. Feedback can add first-hand experience to your public IRDI record.') }}
-                        </p>
+                        <div id="private-property-permission" class="scroll-mt-8">
+                            <h3 class="mt-7 text-xl font-semibold text-irdi-green">
+                                {{ __('Requesting Private Property Permission') }}
+                            </h3>
+
+                            <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                {{ __('A good permission request is respectful, brief, and clear. The goal is not to pressure a property owner into saying yes, but to give them enough information to make an informed decision about access to their property.') }}
+                            </p>
+
+                            <h4 class="mt-6 font-semibold text-zinc-900">{{ __('Before You Approach') }}</h4>
+                            <ul class="mt-3 list-disc space-y-2 pl-6 text-sm leading-6 text-zinc-600">
+                                <li>{{ __('Research the property and confirm that you are approaching the person authorized to grant permission whenever reasonably possible.') }}</li>
+                                <li>{{ __('Have a genuine and specific reason for your interest in detecting the property or learning about its history.') }}</li>
+                                <li>{{ __('Choose a reasonable time to approach and avoid interrupting obvious meals, family activities, work, or other inconvenient circumstances.') }}</li>
+                                <li>{{ __('Present yourself neatly and respectfully. When practical, leave your detector and recovery tools in your vehicle during the initial conversation.') }}</li>
+                            </ul>
+
+                            <h4 class="mt-6 font-semibold text-zinc-900">{{ __('Choosing How to Approach') }}</h4>
+                            <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                {{ __('A legitimate personal introduction or referral can make an initial conversation easier. When no introduction is available, an appropriate face-to-face conversation may work well. If the property owner is already outside and circumstances are appropriate, a polite approach may feel less intrusive than an unexpected knock at the door. Door knocking remains an option when done respectfully and at a reasonable time.') }}
+                            </p>
+
+                            <h4 class="mt-6 font-semibold text-zinc-900">{{ __('A Simple Permission Framework') }}</h4>
+                            <div class="mt-3 rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                                <p class="font-semibold text-zinc-900">{{ __('Introduction → Interest → Request → Property Care → Owner Control') }}</p>
+                                <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                    {{ __('Introduce yourself, explain briefly why the property interests you, clearly ask for permission to metal detect, explain that you will recover targets carefully and restore the ground, and make it clear that the property owner controls whether permission is granted and under what conditions.') }}
+                                </p>
+                            </div>
+
+                            <h4 class="mt-6 font-semibold text-zinc-900">{{ __('Example Permission Request') }}</h4>
+                            <div class="mt-3 rounded-xl border border-irdi-green/20 bg-irdi-green/5 p-5">
+                                <p class="text-sm leading-6 text-zinc-700">
+                                    {{ __('Hello, my name is [name]. I am a local metal detectorist interested in the history of this area, and your property caught my attention because [brief genuine reason]. I wanted to ask whether you would consider allowing me to metal detect part of the property. I recover targets carefully, restore the ground, and remove the trash I find. I am also happy to show you what I recover. If you would rather not, I completely understand.') }}
+                                </p>
+                            </div>
+                            <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                {{ __('Use the example as a framework rather than a script. A natural conversation that accurately reflects who you are and why you are interested in the property is preferable to a memorized sales pitch.') }}
+                            </p>
+
+                            <h4 class="mt-6 font-semibold text-zinc-900">{{ __('If Permission Is Granted') }}</h4>
+                            <ul class="mt-3 list-disc space-y-2 pl-6 text-sm leading-6 text-zinc-600">
+                                <li>{{ __('Confirm the areas where you may detect and any areas that are off limits.') }}</li>
+                                <li>{{ __('Discuss expectations about recovered items, especially potentially valuable, historic, sentimental, or personally identifiable items.') }}</li>
+                                <li>{{ __('Confirm parking, gates, livestock, landscaping, time limits, access routes, and other property-specific instructions.') }}</li>
+                                <li>{{ __('Ask before bringing another detectorist or other person onto the property.') }}</li>
+                                <li>{{ __('Remember that the property owner may change or withdraw permission at any time.') }}</li>
+                            </ul>
+
+                            <h4 class="mt-6 font-semibold text-zinc-900">{{ __('If Permission Is Declined') }}</h4>
+                            <div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-5">
+                                <p class="text-sm leading-6 text-amber-900">
+                                    {{ __('Thank the property owner for their time and leave respectfully. Do not argue, pressure, repeatedly ask, or attempt to negotiate after permission has been declined.') }}
+                                </p>
+                            </div>
+
+                            <h4 class="mt-6 font-semibold text-zinc-900">{{ __('After Detecting') }}</h4>
+                            <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                {{ __('Leave the property clean and restored, follow the agreement concerning recovered items, thank the property owner, and share any information you agreed to provide. When appropriate, an eligible IRDI member may later invite the property owner to provide Property Owner Feedback about the experience.') }}
+                            </p>
+                        </div>
+
+                        <div class="mt-10 border-t border-zinc-200 pt-8">
+                            <h3 class="text-xl font-semibold text-irdi-green">
+                                {{ __('Property Owner Feedback') }}
+                            </h3>
+
+                            <p class="mt-4 leading-7 text-zinc-600">
+                                {{ __('Property Owner Feedback allows a property owner to provide feedback about their experience after allowing you to detect on their property. Feedback can add first-hand experience to your public IRDI record.') }}
+                            </p>
+                        </div>
 
                         <h3 class="mt-7 text-lg font-semibold text-zinc-900">
                             {{ __('Requesting Feedback') }}

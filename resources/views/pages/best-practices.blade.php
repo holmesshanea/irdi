@@ -53,7 +53,7 @@
 
                         <div>
                             <p class="text-sm text-zinc-500">
-                                {{ __('IRDI Member Resource') }}
+                                {{ __('IRDI Responsible Detecting Resource') }}
                             </p>
                         </div>
 
@@ -79,6 +79,52 @@
                                     {{ __('Review applicable local, state, provincial, national, or other laws and regulations.') }}
                                 </li>
                             </ul>
+                        </div>
+
+                        <div>
+                            <h2 class="text-xl font-semibold text-irdi-green">
+                                {{ __('Requesting Permission to Detect Private Property') }}
+                            </h2>
+
+                            <p class="mt-3 leading-7">
+                                {{ __('Permission begins with respect for the property owner and their right to decide who enters and what activities take place on their property. A permission request should be clear, courteous, honest, and free from pressure.') }}
+                            </p>
+
+                            <h3 class="mt-5 font-semibold text-zinc-900">
+                                {{ __('Approaching the Property Owner') }}
+                            </h3>
+
+                            <ul class="mt-3 list-disc space-y-2 pl-6 leading-7">
+                                <li>{{ __('When possible, use a legitimate personal introduction or referral.') }}</li>
+                                <li>{{ __('If approaching in person, choose a reasonable time and avoid interrupting obvious family activities, meals, work, or other inconvenient circumstances.') }}</li>
+                                <li>{{ __('When practical, approaching a property owner who is already outside may be less intrusive than an unexpected knock at the door.') }}</li>
+                                <li>{{ __('Leave detecting and recovery equipment in your vehicle during the initial conversation when practical.') }}</li>
+                                <li>{{ __('Introduce yourself, briefly explain your interest in the property or local history, and make a clear request to metal detect.') }}</li>
+                                <li>{{ __('Do not exaggerate credentials, historical claims, or potential finds in order to obtain permission.') }}</li>
+                                <li>{{ __('Do not pressure the property owner for an immediate answer.') }}</li>
+                            </ul>
+
+                            <h3 class="mt-5 font-semibold text-zinc-900">
+                                {{ __('When Permission Is Granted') }}
+                            </h3>
+
+                            <ul class="mt-3 list-disc space-y-2 pl-6 leading-7">
+                                <li>{{ __('Confirm exactly where you may detect and ask whether any areas are off limits.') }}</li>
+                                <li>{{ __('Discuss expectations concerning recovered items before detecting begins.') }}</li>
+                                <li>{{ __('Ask before bringing another detectorist or other person onto the property.') }}</li>
+                                <li>{{ __('Confirm any time, parking, gate, livestock, landscaping, access, or other property restrictions.') }}</li>
+                                <li>{{ __('Make sure the property owner understands that permission may be changed or withdrawn at any time.') }}</li>
+                                <li>{{ __('Follow any additional reasonable conditions established by the property owner.') }}</li>
+                            </ul>
+
+                            <div class="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-5">
+                                <p class="font-semibold text-amber-900">
+                                    {{ __('A refusal is the end of the request.') }}
+                                </p>
+                                <p class="mt-2 text-sm leading-6 text-amber-800">
+                                    {{ __('Thank the property owner for their time and leave respectfully. Do not argue, pressure, or attempt to persuade someone after they have declined permission.') }}
+                                </p>
+                            </div>
                         </div>
 
                         <div>
