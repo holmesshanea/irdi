@@ -6,7 +6,6 @@ use App\Models\MemberProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -150,8 +149,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('/account', 'pages.account')
         ->name('account');
 
-    Route::livewire('/account/delete', 'account.delete')
-        ->name('account.delete');
+    Route::get('/account/delete', function () {
+        abort(403);
+    })->name('account.delete');
 
     Route::livewire('/account/reviews', 'pages::account.reviews')
         ->name('account.reviews');
@@ -177,24 +177,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::livewire('/account/profiles/{profile}/edit', 'member-profiles.edit')
         ->name('account.profiles.edit');
 
-    Route::delete('/account/profiles/{profile}', function (MemberProfile $profile) {
-        if ($profile->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        if ($profile->profile_image) {
-            Storage::disk(config('filesystems.profile_images_disk', 'public'))
-                ->delete($profile->profile_image);
-        }
-
-        $profile->delete();
-
-        return redirect()
-            ->route('account')
-            ->with(
-                'status',
-                __('Your profile has been deleted. Your IRDI account and membership were not affected.')
-            );
+    Route::delete('/account/profiles/{profile}', function () {
+        abort(403);
     })->name('account.profiles.destroy');
 
     /*

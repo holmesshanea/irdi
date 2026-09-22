@@ -831,23 +831,7 @@
                                                 {{ __('My Reviews') }}
                                             </flux:button>
 
-                                            <form
-                                                action="{{ route('account.profiles.destroy', $profile) }}"
-                                                method="POST"
-                                                onsubmit="return confirm(@js(__('Are you sure you want to permanently delete your profile? This will not delete your IRDI account or membership.')));"
-                                            >
-                                                @csrf
-                                                @method('DELETE')
 
-                                                <flux:button
-                                                    type="submit"
-                                                    variant="danger"
-                                                    size="sm"
-                                                    icon="trash"
-                                                >
-                                                    {{ __('Delete') }}
-                                                </flux:button>
-                                            </form>
 
                                         </div>
 
@@ -893,42 +877,7 @@
 
                 </section>
 
-                {{-- Danger Zone --}}
-                <section class="mt-10">
 
-                    <div class="mb-6">
-                        <h2 class="text-2xl font-bold tracking-tight text-red-700">
-                            {{ __('Danger Zone') }}
-                        </h2>
-
-                        <div class="mt-2 h-1 w-16 bg-red-500"></div>
-
-                        <p class="mt-4 text-sm text-zinc-600">
-                            {{ __('Permanently delete your IRDI account and all associated membership data and profile information.') }}
-                        </p>
-                    </div>
-
-                    <flux:card class="border-red-200 p-6">
-
-                        <div class="rounded-lg bg-red-50 p-4">
-                            <p class="text-sm text-red-800">
-                                {{ __('Deleting your account is permanent. Your IRDI account, membership, member profile, reviews, and associated data will be deleted.') }}
-                            </p>
-                        </div>
-
-                        <div class="mt-6">
-                            <flux:button
-                                href="{{ route('account.delete') }}"
-                                variant="danger"
-                                icon="trash"
-                            >
-                                {{ __('Delete Account') }}
-                            </flux:button>
-                        </div>
-
-                    </flux:card>
-
-                </section>
 
             </div>
 
