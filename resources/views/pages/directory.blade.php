@@ -40,18 +40,21 @@ class extends Component
             ->when($this->search, function ($query) {
                 $query->where(function ($query) {
                     $query
-                        ->where('profile_name', 'like', '%' . $this->search . '%')
+                        ->where(function ($query) {
+                            $query->where('personal_information_hidden', false)
+                                ->where('profile_name', 'like', '%' . $this->search . '%');
+                        })
                         ->orWhere('username', 'like', '%' . $this->search . '%');
                 });
             })
             ->when($this->country, function ($query) {
-                $query->where('country_code', $this->country);
+                $query->where('personal_information_hidden', false)->where('country_code', $this->country);
             })
             ->when($this->stateProvince, function ($query) {
-                $query->where('state_province', $this->stateProvince);
+                $query->where('personal_information_hidden', false)->where('state_province', $this->stateProvince);
             })
             ->when($this->city, function ($query) {
-                $query->where('city', $this->city);
+                $query->where('personal_information_hidden', false)->where('city', $this->city);
             })
             ->when($this->designation === 'member', function ($query) {
                 $query->whereHas('user', function ($query) {
@@ -81,12 +84,12 @@ class extends Component
             })
             ->when($this->sort === 'name_asc', function ($query) {
                 $query
-                    ->orderBy('profile_name')
+                    ->orderByRaw('CASE WHEN personal_information_hidden = 1 THEN username ELSE profile_name END ASC')
                     ->orderBy('id');
             })
             ->when($this->sort === 'name_desc', function ($query) {
                 $query
-                    ->orderByDesc('profile_name')
+                    ->orderByRaw('CASE WHEN personal_information_hidden = 1 THEN username ELSE profile_name END DESC')
                     ->orderByDesc('id');
             })
             ->when($this->sort === 'newest', function ($query) {
@@ -95,7 +98,7 @@ class extends Component
                         App\Models\User::select('member_since')
                             ->whereColumn('users.id', 'member_profiles.user_id')
                     )
-                    ->orderBy('profile_name')
+                    ->orderByRaw('CASE WHEN personal_information_hidden = 1 THEN username ELSE profile_name END ASC')
                     ->orderBy('id');
             })
             ->when($this->sort === 'longest', function ($query) {
@@ -104,7 +107,7 @@ class extends Component
                         App\Models\User::select('member_since')
                             ->whereColumn('users.id', 'member_profiles.user_id')
                     )
-                    ->orderBy('profile_name')
+                    ->orderByRaw('CASE WHEN personal_information_hidden = 1 THEN username ELSE profile_name END ASC')
                     ->orderBy('id');
             })
             ->paginate(24);
@@ -114,6 +117,7 @@ class extends Component
     {
         return MemberProfile::query()
             ->publicDirectory()
+            ->where('personal_information_hidden', false)
             ->whereNotNull('country_code')
             ->where('country_code', '!=', '')
             ->distinct()
@@ -128,8 +132,9 @@ class extends Component
     {
         return MemberProfile::query()
             ->publicDirectory()
+            ->where('personal_information_hidden', false)
             ->when($this->country, function ($query) {
-                $query->where('country_code', $this->country);
+                $query->where('personal_information_hidden', false)->where('country_code', $this->country);
             })
             ->whereNotNull('state_province')
             ->where('state_province', '!=', '')
@@ -142,11 +147,12 @@ class extends Component
     {
         return MemberProfile::query()
             ->publicDirectory()
+            ->where('personal_information_hidden', false)
             ->when($this->country, function ($query) {
-                $query->where('country_code', $this->country);
+                $query->where('personal_information_hidden', false)->where('country_code', $this->country);
             })
             ->when($this->stateProvince, function ($query) {
-                $query->where('state_province', $this->stateProvince);
+                $query->where('personal_information_hidden', false)->where('state_province', $this->stateProvince);
             })
             ->whereNotNull('city')
             ->where('city', '!=', '')
@@ -432,7 +438,7 @@ class extends Component
 
                     <a
                         href="{{ route('member-profiles.show', ['profile' => $profile->username]) }}"
-                        aria-label="{{ __('common.view_profile_for', ['name' => $profile->profile_name]) }}"
+                        aria-label="{{ __('common.view_profile_for', ['name' => $profile->publicName()]) }}"
                         class="block rounded-xl focus:outline-none focus:ring-2 focus:ring-irdi-gold focus:ring-offset-2"
                     >
                         <flux:card class="h-full transition hover:-translate-y-1 hover:shadow-lg">
@@ -441,10 +447,10 @@ class extends Component
 
                                 <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-irdi-green text-lg font-semibold text-white">
 
-                                    @if ($profile->profile_image)
+                                    @if ($profile->publicDetail('profile_image'))
 
                                         <img
-                                            src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
+                                            src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->publicDetail('profile_image')) }}"
                                             alt=""
                                             aria-hidden="true"
                                             class="h-full w-full object-cover"
@@ -452,7 +458,7 @@ class extends Component
 
                                     @else
 
-                                        {{ strtoupper(substr($profile->profile_name, 0, 1)) }}
+                                        {{ strtoupper(substr($profile->publicName(), 0, 1)) }}
 
                                     @endif
 
@@ -461,7 +467,7 @@ class extends Component
                                 <div class="min-w-0">
 
                                     <flux:heading size="lg" level="3">
-                                        {{ $profile->profile_name }}
+                                        {{ $profile->publicName() }}
                                     </flux:heading>
 
                                     <div class="mt-1 text-sm font-medium text-irdi-green">
@@ -526,12 +532,12 @@ class extends Component
                                         @endif
                                     </div>
 
-                                    @if ($profile->city || $profile->state_province || $profile->country)
+                                    @if ($profile->publicDetail('city') || $profile->publicDetail('state_province') || $profile->publicDetail('country'))
                                         <div class="mt-2 flex items-center gap-2 text-sm text-zinc-600">
 
-                                            @if ($profile->country_code)
+                                            @if ($profile->publicDetail('country_code'))
                                                 <flux:flag
-                                                    country="{{ $profile->country_code }}"
+                                                    country="{{ $profile->publicDetail('country_code') }}"
                                                     size="xs"
                                                     class="shrink-0"
                                                     aria-hidden="true"
@@ -540,9 +546,9 @@ class extends Component
 
                                             <span>
                                                 {{ collect([
-                                                    $profile->city,
-                                                    $profile->state_province,
-                                                    ($profile->country_code ? Countries::getName($profile->country_code, app()->getLocale()) : $profile->country),
+                                                    $profile->publicDetail('city'),
+                                                    $profile->publicDetail('state_province'),
+                                                    ($profile->publicDetail('country_code') ? Countries::getName($profile->publicDetail('country_code'), app()->getLocale()) : $profile->publicDetail('country')),
                                                 ])->filter()->implode(', ') }}
                                             </span>
 

@@ -50,7 +50,22 @@ class MemberProfile extends Model
         return [
             'directory_visible' => 'boolean',
             'allow_member_messages' => 'boolean',
+            'personal_information_hidden' => 'boolean',
         ];
+    }
+
+    public function publicName(): string
+    {
+        return $this->personal_information_hidden ? '@'.$this->username : $this->profile_name;
+    }
+
+    public function publicDetail(string $field): string
+    {
+        if (! in_array($field, ['city', 'state_province', 'country', 'country_code', 'bio', 'website', 'profile_image'], true)) {
+            throw new \InvalidArgumentException('Unsupported public profile field.');
+        }
+
+        return $this->personal_information_hidden ? '' : (string) $this->getAttribute($field);
     }
 
     /**
@@ -68,7 +83,9 @@ class MemberProfile extends Model
     public function scopePublicDirectory(Builder $query): Builder
     {
         return $query
-            ->where('directory_visible', true)
+            ->where(function (Builder $query): void {
+                $query->where('directory_visible', true)->orWhere('personal_information_hidden', true);
+            })
             ->whereHas('user', function (Builder $query): void {
                 $query->where('membership_status', 'active');
             });

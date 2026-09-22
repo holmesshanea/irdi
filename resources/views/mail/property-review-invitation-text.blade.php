@@ -1,6 +1,6 @@
 {{ __('IRDI Property Owner Feedback') }}
 
-{{ __(':name has invited you to provide feedback about your experience with them as an IRDI Detectorist.', ['name' => $profile->profile_name]) }}
+{{ __(':name has invited you to provide feedback about your experience with them as an IRDI Detectorist.', ['name' => $profile->publicName()]) }}
 
 {{ __('You do not need an IRDI account to participate.') }}
 

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\LanguageController;
+use App\Http\Controllers\PrivateProfileImageController;
 use App\Http\Controllers\PropertyReviewInvitationController;
 use App\Models\MemberProfile;
 use App\Models\User;
@@ -145,6 +146,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     | Account
     |--------------------------------------------------------------------------
     */
+
+    Route::get('/account/profiles/{profile}/private-image', PrivateProfileImageController::class)
+        ->name('account.profiles.private-image');
 
     Route::view('/account', 'pages.account')
         ->name('account');

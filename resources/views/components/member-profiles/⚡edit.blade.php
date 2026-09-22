@@ -91,18 +91,20 @@ class extends Component
 
     public function removeProfileImage(): void
     {
-        $this->authorizeProfileOwnership();
+        \Illuminate\Support\Facades\DB::transaction(function (): void {
+            $this->authorizeProfileOwnership();
 
-        if ($this->profile->profile_image) {
-            Storage::disk($this->profileImageDisk())
-                ->delete($this->profile->profile_image);
+            if ($this->profile->profile_image) {
+                Storage::disk($this->profileImageDisk())
+                    ->delete($this->profile->profile_image);
 
-            $this->profile->update([
-                'profile_image' => null,
-            ]);
-        }
+                $this->profile->update([
+                    'profile_image' => null,
+                ]);
+            }
 
-        $this->profileImage = null;
+            $this->profileImage = null;
+        });
     }
 
     public function missingProfileFields(): array
@@ -126,84 +128,94 @@ class extends Component
 
     private function authorizeProfileOwnership(): void
     {
-        if ($this->profile->fresh()->user_id !== auth()->id()) {
+        $this->profile = MemberProfile::query()->lockForUpdate()->findOrFail($this->profile->id);
+
+        if ($this->profile->user_id !== auth()->id()) {
             abort(403);
         }
     }
 
     public function save(): void
     {
-        $this->authorizeProfileOwnership();
+        \Illuminate\Support\Facades\DB::transaction(function (): void {
+            $this->authorizeProfileOwnership();
 
-        $validated = $this->validate([
-            'profileName' => ['required', 'string', 'min:5', 'max:255'],
-            'directoryVisible' => ['boolean'],
-            'allowMemberMessages' => ['boolean'],
-            'emailMemberMessageNotifications' => ['boolean'],
-            'city' => ['required', 'string', 'max:100'],
-            'stateProvince' => ['required', 'string', 'max:100'],
-            'countryCode' => [
-                'required',
-                'string',
-                'size:2',
-                function (string $attribute, mixed $value, \Closure $fail): void {
-                    if (! Countries::exists((string) $value)) {
-                        $fail(__('Please select a valid country.'));
-                    }
-                },
-            ],
-            'bio' => ['nullable', 'string', 'max:1000'],
-            'website' => ['nullable', 'url:http,https', 'max:255'],
-            'profileImage' => ['nullable', 'image', 'max:5120'],
-        ], [
-            'profileImage.max' => __('The profile image must be 5 MB or smaller.'),
-            'profileImage.image' => __('The profile image must be a valid image file.'),
-        ]);
+            if ($this->profile->personal_information_hidden && $this->profileImage) {
+                $this->addError('profileImage', __('Turn off personal-information privacy before uploading a new profile image.'));
 
-        if ($this->profileImage) {
-            $disk = $this->profileImageDisk();
-
-            if ($this->profile->profile_image) {
-                Storage::disk($disk)
-                    ->delete($this->profile->profile_image);
+                return;
             }
 
-            $imagePath = $this->profileImage->store(
-                'profile-images',
-                $disk
-            );
+            $validated = $this->validate([
+                'profileName' => ['required', 'string', 'min:5', 'max:255'],
+                'directoryVisible' => ['boolean'],
+                'allowMemberMessages' => ['boolean'],
+                'emailMemberMessageNotifications' => ['boolean'],
+                'city' => ['required', 'string', 'max:100'],
+                'stateProvince' => ['required', 'string', 'max:100'],
+                'countryCode' => [
+                    'required',
+                    'string',
+                    'size:2',
+                    function (string $attribute, mixed $value, \Closure $fail): void {
+                        if (! Countries::exists((string) $value)) {
+                            $fail(__('Please select a valid country.'));
+                        }
+                    },
+                ],
+                'bio' => ['nullable', 'string', 'max:1000'],
+                'website' => ['nullable', 'url:http,https', 'max:255'],
+                'profileImage' => ['nullable', 'image', 'max:5120'],
+            ], [
+                'profileImage.max' => __('The profile image must be 5 MB or smaller.'),
+                'profileImage.image' => __('The profile image must be a valid image file.'),
+            ]);
 
-            $this->profile->profile_image = $imagePath;
-            $this->profile->save();
-        }
+            if ($this->profileImage) {
+                $disk = $this->profileImageDisk();
 
-        $countryCode = strtoupper($validated['countryCode']);
-        $countryName = Countries::getName($countryCode, 'en');
+                if ($this->profile->profile_image) {
+                    Storage::disk($disk)
+                        ->delete($this->profile->profile_image);
+                }
 
-        $this->profile->update([
-            'profile_name' => $validated['profileName'],
-            'city' => $validated['city'],
-            'state_province' => $validated['stateProvince'],
-            'country' => $countryName,
-            'country_code' => $countryCode,
-            'bio' => $validated['bio'],
-            'website' => $validated['website'] ?: null,
-            'directory_visible' => $this->membershipSuspended
-                ? (bool) $this->profile->directory_visible
-                : $validated['directoryVisible'],
-            'allow_member_messages' => $this->membershipSuspended
-                ? (bool) $this->profile->allow_member_messages
-                : $validated['allowMemberMessages'],
-        ]);
+                $imagePath = $this->profileImage->store(
+                    'profile-images',
+                    $disk
+                );
 
-        auth()->user()->update([
-            'email_member_message_notifications' =>
-                $validated['emailMemberMessageNotifications'],
-        ]);
+                $this->profile->profile_image = $imagePath;
+                $this->profile->save();
+            }
 
-        session()->flash('status', __('Your profile has been updated.'));
+            $countryCode = strtoupper($validated['countryCode']);
+            $countryName = Countries::getName($countryCode, 'en');
 
-        $this->redirectRoute('account');
+            $this->profile->update([
+                'profile_name' => $validated['profileName'],
+                'city' => $validated['city'],
+                'state_province' => $validated['stateProvince'],
+                'country' => $countryName,
+                'country_code' => $countryCode,
+                'bio' => $validated['bio'],
+                'website' => $validated['website'] ?: null,
+                'directory_visible' => $this->membershipSuspended
+                    ? (bool) $this->profile->directory_visible
+                    : $validated['directoryVisible'],
+                'allow_member_messages' => $this->membershipSuspended
+                    ? (bool) $this->profile->allow_member_messages
+                    : $validated['allowMemberMessages'],
+            ]);
+
+            auth()->user()->update([
+                'email_member_message_notifications' =>
+                    $validated['emailMemberMessageNotifications'],
+            ]);
+
+            session()->flash('status', __('Your profile has been updated.'));
+
+            $this->redirectRoute('account');
+        });
     }
 };
 ?>

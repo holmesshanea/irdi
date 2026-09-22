@@ -30,7 +30,7 @@ class NewMemberMessageNotification extends Notification implements ShouldQueue
         $sender = $this->message->sender;
 
         $senderName = $sender->memberProfile
-            ? $sender->memberProfile->profile_name
+            ? $sender->memberProfile->publicName()
             : $sender->name;
 
         return (new MailMessage)

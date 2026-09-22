@@ -445,7 +445,7 @@ class extends Component
                                                             {{ __('From') }}:
                                                         @endif
 
-                                                        {{ $otherProfile?->profile_name ?? $otherUser->name }}
+                                                        {{ $otherProfile?->publicName() ?? $otherUser->name }}
                                                     </p>
 
                                                     @if ($otherProfile)

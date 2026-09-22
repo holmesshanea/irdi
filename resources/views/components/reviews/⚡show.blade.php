@@ -47,6 +47,8 @@ class extends Component
             ->where('token', $token)
             ->firstOrFail();
 
+        abort_if($this->invitation->memberProfile->personal_information_hidden, 404);
+
         if (! $this->invitation->reviewer_email) {
             abort(404);
         }
@@ -80,6 +82,7 @@ class extends Component
     public function sendVerificationCode(): void
     {
         $this->invitation->refresh();
+        abort_if($this->invitation->memberProfile->personal_information_hidden, 404);
 
         if ($this->invitation->isUsed()) {
             return;
@@ -136,6 +139,7 @@ class extends Component
     public function verifyCode(): void
     {
         $this->invitation->refresh();
+        abort_if($this->invitation->memberProfile->personal_information_hidden, 404);
 
         if ($this->invitation->isUsed()) {
             return;
@@ -242,6 +246,8 @@ class extends Component
                 ->with('memberProfile')
                 ->lockForUpdate()
                 ->findOrFail($this->invitation->id);
+
+            abort_if($invitation->memberProfile->personal_information_hidden, 404);
 
             if ($invitation->isUsed()) {
                 $this->addError(
@@ -399,18 +405,18 @@ class extends Component
 
                 <div class="text-center">
 
-                    @if ($invitation->memberProfile->profile_image)
+                    @if ($invitation->memberProfile->publicDetail('profile_image'))
 
                         <img
-                            src="{{ asset('storage/' . $invitation->memberProfile->profile_image) }}"
-                            alt="{{ $invitation->memberProfile->profile_name }}"
+                            src="{{ asset('storage/' . $invitation->memberProfile->publicDetail('profile_image')) }}"
+                            alt="{{ $invitation->memberProfile->publicName() }}"
                             class="mx-auto h-20 w-20 rounded-full object-cover"
                         >
 
                     @endif
 
                     <h2 class="mt-4 text-2xl font-semibold text-irdi-green">
-                        {{ __('Rate your experience with :name', ['name' => $invitation->memberProfile->profile_name]) }}
+                        {{ __('Rate your experience with :name', ['name' => $invitation->memberProfile->publicName()]) }}
                     </h2>
 
                     <p class="mt-3 text-zinc-600">

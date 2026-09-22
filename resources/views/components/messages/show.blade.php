@@ -126,7 +126,7 @@ class extends Component
 
         session()->flash(
             'status',
-            ($this->otherProfile?->profile_name ?? $this->otherUser->name)
+            ($this->otherProfile?->publicName() ?? $this->otherUser->name)
             . __(' has been blocked.')
         );
     }
@@ -157,7 +157,7 @@ class extends Component
 
         session()->flash(
             'status',
-            ($this->otherProfile?->profile_name ?? $this->otherUser->name)
+            ($this->otherProfile?->publicName() ?? $this->otherUser->name)
             . __(' has been unblocked.')
         );
     }
@@ -320,7 +320,7 @@ class extends Component
                             </p>
 
                             <p class="mt-1 font-semibold text-irdi-green">
-                                {{ $this->otherProfile?->profile_name ?? $this->otherUser->name }}
+                                {{ $this->otherProfile?->publicName() ?? $this->otherUser->name }}
                             </p>
 
                             @if ($this->otherProfile)

@@ -50,10 +50,10 @@
 
                     <div class="text-center">
 
-                        @if ($invitation->memberProfile->profile_image)
+                        @if ($invitation->memberProfile->publicDetail('profile_image'))
 
                             <img
-                                src="{{ asset('storage/' . $invitation->memberProfile->profile_image) }}"
+                                src="{{ asset('storage/' . $invitation->memberProfile->publicDetail('profile_image')) }}"
                                 alt=""
                                 aria-hidden="true"
                                 class="mx-auto h-20 w-20 rounded-full object-cover"
@@ -62,7 +62,7 @@
                         @endif
 
                         <h2 class="mt-4 text-2xl font-semibold text-irdi-green">
-                            {{ __('Rate your experience with :name', ['name' => $invitation->memberProfile->profile_name]) }}
+                            {{ __('Rate your experience with :name', ['name' => $invitation->memberProfile->publicName()]) }}
                         </h2>
 
                         <p class="mt-3 text-zinc-600">

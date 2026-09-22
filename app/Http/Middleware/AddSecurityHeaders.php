@@ -42,6 +42,10 @@ class AddSecurityHeaders
             ])
         );
 
+        if ($request->routeIs('directory', 'statistics', 'sitemap', 'member-profiles.show', 'member-profiles.card', 'property-reviews.show', 'messages.*', 'account.profiles.private-image')) {
+            $response->headers->set('Cache-Control', 'private, no-store, max-age=0');
+        }
+
         return $response;
     }
 }

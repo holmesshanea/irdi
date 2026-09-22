@@ -28,7 +28,7 @@
                         </h1>
 
                         <p style="margin:30px 0 0; font-size:16px; line-height:1.6;">
-                            {{ $profile->profile_name }} has invited you to provide feedback
+                            {{ $profile->publicName() }} has invited you to provide feedback
                             about your experience with them as an IRDI Detectorist.
                         </p>
 

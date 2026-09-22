@@ -34,6 +34,7 @@ class extends Component
             ->whereHas('user', function (Builder $query): void {
                 $query->where('membership_status', 'active');
             })
+            ->where('personal_information_hidden', false)
             ->whereNotNull('country_code')
             ->where('country_code', '!=', '')
             ->groupBy('country_code')
@@ -154,6 +155,7 @@ class extends Component
             ->whereHas('user', function (Builder $query): void {
                 $query->where('membership_status', 'active');
             })
+            ->where('personal_information_hidden', false)
             ->whereNotNull('country_code')
             ->where('country_code', '!=', '')
             ->distinct()

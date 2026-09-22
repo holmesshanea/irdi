@@ -487,7 +487,7 @@
 
                             <div class="relative rounded-xl border border-zinc-200 p-5">
 
-                                @if (auth()->user()->isInGoodStanding())
+                                @if (auth()->user()->isInGoodStanding() && ! $profile->personal_information_hidden)
 
                                     <div
                                         class="z-50 mb-4 lg:absolute lg:right-5 lg:top-5 lg:mb-0"
@@ -716,7 +716,7 @@
                                                         {{ __('Directory Unavailable While Suspended') }}
                                                     </flux:badge>
 
-                                                @elseif ($profile->directory_visible)
+                                                @elseif ($profile->directory_visible || $profile->personal_information_hidden)
 
                                                     <flux:badge color="green">
                                                         {{ __('Directory Visible') }}
@@ -878,6 +878,10 @@
                 </section>
 
 
+
+                @if (auth()->user()->memberProfile)
+                    <livewire:account.privacy />
+                @endif
 
             </div>
 

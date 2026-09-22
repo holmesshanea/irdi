@@ -22,6 +22,7 @@ class extends Component
 
         if (
             ! $profile->directory_visible
+            && ! $profile->personal_information_hidden
             && $profile->user_id !== auth()->id()
         ) {
             abort(404);

@@ -19,7 +19,7 @@
                 </p>
 
                 <h2 class="mt-1 truncate text-xl font-bold leading-tight text-irdi-green">
-                    {{ $profile->profile_name }}
+                    {{ $profile->publicName() }}
                 </h2>
 
                 <p class="mt-0.5 text-sm text-zinc-500">

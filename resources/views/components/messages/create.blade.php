@@ -71,6 +71,8 @@ class extends Component
 
     private function ensureCanMessage(): bool
     {
+        abort_if($this->profile->personal_information_hidden, 404);
+
         $sender = auth()->user();
 
         if ($sender === null) {
@@ -208,6 +210,8 @@ class extends Component
             ],
         ]);
 
+        abort_if($this->profile->personal_information_hidden, 404);
+
         $sender = auth()->user();
 
         if ($sender === null) {
@@ -220,23 +224,27 @@ class extends Component
             $rateLimitKey,
             5,
             function () use ($sender, $validated): void {
-                $message = Message::create([
-                    'sender_id' => $sender->id,
-                    'recipient_id' => $this->profile->user_id,
-                    'subject' => $validated['subject'],
-                    'body' => $validated['body'],
-                ]);
+                \Illuminate\Support\Facades\DB::transaction(function () use ($sender, $validated): void {
+                    $this->profile = \App\Models\MemberProfile::query()->lockForUpdate()->findOrFail($this->profile->id);
+                    abort_unless($this->ensureCanMessage(), 403);
+                    $message = Message::create([
+                        'sender_id' => $sender->id,
+                        'recipient_id' => $this->profile->user_id,
+                        'subject' => $validated['subject'],
+                        'body' => $validated['body'],
+                    ]);
 
-                $message->load([
-                    'sender.memberProfile',
-                    'recipient',
-                ]);
+                    $message->load([
+                        'sender.memberProfile',
+                        'recipient',
+                    ]);
 
-                if ($message->recipient->email_member_message_notifications) {
-                    $message->recipient->notify(
-                        new NewMemberMessageNotification($message)
-                    );
-                }
+                    if ($message->recipient->email_member_message_notifications) {
+                        $message->recipient->notify(
+                            (new NewMemberMessageNotification($message))->afterCommit()
+                        );
+                    }
+                });
             },
             60
         );
@@ -295,7 +303,7 @@ class extends Component
                             </h2>
 
                             <p class="mt-1 text-sm text-green-700">
-                                Your message was sent to {{ $profile->profile_name }}.
+                                Your message was sent to {{ $profile->publicName() }}.
                             </p>
 
                         </div>
@@ -317,7 +325,7 @@ class extends Component
                     <div class="mt-2">
 
                         <h2 class="text-lg font-semibold text-irdi-green">
-                            {{ $profile->profile_name }}
+                            {{ $profile->publicName() }}
                         </h2>
 
                         <p class="text-sm text-zinc-500">

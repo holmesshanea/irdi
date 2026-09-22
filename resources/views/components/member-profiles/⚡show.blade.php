@@ -30,6 +30,7 @@ class extends Component
 
         if (
             ! $profile->directory_visible
+            && ! $profile->personal_information_hidden
             && $profile->user_id !== auth()->id()
         ) {
             abort(404);
@@ -80,12 +81,12 @@ class extends Component
     public function render()
     {
         $location = collect([
-            $this->profile->city,
-            $this->profile->state_province,
-            $this->profile->country,
+            $this->profile->publicDetail('city'),
+            $this->profile->publicDetail('state_province'),
+            $this->profile->publicDetail('country'),
         ])->filter()->implode(', ');
 
-        $description = __('View :name\'s IRDI member profile', ['name' => $this->profile->profile_name]);
+        $description = __('View :name\'s IRDI member profile', ['name' => $this->profile->publicName()]);
 
         if ($location !== '') {
             $description .= __(' in :location', ['location' => $location]);
@@ -100,7 +101,7 @@ class extends Component
                     'profile' => $this->profile->username,
                 ]),
             ])
-            ->title(__('Profile title: :name | IRDI Member', ['name' => $this->profile->profile_name]));
+            ->title(__('Profile title: :name | IRDI Member', ['name' => $this->profile->publicName()]));
     }
 };
 ?>
@@ -114,18 +115,18 @@ class extends Component
 
                 <div class="rounded-2xl border border-irdi-gold/70 bg-white px-6 py-12 text-center shadow-sm sm:px-10">
 
-                    @if ($profile->profile_image)
+                    @if ($profile->publicDetail('profile_image'))
 
                         <img
-                            src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->profile_image) }}"
-                            alt="{{ $profile->profile_name }}"
+                            src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->publicDetail('profile_image')) }}"
+                            alt="{{ $profile->publicName() }}"
                             class="mx-auto h-32 w-32 rounded-full object-cover ring-4 ring-white shadow-sm"
                         >
 
                     @else
 
                         <div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-zinc-200 text-3xl font-semibold text-irdi-green ring-4 ring-white shadow-sm">
-                            {{ strtoupper(substr($profile->profile_name, 0, 1)) }}
+                            {{ strtoupper(substr($profile->publicName(), 0, 1)) }}
                         </div>
 
                     @endif
@@ -162,7 +163,7 @@ class extends Component
                     @endif
 
                     <h1 class="mt-4 text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
-                        {{ $profile->profile_name }}
+                        {{ $profile->publicName() }}
                     </h1>
 
                     <p class="mt-2 text-zinc-500">
@@ -189,12 +190,12 @@ class extends Component
                         </p>
                     @endif
 
-                    @if ($profile->city || $profile->state_province || $profile->country)
+                    @if ($profile->publicDetail('city') || $profile->publicDetail('state_province') || $profile->publicDetail('country'))
                         <div class="mt-3 flex items-center justify-center gap-2 text-zinc-600">
 
-                            @if ($profile->country_code)
+                            @if ($profile->publicDetail('country_code'))
                                 <flux:flag
-                                    country="{{ $profile->country_code }}"
+                                    country="{{ $profile->publicDetail('country_code') }}"
                                     size="xs"
                                     class="shrink-0"
                                 />
@@ -202,9 +203,9 @@ class extends Component
 
                             <span>
                                 {{ collect([
-                                    $profile->city,
-                                    $profile->state_province,
-                                    ($profile->country_code ? Countries::getName($profile->country_code, app()->getLocale()) : $profile->country),
+                                    $profile->publicDetail('city'),
+                                    $profile->publicDetail('state_province'),
+                                    ($profile->publicDetail('country_code') ? Countries::getName($profile->publicDetail('country_code'), app()->getLocale()) : $profile->publicDetail('country')),
                                 ])->filter()->implode(', ') }}
                             </span>
 
@@ -215,6 +216,7 @@ class extends Component
                         auth()->check()
                         && auth()->user()->membership_status === 'active'
                         && auth()->id() !== $profile->user_id
+                        && ! $profile->personal_information_hidden
                         && $profile->allow_member_messages
                     )
 
@@ -340,9 +342,9 @@ class extends Component
                                 {{ __('About') }}
                             </h2>
 
-                            @if ($profile->bio)
+                            @if ($profile->publicDetail('bio'))
                                 <p class="mt-3 whitespace-pre-line leading-7 text-zinc-700">
-                                    {{ $profile->bio }}
+                                    {{ $profile->publicDetail('bio') }}
                                 </p>
                             @else
                                 <p class="mt-3 text-sm text-zinc-500">
@@ -350,20 +352,20 @@ class extends Component
                                 </p>
                             @endif
 
-                            @if ($profile->website)
+                            @if ($profile->publicDetail('website'))
                                 <div class="mt-6 border-t border-zinc-200 pt-5">
                                     <p class="text-sm font-medium text-zinc-500">
                                         {{ __('Website') }}
                                     </p>
 
                                     <a
-                                        href="{{ $profile->website }}"
+                                        href="{{ $profile->publicDetail('website') }}"
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         class="mt-2 inline-flex items-center gap-2 break-all text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
                                     >
                                         <flux:icon.globe-alt class="size-4 shrink-0" />
-                                        <span>{{ $profile->website }}</span>
+                                        <span>{{ $profile->publicDetail('website') }}</span>
                                     </a>
                                 </div>
                             @endif
@@ -466,6 +468,7 @@ class extends Component
                     @if (
                         auth()->check()
                         && $profile->user_id === auth()->id()
+                        && ! $profile->personal_information_hidden
                         && auth()->user()->membership_status === 'active'
                     )
                         <div class="mt-5 border-t border-zinc-200 pt-5">

@@ -18,6 +18,8 @@ class PropertyReviewInvitationController extends Controller
         Request $request,
         MemberProfile $profile
     ): RedirectResponse {
+        abort_if($profile->personal_information_hidden, 403);
+
         if ($profile->user_id !== auth()->id()) {
             abort(403);
         }
@@ -93,6 +95,8 @@ class PropertyReviewInvitationController extends Controller
         PropertyReviewInvitation $invitation
     ): RedirectResponse {
         $profile = $invitation->memberProfile;
+
+        abort_if($profile->personal_information_hidden, 403);
 
         if ($profile->user_id !== auth()->id()) {
             abort(403);
