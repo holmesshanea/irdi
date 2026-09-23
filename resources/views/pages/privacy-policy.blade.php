@@ -53,7 +53,7 @@
 
                         <div>
                             <p class="text-sm text-zinc-500">
-                                {{ __('Last updated: September 15, 2026') }}
+                                {{ __('privacy.updated') }}
                             </p>
                         </div>
 
@@ -81,7 +81,7 @@
                                 <li>{{ __('Your email address.') }}</li>
                                 <li>{{ __('Your account and membership information.') }}</li>
                                 <li>
-                                    {{ __('Information you choose to include in a Detectorist, Organization, or Vendor profile.') }}
+                                    {{ __('privacy.profile_data') }}
                                 </li>
                                 <li>
                                     {{ __('Profile images, biographies, websites, usernames, and location information you choose to provide.') }}
@@ -128,11 +128,11 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('IRDI members may create Detectorist, Organization, and Vendor profiles. Members control whether a profile is displayed in the public Member Directory.') }}
+                                {{ __('privacy.one_profile') }}
                             </p>
 
                             <p class="mt-3 leading-7">
-                                {{ __('If you choose to make a profile publicly visible, information associated with that profile may be available to anyone who visits the IRDI website. This may include your profile name, public username, profile type, profile image, location, biography, website, current membership standing, membership information, and available public property owner feedback.') }}
+                                {{ __('privacy.public_fields') }}
                             </p>
 
                             <p class="mt-3 leading-7">
@@ -243,8 +243,13 @@
                             </p>
 
                             <p class="mt-3 leading-7">
-                                {{ __('You may also choose to delete individual member profiles or delete your IRDI account. Account deletion may permanently remove or de-identify account, membership, and profile information, but IRDI may retain certain records when reasonably necessary for security, fraud prevention, legal obligations, dispute resolution, moderation, enforcement, accountability, or protection of IRDI and its users.') }}
+                                {{ __('privacy.no_deletion') }}
                             </p>
+                            <p class="mt-3 leading-7">{{ __('privacy.summary') }}</p>
+                            <p class="mt-3 leading-7">{{ __('privacy.directory_rules') }}</p>
+                            <p class="mt-3 leading-7">{{ __('privacy.contact_controls') }}</p>
+                            <p class="mt-3 leading-7">{{ __('privacy.limits') }}</p>
+                            <p class="mt-3 leading-7">{{ __('privacy.requests') }}</p>
                         </div>
 
                         <div>

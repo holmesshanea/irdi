@@ -274,7 +274,7 @@ class extends Component
                     </div>
 
                     <p class="mt-4 text-sm leading-6 text-zinc-600">
-                        {{ __('statistics.cards.countries_represented_description') }}
+                        {{ __('privacy.country_description') }}
                     </p>
                 </flux:card>
 
@@ -318,7 +318,7 @@ class extends Component
                     </div>
 
                     <p class="mt-4 text-sm leading-6 text-zinc-600">
-                        {{ __('statistics.cards.public_directory_members_description') }}
+                        {{ __('privacy.directory_count') }}
                     </p>
                 </flux:card>
             </div>
@@ -334,7 +334,7 @@ class extends Component
                 </h2>
 
                 <p class="mt-4 text-lg leading-8 text-zinc-600">
-                    {{ __('statistics.countries.description') }}
+                    {{ __('privacy.country_description') }}
                 </p>
             </div>
 
@@ -382,7 +382,7 @@ class extends Component
                                 {{ __('statistics.countries.ranking_heading') }}
                             </h3>
                             <p class="mt-1 text-sm text-zinc-500">
-                                {{ __('statistics.countries.ranking_description') }}
+                                {{ __('privacy.country_ranking') }}
                             </p>
                         </div>
 
@@ -415,7 +415,7 @@ class extends Component
                 </div>
 
                 <p class="mx-auto mt-8 max-w-3xl text-center text-sm leading-6 text-zinc-500">
-                    {{ __('statistics.countries.privacy_note') }}
+                    {{ __('privacy.stats') }}
                 </p>
             @else
                 <flux:card class="mx-auto mt-12 max-w-2xl p-8 text-center">
@@ -424,7 +424,7 @@ class extends Component
                         {{ __('statistics.countries.empty_heading') }}
                     </h3>
                     <p class="mt-2 text-sm leading-6 text-zinc-600">
-                        {{ __('statistics.countries.empty_description') }}
+                        {{ __('privacy.country_description') }}
                     </p>
                 </flux:card>
             @endif

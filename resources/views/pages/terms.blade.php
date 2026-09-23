@@ -53,7 +53,7 @@
 
                         <div>
                             <p class="text-sm text-zinc-500">
-                                {{ __('Last updated: September 15, 2026') }}
+                                {{ __('privacy.updated') }}
                             </p>
                         </div>
 
@@ -119,7 +119,7 @@
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Eligible IRDI members may create Detectorist, Organization, and Vendor profiles subject to the profile limits and requirements established by IRDI.') }}
+                                {{ __('privacy.one_profile') }}
                             </p>
 
                             <p class="mt-3 leading-7">
@@ -265,12 +265,14 @@
 
                         <div>
                             <h2 class="text-xl font-semibold text-irdi-green">
-                                {{ __('Account Deletion') }}
+                                {{ __('privacy.title') }}
                             </h2>
 
                             <p class="mt-3 leading-7">
-                                {{ __('Users may be able to delete their IRDI account through account settings. Account deletion may permanently remove associated account, membership, and profile information, but IRDI may retain records when reasonably necessary for legal obligations, security, fraud prevention, dispute resolution, moderation, enforcement, accountability, or protection of IRDI and its users.') }}
+                                {{ __('privacy.no_deletion') }}
                             </p>
+                            <p class="mt-3 leading-7">{{ __('privacy.verification') }}</p>
+                            <p class="mt-3 leading-7">{{ __('privacy.requests') }}</p>
                         </div>
 
                         <div>

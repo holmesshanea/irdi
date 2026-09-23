@@ -137,10 +137,10 @@
                                 </a>
 
                                 <a
-                                    href="#delete"
+                                    href="#privacy"
                                     class="block rounded-lg px-3 py-2 text-zinc-700 hover:bg-zinc-100 hover:text-irdi-green"
                                 >
-                                    {{ __('12. Deleting Your Account') }}
+                                    {{ __('privacy.manual_nav') }}
                                 </a>
 
                                 <a
@@ -490,7 +490,7 @@
                         </h2>
 
                         <p class="mt-4 leading-7 text-zinc-600">
-                            {{ __('An active IRDI member can create one Member Profile. Your Member Profile provides the information used for your public IRDI identity and Member Directory listing when directory visibility is enabled and your membership status permits public display.') }}
+                            {{ __('privacy.one_profile') }}
                         </p>
 
                         <h3 class="mt-7 text-lg font-semibold text-zinc-900">
@@ -567,11 +567,11 @@
                         </h2>
 
                         <p class="mt-4 leading-7 text-zinc-600">
-                            {{ __('The IRDI Member Directory is a public verification tool. When your profile is eligible for public display and you enable directory visibility, visitors can find your Member Profile through the directory.') }}
+                            {{ __('privacy.directory_rules') }}
                         </p>
 
                         <p class="mt-4 text-sm leading-6 text-zinc-600">
-                            {{ __('Your public Member Profile may display your profile name, username, profile image, general location, biography, website, Member Since date, current membership standing, and available Property Owner Feedback. Your account email address is not displayed as part of your public Member Profile.') }}
+                            {{ __('privacy.public_fields') }}
                         </p>
 
                         <div class="mt-6">
@@ -918,9 +918,9 @@
                     </section>
 
 
-                    {{-- 12. Delete --}}
+                    {{-- 12. Personal information privacy --}}
                     <section
-                        id="delete"
+                        id="privacy"
                         class="scroll-mt-8 border-t border-zinc-200 py-10"
                     >
 
@@ -929,27 +929,27 @@
                         </p>
 
                         <h2 class="mt-2 text-2xl font-bold text-irdi-green">
-                            {{ __('Deleting Your Account') }}
+                            {{ __('privacy.title') }}
                         </h2>
 
                         <p class="mt-4 leading-7 text-zinc-600">
-                            {{ __('You can permanently delete your IRDI account. Account deletion requires your current password.') }}
+                            {{ __('privacy.how_to') }}
                         </p>
 
-                        <div class="mt-6 rounded-xl border border-red-200 bg-red-50 p-5">
+                        <div class="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-5">
 
                             <div class="flex gap-3">
 
-                                <flux:icon.exclamation-triangle class="mt-0.5 size-5 shrink-0 text-red-700" />
+                                <flux:icon.shield-check class="mt-0.5 size-5 shrink-0 text-irdi-green" />
 
                                 <div>
 
-                                    <h3 class="font-semibold text-red-900">
-                                        {{ __('Account deletion is permanent.') }}
+                                    <h3 class="font-semibold text-irdi-green">
+                                        {{ __('privacy.title') }}
                                     </h3>
 
-                                    <p class="mt-2 text-sm leading-6 text-red-800">
-                                        {{ __('Deleting your account removes your IRDI account, membership, Member Profile, and uploaded profile image. Make sure you want to permanently remove your membership before continuing.') }}
+                                    <p class="mt-2 text-sm leading-6 text-zinc-700">
+                                        {{ __('privacy.no_deletion') }}
                                     </p>
 
                                 </div>
@@ -958,14 +958,21 @@
 
                         </div>
 
+                        <p class="mt-4 text-sm leading-6 text-zinc-600">{{ __('privacy.summary') }}</p>
+                        <p class="mt-4 text-sm leading-6 text-zinc-600">{{ __('privacy.contact_controls') }}</p>
+                        <p class="mt-4 text-sm leading-6 text-zinc-600">{{ __('privacy.verification') }}</p>
+                        <p class="mt-4 text-sm leading-6 text-zinc-600">{{ __('privacy.restore') }}</p>
+                        <p class="mt-4 text-sm leading-6 text-zinc-600">{{ __('privacy.limits') }}</p>
+                        <p class="mt-4 text-sm leading-6 text-zinc-600">{{ __('privacy.requests') }}</p>
+
                         @auth
                             <div class="mt-6">
                                 <flux:button
-                                    href="{{ route('account.delete') }}"
-                                    variant="danger"
-                                    icon="trash"
+                                    href="{{ route('account') }}"
+                                    variant="primary"
+                                    icon="shield-check"
                                 >
-                                    {{ __('Delete My Account') }}
+                                    {{ __('privacy.manage') }}
                                 </flux:button>
                             </div>
                         @endauth

@@ -60,7 +60,7 @@ test('statistics page counts active members countries charter members and public
         ->assertSeeText('Canada')
         ->assertSeeText('50.0%', false)
         ->assertDontSeeText('United Kingdom')
-        ->assertSeeText('Country statistics represent active IRDI membership in aggregate');
+        ->assertSeeText(__('privacy.stats'));
 
     expect(User::query()->where('membership_status', 'active')->count())->toBe(2)
         ->and(MemberProfile::query()

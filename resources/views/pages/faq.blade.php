@@ -299,28 +299,28 @@
 
                         <flux:accordion.item heading="{{ __('What is the IRDI Member Directory?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('The Member Directory is a public verification tool for current IRDI members in good standing who have chosen to make their Member Profile visible. Visitors can use it to confirm current membership and standing and open a member’s public profile for additional information.') }}
+                                {{ __('privacy.directory_intro') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('Do I have to appear in the Member Directory?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('No. Directory participation is optional. You control whether your Member Profile is visible in the public Member Directory.') }}
+                                {{ __('privacy.directory_rules') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('How do I make my profile visible in the Member Directory?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('Edit your Member Profile from your account and enable directory visibility. You can return to your profile settings later if you want to hide it from the directory again.') }}
+                                {{ __('privacy.directory_help') }}
                             </p>
                         </flux:accordion.item>
 
 
                         <flux:accordion.item heading="{{ __('Can people still view my profile if I hide it from the directory?') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('A profile that is not publicly visible is not available to regular public visitors through the Member Directory. You can still manage and view your own profile while signed into your account.') }}
+                                {{ __('privacy.directory_off') }}
                             </p>
                         </flux:accordion.item>
 
@@ -575,17 +575,19 @@
                         </flux:accordion.item>
 
 
-                        <flux:accordion.item heading="{{ __('Can I delete my IRDI account?') }}">
+                        <flux:accordion.item heading="{{ __('privacy.faq_close') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('Yes. You can permanently delete your IRDI account through your account settings.') }}
+                                {{ __('privacy.no_deletion') }}
                             </p>
                         </flux:accordion.item>
 
 
-                        <flux:accordion.item heading="{{ __('What happens if I delete my account?') }}">
+                        <flux:accordion.item heading="{{ __('privacy.faq_hide') }}">
                             <p class="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
-                                {{ __('Deleting your account permanently removes your account and associated Member Profile. Because account deletion is permanent, make sure you want to remove your membership before completing the deletion process.') }}
+                                {{ __('privacy.how_to') }}
                             </p>
+                            <p class="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{{ __('privacy.summary') }}</p>
+                            <p class="mt-3 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{{ __('privacy.requests') }}</p>
                         </flux:accordion.item>
 
                     </flux:accordion>

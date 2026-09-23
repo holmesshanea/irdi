@@ -141,7 +141,7 @@ class extends Component
             $this->authorizeProfileOwnership();
 
             if ($this->profile->personal_information_hidden && $this->profileImage) {
-                $this->addError('profileImage', __('Turn off personal-information privacy before uploading a new profile image.'));
+                $this->addError('profileImage', __('privacy.upload_error'));
 
                 return;
             }
@@ -504,7 +504,7 @@ class extends Component
                         <flux:switch
                             wire:model="directoryVisible"
                             label="{{ __('Show this profile in the Member Directory') }}"
-                            description="{{ __('When enabled, your profile can appear in the public IRDI Member Directory and anyone can view your public profile page.') }}"
+                            description="{{ __('privacy.directory_help') }}"
                         />
 
                         <flux:switch

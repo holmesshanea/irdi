@@ -254,6 +254,7 @@ class extends Component
 
     <section class="bg-zinc-50">
         <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+            <p class="mb-6 text-sm leading-6 text-zinc-600">{{ __('privacy.directory_hint') }}</p>
 
             <div class="mb-8 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
                 <div class="flex items-start gap-4">

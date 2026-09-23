@@ -304,7 +304,7 @@
                     <div class="mt-3 h-1 w-full bg-irdi-gold"></div>
 
                     <p class="mt-5 leading-7 text-zinc-600">
-                        {{ __('Members may choose to appear in the public IRDI Member Directory, allowing landowners and others to verify their current membership and standing and open their public profile.') }}
+                        {{ __('privacy.directory_intro') }}
                     </p>
 
                 </flux:card>
