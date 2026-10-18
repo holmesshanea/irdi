@@ -59,6 +59,9 @@ function propertyReviewModerationReview(
         'private_concern_details' => $attributes['private_concern_details'] ?? null,
     ]);
 
+    // Moderation lifecycle fixtures begin as already approved public reviews.
+    $review->approved_at = $attributes['approved_at'] ?? now();
+
     if (array_key_exists('hidden_at', $attributes)) {
         $review->hidden_at = $attributes['hidden_at'];
     }

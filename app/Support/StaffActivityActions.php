@@ -59,6 +59,7 @@ final class StaffActivityActions
 
             'reviews' => [
                 'review_marked_reviewed',
+                'review_approved',
                 'review_hidden',
                 'review_restored',
             ],

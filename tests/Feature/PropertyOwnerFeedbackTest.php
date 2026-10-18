@@ -52,7 +52,7 @@ function propertyFeedbackLegacyReview(
         'used_at' => now(),
     ]);
 
-    return PropertyReview::create([
+    $review = PropertyReview::create([
         'member_profile_id' => $profile->id,
         'property_review_invitation_id' => $invitation->id,
         'reviewer_email' => $email,
@@ -66,6 +66,12 @@ function propertyFeedbackLegacyReview(
         'private_concern' => null,
         'private_concern_details' => null,
     ]);
+
+    // Historical fixture: this review was approved before public display.
+    $review->approved_at = now();
+    $review->save();
+
+    return $review;
 }
 
 function propertyFeedbackNewReview(
@@ -78,7 +84,7 @@ function propertyFeedbackNewReview(
         'used_at' => now(),
     ]);
 
-    return PropertyReview::create(array_merge([
+    $review = PropertyReview::create(array_merge([
         'member_profile_id' => $profile->id,
         'property_review_invitation_id' => $invitation->id,
         'reviewer_email' => $email,
@@ -92,6 +98,12 @@ function propertyFeedbackNewReview(
         'private_concern' => false,
         'private_concern_details' => null,
     ], $attributes));
+
+    // This helper represents a previously approved review, not a fresh submission.
+    $review->approved_at = now();
+    $review->save();
+
+    return $review;
 }
 
 test('new property owner questionnaire stores new fields without fabricating legacy care rating', function () {

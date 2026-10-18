@@ -25,14 +25,23 @@ class extends Component
     {
         $review = PropertyReview::findOrFail($reviewId);
 
-        if ($review->admin_reviewed_at === null) {
+        // A review may already have been marked as reviewed without being approved.
+        // Approval must not depend on the earlier administrative review timestamp.
+        if ($review->hidden_at !== null) {
+            session()->flash('status', 'Hidden reviews cannot be approved. Restore the review first.');
+
+            return;
+        }
+
+        if ($review->approved_at === null) {
             DB::transaction(function () use ($review): void {
-                $review->admin_reviewed_at = now();
+                $review->admin_reviewed_at ??= now();
+                $review->approved_at = now();
                 $review->save();
 
                 StaffActivity::record(
-                    action: 'review_marked_reviewed',
-                    description: 'Marked property owner review #'.$review->id.' as reviewed.',
+                    action: 'review_approved',
+                    description: 'Approved property owner review #'.$review->id.' for publication.',
                     targetUserId: $review->memberProfile?->user_id,
                     subject: $review,
                     metadata: [
@@ -42,7 +51,7 @@ class extends Component
             });
         }
 
-        session()->flash('status', 'Review marked as reviewed.');
+        session()->flash('status', 'Review approved for publication.');
     }
 
     public function startHidingReview(int $reviewId): void
@@ -127,6 +136,8 @@ class extends Component
 
         DB::transaction(function () use ($review): void {
             $review->hidden_at = null;
+            $review->approved_at = now();
+            $review->admin_reviewed_at ??= now();
             $review->save();
 
             $moderation = PropertyReviewModeration::create([
@@ -183,7 +194,7 @@ class extends Component
         $allReviewsCount = PropertyReview::count();
 
         $visibleReviewsCount = PropertyReview::query()
-            ->whereNull('hidden_at')
+            ->visible()
             ->count();
 
         $hiddenReviewsCount = PropertyReview::query()
@@ -199,7 +210,7 @@ class extends Component
         }
 
         if ($this->status === 'visible') {
-            $reviews->whereNull('hidden_at');
+            $reviews->visible();
         }
 
         if ($this->status === 'hidden') {
@@ -401,6 +412,10 @@ class extends Component
                                                 Hidden
                                             </flux:badge>
 
+                                        @elseif ($review->approved_at === null)
+
+                                            <flux:badge color="amber">Pending Approval</flux:badge>
+
                                         @else
 
                                             <flux:badge color="green">
@@ -409,7 +424,7 @@ class extends Component
 
                                         @endif
 
-                                        @if ($review->admin_reviewed_at === null)
+                                        @if ($review->approved_at === null && $review->hidden_at === null)
 
                                             <flux:badge color="amber">
                                                 Needs Review
@@ -477,15 +492,15 @@ class extends Component
                                         View Review
                                     </flux:button>
 
-                                    @if ($review->admin_reviewed_at === null)
+                                    @if ($review->approved_at === null && $review->hidden_at === null)
 
                                         <flux:button
                                             type="button"
                                             variant="primary"
                                             wire:click="markReviewed({{ $review->id }})"
-                                            wire:confirm="Mark this review as reviewed?"
+                                            wire:confirm="Approve this review for public display?"
                                         >
-                                            Mark Reviewed
+                                            Approve & Publish
                                         </flux:button>
 
                                     @endif

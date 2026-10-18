@@ -36,6 +36,7 @@ class PropertyReview extends Model
             'private_concern' => 'boolean',
             'hidden_at' => 'datetime',
             'admin_reviewed_at' => 'datetime',
+            'approved_at' => 'datetime',
         ];
     }
 
@@ -64,7 +65,7 @@ class PropertyReview extends Model
      */
     public function scopeVisible(Builder $query): Builder
     {
-        return $query->whereNull('hidden_at');
+        return $query->whereNull('hidden_at')->whereNotNull('approved_at');
     }
 
     /**
