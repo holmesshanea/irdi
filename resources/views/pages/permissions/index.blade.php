@@ -1,16 +1,25 @@
-<x-layouts.public title="Landowner permissions | IRDI" :noindex="true">
-<section class="mx-auto max-w-5xl space-y-8 px-6 py-12"><h1 class="text-3xl font-bold">Landowner permissions</h1>
-<p>Only the landowner can grant or withdraw access. Never enter a private property address here; use a general label.</p>
-@if(session('status'))<p role="status">{{ session('status') }}</p>@endif
-@if($errors->any())<ul class="text-red-700">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>@endif
-<form method="POST" action="{{ route('account.permissions.store') }}" class="grid gap-4 rounded-xl border p-6">@csrf
-<label>Member profile <select name="member_profile_id" required class="w-full border p-2">@foreach($profiles as $profile)<option value="{{ $profile->id }}">{{ $profile->profile_name }}</option>@endforeach</select></label>
-<label>Landowner email <input class="w-full border p-2" type="email" name="landowner_email" value="{{ old('landowner_email') }}" required></label>
-<label>Property label (not street address) <input class="w-full border p-2" name="property_label" maxlength="150" required value="{{ old('property_label') }}"></label>
-<label>Proposed activity <textarea class="w-full border p-2" name="proposed_activity" required>{{ old('proposed_activity') }}</textarea></label>
-<label>Requested conditions <textarea class="w-full border p-2" name="requested_conditions">{{ old('requested_conditions') }}</textarea></label>
-<label>Start date <input class="border p-2" type="date" name="starts_on" required></label>
-<label>End date <input class="border p-2" type="date" name="ends_on" required></label>
-<button class="rounded bg-irdi-green px-5 py-3 text-white">Email permission request</button></form>
-<h2 class="text-2xl font-bold">Requests</h2><div class="space-y-3">@forelse($permissions as $permission)<a class="block rounded border p-4" href="{{ route('account.permissions.show', $permission) }}"><strong>{{ $permission->property_label }}</strong> — {{ ucfirst($permission->effectiveStatus()) }} — {{ $permission->starts_on->toDateString() }} to {{ $permission->ends_on->toDateString() }}</a>@empty<p>No requests yet.</p>@endforelse</div>{{ $permissions->links() }}
-</section></x-layouts.public>
+<x-layouts.public title="Landowner introduction &amp; permission packet | IRDI" :noindex="true">
+<section class="mx-auto max-w-5xl space-y-8 px-6 py-12">
+    <h1 class="text-3xl font-bold">Landowner Introduction &amp; Permission Packet</h1>
+    <p>Meet the landowner in person. Introduce yourself with your personalized QR flyer, discuss their conditions, and complete the companion <strong>Landowner Metal Detecting Permission Agreement</strong> together. Both parties sign and keep a copy.</p>
+    <p class="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-950">The flyer and unsigned agreement do not grant permission. Only an authorized landowner or representative can grant access. IRDI does not certify ownership or authorize entry.</p>
+    @if(session('status'))<p role="status">{{ session('status') }}</p>@endif
+    @if($profiles->isEmpty())
+        <p>No member profiles are available for printing.</p>
+    @else
+        <div class="grid gap-4 sm:grid-cols-2">
+            @foreach($profiles as $profile)
+                <div class="rounded-xl border p-5 space-y-3">
+                    <h2 class="text-lg font-semibold">{{ $profile->publicName() }}</h2>
+                    <p class="text-sm">Print your personalized introduction flyer and its companion handwritten permission agreement as one packet.</p>
+                    <a class="inline-block rounded bg-irdi-green px-5 py-3 text-white" href="{{ route('member-profiles.introduction', $profile) }}" target="_blank" rel="noopener">Print introduction &amp; agreement</a>
+                </div>
+            @endforeach
+        </div>
+    @endif
+    <h2 class="text-2xl font-bold">Earlier digital permission requests</h2>
+    <p class="text-sm">Existing email-based requests remain available here for reference. The printed, jointly signed agreement is the recommended approach for new in-person introductions. A signed paper agreement is not automatically recorded or verified by IRDI.</p>
+    <div class="space-y-3">@forelse($permissions as $permission)<a class="block rounded border p-4" href="{{ route('account.permissions.show', $permission) }}"><strong>{{ $permission->property_label }}</strong> — {{ ucfirst($permission->effectiveStatus()) }} — {{ $permission->starts_on->toDateString() }} to {{ $permission->ends_on->toDateString() }}</a>@empty<p>No earlier digital requests.</p>@endforelse</div>
+    {{ $permissions->links() }}
+</section>
+</x-layouts.public>
