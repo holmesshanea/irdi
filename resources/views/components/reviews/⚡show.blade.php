@@ -28,6 +28,8 @@ class extends Component
 
     public string $communicationCourtesy = '';
 
+    public string $careOfProperty = '';
+
     public string $propertyLeftSatisfactorily = '';
 
     public string $wouldAllowReturn = '';
@@ -228,6 +230,7 @@ class extends Component
             'overallExperience' => ['required', 'integer', 'between:1,5'],
             'respectForProperty' => ['required', 'integer', 'between:1,5'],
             'communicationCourtesy' => ['required', 'integer', 'between:1,5'],
+            'careOfProperty' => ['nullable', 'integer', 'between:1,5'],
             'propertyLeftSatisfactorily' => ['required', 'in:yes,no'],
             'wouldAllowReturn' => ['required', 'in:yes,no'],
             'comments' => ['nullable', 'string', 'max:2000'],
@@ -301,7 +304,9 @@ class extends Component
                 'overall_experience' => $validated['overallExperience'],
                 'respect_for_property' => $validated['respectForProperty'],
                 'communication_courtesy' => $validated['communicationCourtesy'],
-                'care_of_property' => null,
+                'care_of_property' => filled($validated['careOfProperty'] ?? null)
+                    ? (int) $validated['careOfProperty']
+                    : null,
                 'property_left_satisfactorily' => $validated['propertyLeftSatisfactorily'] === 'yes',
                 'would_allow_return' => $validated['wouldAllowReturn'] === 'yes',
                 'comments' => filled($validated['comments'])
@@ -514,6 +519,20 @@ class extends Component
                                 <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
                             </flux:select>
                             @error('communicationCourtesy')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-irdi-green">{{ __('Care of Property & Responsible Recovery') }}</label>
+                            <p class="mt-1 text-sm text-zinc-500">{{ __('Based on what you personally observed, how carefully did the member recover targets, refill holes, minimize disturbance, and handle recovered debris? This relates to the IRDI Code of Ethics commitment to leave the land in the same or better condition.') }}</p>
+                            <flux:select wire:model="careOfProperty" class="mt-3" placeholder="{{ __('Select a rating or Not observed') }}">
+                                <flux:select.option value="5">{{ __('5 — Excellent') }}</flux:select.option>
+                                <flux:select.option value="4">{{ __('4 — Very Good') }}</flux:select.option>
+                                <flux:select.option value="3">{{ __('3 — Good') }}</flux:select.option>
+                                <flux:select.option value="2">{{ __('2 — Fair') }}</flux:select.option>
+                                <flux:select.option value="1">{{ __('1 — Poor') }}</flux:select.option>
+                            </flux:select>
+                            <p class="mt-2 text-xs text-zinc-500">{{ __('Optional: leave unrated if you did not observe recovery or site care. Do not guess.') }}</p>
+                            @error('careOfProperty')<p class="mt-2 text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
 
                         <div>

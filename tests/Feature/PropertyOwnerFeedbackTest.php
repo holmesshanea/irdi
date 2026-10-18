@@ -322,3 +322,40 @@ test('hidden reviews are excluded from public property owner statistics', functi
         ->assertSet('wouldAllowReturnCount', 3)
         ->assertSet('propertyReviewRating', 5.0);
 });
+
+
+test('landowner can rate observed property care against the IRDI ethics standard', function () {
+    $profile = propertyFeedbackProfile();
+    $invitation = propertyFeedbackInvitation($profile, 'property-care@example.com');
+
+    Livewire::test('reviews.show', ['token' => $invitation->token])
+        ->set('overallExperience', '4')
+        ->set('respectForProperty', '5')
+        ->set('communicationCourtesy', '4')
+        ->set('careOfProperty', '5')
+        ->set('propertyLeftSatisfactorily', 'yes')
+        ->set('wouldAllowReturn', 'yes')
+        ->set('privateConcern', 'no')
+        ->call('submitReview')
+        ->assertHasNoErrors();
+
+    expect(PropertyReview::query()->sole()->care_of_property)->toBe(5);
+});
+
+test('landowner property care rating must be between one and five when provided', function () {
+    $profile = propertyFeedbackProfile();
+    $invitation = propertyFeedbackInvitation($profile, 'invalid-care@example.com');
+
+    Livewire::test('reviews.show', ['token' => $invitation->token])
+        ->set('overallExperience', '4')
+        ->set('respectForProperty', '5')
+        ->set('communicationCourtesy', '4')
+        ->set('careOfProperty', '6')
+        ->set('propertyLeftSatisfactorily', 'yes')
+        ->set('wouldAllowReturn', 'yes')
+        ->set('privateConcern', 'no')
+        ->call('submitReview')
+        ->assertHasErrors(['careOfProperty']);
+
+    expect(PropertyReview::count())->toBe(0);
+});
