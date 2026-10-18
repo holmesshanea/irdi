@@ -874,6 +874,8 @@
                         {{ __('common.about') }}
                     </a>
 
+                    <a href="{{ route('founding-supporters') }}" class="text-zinc-600 transition hover:text-irdi-green">Founding Supporters</a>
+
                     <a
                         href="{{ route('membership') }}"
                         class="text-zinc-600 transition hover:text-irdi-green"

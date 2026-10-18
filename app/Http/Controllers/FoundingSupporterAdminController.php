@@ -24,6 +24,7 @@ class FoundingSupporterAdminController extends Controller
     {
         $this->authorizeAdmin($request);
         $data = $this->validated($request);
+        $data['recognition_consented_at'] = $data['is_public'] ? now() : null;
         FoundingSupporter::create($data);
 
         return redirect()->route('admin.founding-supporters.index')->with('status', 'Supporter added.');
@@ -32,7 +33,13 @@ class FoundingSupporterAdminController extends Controller
     public function update(Request $request, FoundingSupporter $supporter): RedirectResponse
     {
         $this->authorizeAdmin($request);
-        $supporter->update($this->validated($request, $supporter));
+        $data = $this->validated($request, $supporter);
+        if (! $data['is_public']) {
+            $data['recognition_consented_at'] = null;
+        } elseif (! $supporter->is_public || $supporter->recognition_consented_at === null) {
+            $data['recognition_consented_at'] = now();
+        }
+        $supporter->update($data);
 
         return redirect()->route('admin.founding-supporters.index')->with('status', 'Supporter updated.');
     }
@@ -62,7 +69,7 @@ class FoundingSupporterAdminController extends Controller
             'is_public' => ['required', 'boolean'],
         ]);
 
-        // Explicit consent must be recorded before public recognition is enabled.
+        // The opt-in checkbox is an administrator's attestation of explicit supporter consent.
         return $data;
     }
 }

@@ -3,7 +3,7 @@
 use App\Models\FoundingSupporter;
 
 it('displays only supporters who consented to public recognition', function () {
-    FoundingSupporter::create(['display_name' => 'Visible Founder', 'tier' => 'founder', 'is_public' => true]);
+    FoundingSupporter::create(['display_name' => 'Visible Founder', 'tier' => 'founder', 'is_public' => true, 'recognition_consented_at' => now()]);
     FoundingSupporter::create(['display_name' => 'Private Supporter', 'tier' => 'charter', 'is_public' => false]);
 
     $this->get(route('founding-supporters'))
@@ -14,7 +14,7 @@ it('displays only supporters who consented to public recognition', function () {
 });
 
 it('escapes public display names', function () {
-    FoundingSupporter::create(['display_name' => '<script>alert(1)</script>', 'tier' => 'launch', 'is_public' => true]);
+    FoundingSupporter::create(['display_name' => '<script>alert(1)</script>', 'tier' => 'launch', 'is_public' => true, 'recognition_consented_at' => now()]);
 
     $this->get(route('founding-supporters'))
         ->assertOk()

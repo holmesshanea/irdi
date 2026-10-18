@@ -39,6 +39,7 @@ Route::middleware(['auth', 'verified'])->prefix('admin/founding-supporters')->na
 Route::get('/founding-supporters', function () {
     $supporters = FoundingSupporter::query()
         ->where('is_public', true)
+        ->whereNotNull('recognition_consented_at')
         ->orderBy('display_name')
         ->get()
         ->groupBy('tier');
