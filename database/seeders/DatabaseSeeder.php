@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             throw new RuntimeException('Demo database seeding is disabled in production.');
         }
 
-        $password = env('IRDI_DEMO_ADMIN_PASSWORD');
+        $password = config('demo.admin_password');
         if (! is_string($password) || strlen($password) < 12) {
             throw new RuntimeException('Set IRDI_DEMO_ADMIN_PASSWORD in your local .env (minimum 12 characters) before seeding.');
         }

@@ -84,6 +84,6 @@ class PropertyOwnerFeedbackSeeder extends Seeder
                 });
             });
 
-        $this->command?->info("Created {$created} fictional property owner feedback reviews.");
+        $this->command->info("Created {$created} fictional property owner feedback reviews.");
     }
 }

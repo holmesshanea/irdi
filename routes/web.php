@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\LandownerIntroductionController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PrivateProfileImageController;
 use App\Http\Controllers\PropertyReviewInvitationController;
+use App\Models\FoundingSupporter;
 use App\Models\MemberProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Response;
@@ -24,6 +26,16 @@ Route::get('/', function () {
             ->count(),
     ]);
 })->name('home');
+
+Route::get('/founding-supporters', function () {
+    $supporters = FoundingSupporter::query()
+        ->where('is_public', true)
+        ->orderBy('display_name')
+        ->get()
+        ->groupBy('tier');
+
+    return view('pages.founding-supporters', compact('supporters'));
+})->name('founding-supporters');
 
 Route::view('/about', 'pages.about')
     ->name('about');
@@ -234,7 +246,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/directory/{profile:username}/introduction', \App\Http\Controllers\LandownerIntroductionController::class)
+Route::get('/directory/{profile:username}/introduction', LandownerIntroductionController::class)
     ->name('member-profiles.introduction');
 
 Route::livewire(

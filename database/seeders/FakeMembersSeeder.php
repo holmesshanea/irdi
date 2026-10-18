@@ -80,7 +80,7 @@ class FakeMembersSeeder extends Seeder
                 }
             });
 
-            $this->command?->info('Processed '.min($start + 249, self::COUNT).' / '.self::COUNT.' fake members.');
+            $this->command->info('Processed '.min($start + 249, self::COUNT).' / '.self::COUNT.' fake members.');
         }
     }
 }

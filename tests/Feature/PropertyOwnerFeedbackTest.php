@@ -323,7 +323,6 @@ test('hidden reviews are excluded from public property owner statistics', functi
         ->assertSet('propertyReviewRating', 5.0);
 });
 
-
 test('landowner can rate observed property care against the IRDI ethics standard', function () {
     $profile = propertyFeedbackProfile();
     $invitation = propertyFeedbackInvitation($profile, 'property-care@example.com');
