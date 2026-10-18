@@ -1,0 +1,569 @@
+<?php
+
+use App\Models\MemberProfile;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Symfony\Component\Intl\Countries;
+use tbQuar\Facades\Quar;
+
+new
+
+class extends Component
+{
+    public MemberProfile $profile;
+
+    public string $qrCode = '';
+
+    public string $embedCode = '';
+
+    public int $propertyReviewCount = 0;
+
+    public int $wouldAllowReturnCount = 0;
+
+    public ?float $propertyReviewRating = null;
+
+    public function mount(MemberProfile $profile): void
+    {
+        if ($profile->user->membership_status !== 'active') {
+            abort(404);
+        }
+
+        if (
+            ! $profile->directory_visible
+            && ! $profile->personal_information_hidden
+            && $profile->user_id !== auth()->id()
+        ) {
+            abort(404);
+        }
+
+        $this->profile = $profile;
+
+        $this->qrCode = Quar::size(116)
+            ->generate(route('member-profiles.show', $profile));
+
+        $this->embedCode = '<iframe src="' .
+            route('member-profiles.card', $profile) .
+            '" width="100%" height="320" style="max-width:700px;border:0;" loading="lazy"></iframe>';
+
+        $reviewStats = $profile->propertyReviews()
+            ->visible()
+            ->selectRaw('
+                COUNT(*) as review_count,
+                SUM(CASE WHEN would_allow_return = 1 THEN 1 ELSE 0 END) as return_count,
+                AVG(
+                    CASE
+                        WHEN overall_experience IS NOT NULL
+                            THEN overall_experience
+                        WHEN care_of_property IS NOT NULL
+                            THEN (
+                                respect_for_property
+                                + communication_courtesy
+                                + care_of_property
+                            ) / 3.0
+                        ELSE NULL
+                    END
+                ) as average_rating
+            ')
+            ->first();
+
+        $this->propertyReviewCount = (int) $reviewStats->review_count;
+
+        $this->wouldAllowReturnCount = (int) $reviewStats->return_count;
+
+        if ($this->propertyReviewCount >= 3) {
+            $this->propertyReviewRating = round(
+                (float) $reviewStats->average_rating,
+                1
+            );
+        }
+    }
+
+    public function render()
+    {
+        $location = collect([
+            $this->profile->publicDetail('city'),
+            $this->profile->publicDetail('state_province'),
+            $this->profile->publicDetail('country'),
+        ])->filter()->implode(', ');
+
+        $description = __('View :name\'s IRDI member profile', ['name' => $this->profile->publicName()]);
+
+        if ($location !== '') {
+            $description .= __(' in :location', ['location' => $location]);
+        }
+
+        $description .= __(', including membership information, profile details, and property owner feedback.');
+
+        return $this->view()
+            ->layout('components.layouts.public', [
+                'description' => $description,
+                'canonical' => route('member-profiles.show', [
+                    'profile' => $this->profile->username,
+                ]),
+            ])
+            ->title(__('Profile title: :name | IRDI Member', ['name' => $this->profile->publicName()]));
+    }
+};
+?>
+
+<div>
+
+    <section class="bg-zinc-50">
+        <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
+
+            <div class="mx-auto max-w-4xl">
+
+                <div class="rounded-2xl border border-irdi-gold/70 bg-white px-6 py-12 text-center shadow-sm sm:px-10">
+
+                    @if ($profile->publicDetail('profile_image'))
+
+                        <img
+                            src="{{ Storage::disk(config('filesystems.profile_images_disk', 'public'))->url($profile->publicDetail('profile_image')) }}"
+                            alt="{{ $profile->publicName() }}"
+                            class="mx-auto h-32 w-32 rounded-full object-cover ring-4 ring-white shadow-sm"
+                        >
+
+                    @else
+
+                        <div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-zinc-200 text-3xl font-semibold text-irdi-green ring-4 ring-white shadow-sm">
+                            {{ strtoupper(substr($profile->publicName(), 0, 1)) }}
+                        </div>
+
+                    @endif
+
+                    @if (
+                        $profile->user->is_super_admin
+                        || $profile->user->is_admin
+                        || $profile->user->is_moderator
+                        || $profile->user->is_charter_member
+                    )
+                        <div class="mt-6 flex flex-wrap justify-center gap-2">
+
+                            @if ($profile->user->is_super_admin)
+                                <flux:badge color="red">
+                                    {{ __('Super Administrator') }}
+                                </flux:badge>
+                            @elseif ($profile->user->is_admin)
+                                <flux:badge color="red">
+                                    {{ __('Administrator') }}
+                                </flux:badge>
+                            @elseif ($profile->user->is_moderator)
+                                <flux:badge color="blue">
+                                    {{ __('Moderator') }}
+                                </flux:badge>
+                            @endif
+
+                            @if ($profile->user->is_charter_member)
+                                <flux:badge color="amber">
+                                    {{ __('Charter Member') }}
+                                </flux:badge>
+                            @endif
+
+                        </div>
+                    @endif
+
+                    <h1 class="mt-4 text-3xl font-bold tracking-tight text-irdi-green sm:text-4xl">
+                        {{ $profile->publicName() }}
+                    </h1>
+
+                    <p class="mt-2 text-zinc-500">
+                        {{ '@' . $profile->username }}
+                    </p>
+
+                    <div class="mt-5 flex justify-center">
+                        @if ($profile->user->isInGoodStanding())
+                            <div class="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
+                                <span class="h-2.5 w-2.5 rounded-full bg-green-500" aria-hidden="true"></span>
+                                {{ __('Member in Good Standing') }}
+                            </div>
+                        @else
+                            <div class="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-800">
+                                <span class="h-2.5 w-2.5 rounded-full bg-amber-500" aria-hidden="true"></span>
+                                {{ __('Good Standing Not Current') }}
+                            </div>
+                        @endif
+                    </div>
+
+                    @if ($profile->user->member_since)
+                        <p class="mt-3 text-sm text-zinc-500">
+                            {{ __('IRDI Member Since :date', ['date' => $profile->user->member_since->translatedFormat('F Y')]) }}
+                        </p>
+                    @endif
+
+                    @if ($profile->publicDetail('city') || $profile->publicDetail('state_province') || $profile->publicDetail('country'))
+                        <div class="mt-3 flex items-center justify-center gap-2 text-zinc-600">
+
+                            @if ($profile->publicDetail('country_code'))
+                                <flux:flag
+                                    country="{{ $profile->publicDetail('country_code') }}"
+                                    size="xs"
+                                    class="shrink-0"
+                                />
+                            @endif
+
+                            <span>
+                                {{ collect([
+                                    $profile->publicDetail('city'),
+                                    $profile->publicDetail('state_province'),
+                                    ($profile->publicDetail('country_code') ? Countries::getName($profile->publicDetail('country_code'), app()->getLocale()) : $profile->publicDetail('country')),
+                                ])->filter()->implode(', ') }}
+                            </span>
+
+                        </div>
+                    @endif
+
+                    @if (
+                        auth()->check()
+                        && auth()->user()->membership_status === 'active'
+                        && auth()->id() !== $profile->user_id
+                        && ! $profile->personal_information_hidden
+                        && $profile->allow_member_messages
+                    )
+
+                        <div class="mt-6 flex justify-center">
+
+                            <flux:button
+                                :href="route('messages.create', $profile)"
+                                variant="primary"
+                                icon="envelope"
+                            >
+                                {{ __('Message Member') }}
+                            </flux:button>
+
+                        </div>
+
+                    @endif
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <section class="bg-white">
+        <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8">
+
+            <div class="mx-auto max-w-3xl">
+
+                <flux:card class="p-6">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                            <flux:icon.shield-check class="size-5" />
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-lg font-semibold text-irdi-green">
+                                {{ __('IRDI Membership & Standing') }}
+                            </h2>
+
+                            @if ($profile->user->isInGoodStanding())
+                                <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm font-semibold text-green-800">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-green-500" aria-hidden="true"></span>
+                                    {{ __('Member in Good Standing') }}
+                                </div>
+
+                                <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                    {{ __('This member currently meets IRDI’s membership and accountability requirements.') }}
+                                </p>
+                            @else
+                                <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm font-semibold text-amber-800">
+                                    <span class="h-2.5 w-2.5 rounded-full bg-amber-500" aria-hidden="true"></span>
+                                    {{ __('Good Standing Not Current') }}
+                                </div>
+
+                                <p class="mt-3 text-sm leading-6 text-zinc-600">
+                                    {{ __('This member’s IRDI membership remains active, but they are not currently designated as a Member in Good Standing.') }}
+                                </p>
+                            @endif
+
+                            @if ($profile->user->member_since)
+                                <div class="mt-5 border-t border-zinc-200 pt-5">
+                                    <p class="text-sm font-medium text-zinc-500">
+                                        {{ __('Member Since') }}
+                                    </p>
+
+                                    <p class="mt-1 font-medium text-zinc-800">
+                                        {{ $profile->user->member_since->translatedFormat('F Y') }}
+                                    </p>
+                                </div>
+                            @endif
+
+                            <div class="mt-5 border-t border-zinc-200 pt-5">
+                                <p class="text-sm font-medium text-zinc-500">
+                                    {{ __('Member Commitment') }}
+                                </p>
+
+                                <p class="mt-2 text-sm leading-6 text-zinc-600">
+                                    {{ __('IRDI members agree to follow the IRDI Code of Ethics and Best Practices and are expected to uphold those standards throughout their membership.') }}
+                                </p>
+
+                                <div class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                                    <a
+                                        href="{{ route('code-of-ethics') }}"
+                                        class="font-medium text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                    >
+                                        {{ __('Code of Ethics') }}
+                                    </a>
+
+                                    <a
+                                        href="{{ route('best-practices') }}"
+                                        class="font-medium text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                    >
+                                        {{ __('Best Practices') }}
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="mt-5 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
+                                <p class="text-xs leading-5 text-zinc-500">
+                                    {{ __('Membership standing reflects a member’s current status with IRDI. It is not a background check, endorsement, or guarantee of future conduct.') }}
+                                </p>
+
+                                <a
+                                    href="{{ route('faq') }}"
+                                    class="mt-2 inline-flex text-sm font-medium text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                >
+                                    {{ __('What does Good Standing mean?') }}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </flux:card>
+
+                <flux:card class="mt-6 p-6">
+                    <div class="flex items-start gap-3">
+                        <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                            <flux:icon.user-circle class="size-5" />
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-lg font-semibold text-irdi-green">
+                                {{ __('About') }}
+                            </h2>
+
+                            @if ($profile->publicDetail('bio'))
+                                <p class="mt-3 whitespace-pre-line leading-7 text-zinc-700">
+                                    {{ $profile->publicDetail('bio') }}
+                                </p>
+                            @else
+                                <p class="mt-3 text-sm text-zinc-500">
+                                    {{ __('This member has not added an About section yet.') }}
+                                </p>
+                            @endif
+
+                            @if ($profile->publicDetail('website'))
+                                <div class="mt-6 border-t border-zinc-200 pt-5">
+                                    <p class="text-sm font-medium text-zinc-500">
+                                        {{ __('Website') }}
+                                    </p>
+
+                                    <a
+                                        href="{{ $profile->publicDetail('website') }}"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        class="mt-2 inline-flex items-center gap-2 break-all text-irdi-green underline decoration-irdi-gold underline-offset-4 hover:text-irdi-gold-text"
+                                    >
+                                        <flux:icon.globe-alt class="size-4 shrink-0" />
+                                        <span>{{ $profile->publicDetail('website') }}</span>
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </flux:card>
+
+                <flux:card class="mt-6 p-6">
+                    <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+                        <div class="flex items-start gap-3">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-irdi-gold/10 text-irdi-green">
+                                <flux:icon.shield-check class="size-5" />
+                            </div>
+
+                            <div>
+                                <h2 class="text-lg font-semibold text-irdi-green">
+                                    {{ __('Property Owner Feedback') }}
+                                </h2>
+
+                                <p class="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">
+                                    {{ __('Property owner feedback provides additional context about this member’s conduct while detecting on private property. Feedback is submitted through individual IRDI review invitations, and reviewers must verify their email address before submitting.') }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <flux:badge color="green" class="shrink-0">
+                            {{ $propertyReviewCount }}
+                            {{ $propertyReviewCount === 1 ? __('Review') : __('Reviews') }}
+                        </flux:badge>
+                    </div>
+
+                    @if ($propertyReviewCount === 0)
+                        <div class="mt-6 rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                            <div class="flex items-start gap-3">
+                                <flux:icon.chat-bubble-left-right class="mt-0.5 size-5 shrink-0 text-zinc-400" />
+
+                                <div>
+                                    <p class="font-medium text-zinc-700">
+                                        {{ __('No property owner feedback yet') }}
+                                    </p>
+
+                                    <p class="mt-1 text-sm leading-6 text-zinc-500">
+                                        {{ __('This member has not received any visible property owner reviews yet.') }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+
+                            <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                                <div class="flex items-center gap-2 text-sm font-medium text-zinc-500">
+                                    <flux:icon.star class="size-4" />
+                                    <span>{{ __('Property Owner Rating') }}</span>
+                                </div>
+
+                                @if ($propertyReviewRating !== null)
+                                    <p class="mt-3 text-3xl font-bold text-irdi-green">
+                                        {{ number_format($propertyReviewRating, 1) }}
+                                        <span class="text-base font-medium text-zinc-500">
+                                            / 5
+                                        </span>
+                                    </p>
+
+                                    <p class="mt-2 text-sm text-zinc-500">
+                                        {{ $propertyReviewCount === 1
+                                            ? __('Based on :count review.', ['count' => $propertyReviewCount])
+                                            : __('Based on :count reviews.', ['count' => $propertyReviewCount]) }}
+                                    </p>
+                                @else
+                                    <p class="mt-3 text-lg font-semibold text-irdi-green">
+                                        {{ $propertyReviewCount }}
+                                        {{ $propertyReviewCount === 1 ? __('Property Owner Review') : __('Property Owner Reviews') }}
+                                    </p>
+
+                                    <p class="mt-2 text-sm leading-6 text-zinc-500">
+                                        {{ __('A public rating is displayed after at least three visible reviews.') }}
+                                    </p>
+                                @endif
+                            </div>
+
+                            <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-5">
+                                <div class="flex items-center gap-2 text-sm font-medium text-zinc-500">
+                                    <flux:icon.arrow-uturn-left class="size-4" />
+                                    <span>{{ __('Would Allow This Member to Return') }}</span>
+                                </div>
+
+                                <p class="mt-3 text-3xl font-bold text-irdi-green">
+                                    {{ __(':count of :total', ['count' => $wouldAllowReturnCount, 'total' => $propertyReviewCount]) }}
+                                </p>
+
+                                <p class="mt-2 text-sm text-zinc-500">
+                                    {{ __(':percent% of reviewers would allow this member to return.', ['percent' => round(($wouldAllowReturnCount / $propertyReviewCount) * 100)]) }}
+                                </p>
+                            </div>
+
+                        </div>
+                    @endif
+
+                    @if (
+                        auth()->check()
+                        && $profile->user_id === auth()->id()
+                        && ! $profile->personal_information_hidden
+                        && auth()->user()->membership_status === 'active'
+                    )
+                        <div class="mt-5 border-t border-zinc-200 pt-5">
+                            <flux:button
+                                :href="route('account.reviews')"
+                                variant="primary"
+                                icon="envelope"
+                                wire:navigate
+                            >
+                                {{ __('Request Property Owner Review') }}
+                            </flux:button>
+                        </div>
+                    @endif
+
+                    <p class="mt-5 text-xs leading-5 text-zinc-500">
+                        {{ __('IRDI verifies the reviewer’s email address but does not independently verify property ownership or the contents of a review.') }}
+                    </p>
+                </flux:card>
+
+                @if (auth()->check() && $profile->user_id === auth()->id())
+
+                    <div id="member-card" class="mt-10">
+
+                        @include('partials.member-profiles.membership-card', [
+                            'profile' => $profile,
+                            'qrCode' => $qrCode,
+                        ])
+
+                        <div class="mx-auto mt-4 max-w-xl text-center">
+
+                            <p class="text-sm text-zinc-500">
+                                {{ __('Only you can see this card.') }}
+                            </p>
+
+                            <div
+                                class="mt-4 flex flex-wrap items-center justify-center gap-3"
+                                x-data="{ copied: false }"
+                            >
+
+                                <textarea
+                                    x-ref="embedCode"
+                                    class="sr-only"
+                                    readonly
+                                >{{ $embedCode }}</textarea>
+
+                                <flux:button
+                                    :href="route('account.profiles.edit', $profile)"
+                                    variant="outline"
+                                    icon="pencil-square"
+                                >
+                                    {{ __('Edit Profile') }}
+                                </flux:button>
+
+                                <flux:button
+                                    :href="route('member-profiles.card', $profile)"
+                                    variant="outline"
+                                    icon="identification"
+                                    target="_blank"
+                                >
+                                    {{ __('View Standalone Card') }}
+                                </flux:button>
+
+                                <flux:button
+                                    :href="route('member-profiles.introduction', $profile)"
+                                    variant="outline"
+                                    icon="printer"
+                                    target="_blank"
+                                >
+                                    {{ __('Print Landowner Introduction') }}
+                                </flux:button>
+
+                                <button
+                                    type="button"
+                                    class="inline-flex items-center justify-center rounded-lg bg-irdi-green px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+                                    x-on:click="
+                                        $refs.embedCode.select();
+                                        document.execCommand('copy');
+                                        copied = true;
+                                        setTimeout(() => {
+                                            copied = false;
+                                        }, 2000);
+                                    "
+                                    x-text="copied ? @js(__('Copied!')) : @js(__('Copy Embed Code'))"
+                                >
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                @endif
+
+            </div>
+
+        </div>
+    </section>

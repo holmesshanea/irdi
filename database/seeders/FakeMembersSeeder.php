@@ -12,7 +12,7 @@ use RuntimeException;
 
 class FakeMembersSeeder extends Seeder
 {
-    private const COUNT = 10197;
+    private const COUNT = 158;
 
     public function run(): void
     {

@@ -234,6 +234,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
+Route::get('/directory/{profile:username}/introduction', \App\Http\Controllers\LandownerIntroductionController::class)
+    ->name('member-profiles.introduction');
+
 Route::livewire(
     '/directory/{profile:username}/card',
     'member-profiles.card'

@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use RuntimeException;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,6 +17,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production')) {
+            throw new RuntimeException('Demo database seeding is disabled in production.');
+        }
+
+        $password = env('IRDI_DEMO_ADMIN_PASSWORD');
+        if (! is_string($password) || strlen($password) < 12) {
+            throw new RuntimeException('Set IRDI_DEMO_ADMIN_PASSWORD in your local .env (minimum 12 characters) before seeding.');
+        }
+
         User::create([
             'name' => 'Shane Holmes',
             'email' => 'holmesshanea@yahoo.com',
@@ -27,7 +37,9 @@ class DatabaseSeeder extends Seeder
             'membership_status' => 'active',
             'member_since' => now(),
 
-            'password' => Hash::make('Colvin1Blake2!'),
+            'password' => Hash::make($password),
         ]);
+
+        $this->call([FakeMembersSeeder::class, PropertyOwnerFeedbackSeeder::class]);
     }
 }
