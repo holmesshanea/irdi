@@ -45,7 +45,7 @@ it('records landowner approval and allows later withdrawal', function () {
     ]);
 
     $this->post(route('landowner-permissions.decision', ['token' => $token]), [
-        'decision' => 'approved', 'landowner_conditions' => 'Close every hole.',
+        'decision' => 'approved', 'authority_confirmed' => '1', 'landowner_conditions' => 'Close every hole.',
     ])->assertRedirect();
     expect($permission->fresh()->status)->toBe('approved')
         ->and($permission->fresh()->landowner_conditions)->toBe('Close every hole.');

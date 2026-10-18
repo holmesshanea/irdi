@@ -49,7 +49,10 @@ class LandownerPermissionController extends Controller
         $token = Str::random(64);
         $data['landowner_email'] = strtolower(trim($data['landowner_email']));
         $permission = new LandownerPermission($data);
-        $permission->forceFill(['access_token_hash' => hash('sha256', $token)]);
+        $permission->forceFill([
+            'access_token_hash' => hash('sha256', $token),
+            'response_link_expires_at' => now()->addDays(30),
+        ]);
         $permission->save();
         $url = route('landowner-permissions.respond', ['token' => $token]);
         try {
@@ -79,14 +82,16 @@ class LandownerPermissionController extends Controller
 
     public function decision(Request $request, string $token): RedirectResponse
     {
-        $data = $request->validate(['decision' => ['required', 'in:approved,declined,withdrawn'], 'landowner_conditions' => ['nullable', 'string', 'max:3000']]);
+        $data = $request->validate(['decision' => ['required', 'in:approved,declined,withdrawn'], 'landowner_conditions' => ['nullable', 'string', 'max:3000'], 'authority_confirmed' => ['accepted_if:decision,approved']]);
         $permission = DB::transaction(function () use ($token, $data): LandownerPermission {
             $permission = LandownerPermission::query()->where('access_token_hash', hash('sha256', $token))->lockForUpdate()->firstOrFail();
             if ($data['decision'] === 'withdrawn') {
                 abort_unless($permission->status === 'approved' && ! $permission->withdrawn_at, 409);
                 $permission->withdrawn_at = now();
             } else {
-                abort_unless($permission->status === 'pending', 409);
+                abort_unless($permission->status === 'pending'
+                    && ! $permission->isResponseLinkExpired()
+                    && ! $permission->isRequestDateExpired(), 409);
                 $permission->status = $data['decision'];
                 $permission->responded_at = now();
                 $permission->landowner_conditions = $data['landowner_conditions'] ?? null;
@@ -99,10 +104,14 @@ class LandownerPermissionController extends Controller
         // Do not send the private landowner access token to the member.
         $memberEmail = $permission->memberProfile->user?->email;
         if ($memberEmail) {
-            Mail::to($memberEmail)->send(new LandownerPermissionNotice(
-                'IRDI: Landowner permission status updated',
-                'A landowner has updated the status of your permission request for '.$permission->property_label.'. Current status: '.$permission->effectiveStatus().'. Sign in to your IRDI account to view the record and conditions.',
-            ));
+            try {
+                Mail::to($memberEmail)->send(new LandownerPermissionNotice(
+                    'IRDI: Landowner permission status updated',
+                    'A landowner has updated the status of your permission request for '.$permission->property_label.'. Current status: '.$permission->effectiveStatus().'. Sign in to your IRDI account to view the record and conditions.',
+                ));
+            } catch (\Throwable $exception) {
+                report($exception);
+            }
         }
 
         return back()->with('status', 'Your decision has been recorded.');

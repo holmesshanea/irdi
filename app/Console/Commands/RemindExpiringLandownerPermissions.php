@@ -24,17 +24,25 @@ class RemindExpiringLandownerPermissions extends Command
             ->whereDate('ends_on', '<=', today()->addDays(3))
             ->chunkById(100, function ($permissions) use (&$sent): void {
                 foreach ($permissions as $permission) {
+                    if ($permission->effectiveStatus() !== 'approved') {
+                        continue;
+                    }
                     $email = $permission->memberProfile->user?->email;
                     if (! $email) {
                         continue;
                     }
-                    Mail::to($email)->send(new LandownerPermissionNotice(
-                        'IRDI: Landowner permission ending soon',
-                        'Your IRDI landowner permission record for '.$permission->property_label.' ends on '.Carbon::parse($permission->ends_on)->toDateString().'. Check your account for the full record. Do not detect after permission expires without renewed landowner consent.',
-                    ));
-                    $permission->last_reminded_at = now();
-                    $permission->save();
-                    $sent++;
+                    try {
+                        Mail::to($email)->send(new LandownerPermissionNotice(
+                            'IRDI: Landowner permission ending soon',
+                            'Your IRDI landowner permission record for '.$permission->property_label.' ends on '.Carbon::parse($permission->ends_on)->toDateString().'. Check your account for the full record. Do not detect after permission expires without renewed landowner consent.',
+                        ));
+                        $permission->last_reminded_at = now();
+                        $permission->save();
+                        $sent++;
+                    } catch (\Throwable $exception) {
+                        report($exception);
+                        $this->error('Failed to send permission reminder for record #'.$permission->id);
+                    }
                 }
             });
         $this->info("Sent {$sent} permission expiration reminder(s).");

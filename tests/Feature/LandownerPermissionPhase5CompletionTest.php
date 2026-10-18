@@ -29,7 +29,7 @@ it('emails a member after a landowner approves without exposing the response tok
         'access_token_hash' => hash('sha256', $token),
     ]);
 
-    $this->post(route('landowner-permissions.decision', ['token' => $token]), ['decision' => 'approved'])->assertRedirect();
+    $this->post(route('landowner-permissions.decision', ['token' => $token]), ['decision' => 'approved', 'authority_confirmed' => '1'])->assertRedirect();
     expect($permission->fresh()->status)->toBe('approved');
     Mail::assertSent(LandownerPermissionNotice::class, 1);
 });

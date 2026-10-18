@@ -15,6 +15,7 @@ class LandownerPermission extends Model
         return [
             'starts_on' => 'date', 'ends_on' => 'date', 'responded_at' => 'datetime',
             'withdrawn_at' => 'datetime', 'last_reminded_at' => 'datetime',
+            'response_link_expires_at' => 'datetime',
         ];
     }
 
@@ -24,12 +25,23 @@ class LandownerPermission extends Model
         return $this->belongsTo(MemberProfile::class);
     }
 
+    public function isResponseLinkExpired(): bool
+    {
+        return $this->response_link_expires_at !== null
+            && Carbon::parse((string) $this->response_link_expires_at)->isPast();
+    }
+
+    public function isRequestDateExpired(): bool
+    {
+        return Carbon::parse((string) $this->ends_on)->startOfDay()->isBefore(today());
+    }
+
     public function effectiveStatus(): string
     {
         if ($this->withdrawn_at) {
             return 'withdrawn';
         }
-        if ($this->status === 'approved' && Carbon::parse((string) $this->ends_on)->isBefore(today())) {
+        if ($this->status === 'approved' && $this->isRequestDateExpired()) {
             return 'expired';
         }
 
