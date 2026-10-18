@@ -12,3 +12,6 @@ Schedule::command('messaging:restore-expired')
     ->hourly()
     ->withoutOverlapping()
     ->onOneServer();
+
+// Daily reminder; idempotent via last_reminded_at. Requires Laravel scheduler to run.
+Schedule::command('permissions:remind-expiring')->dailyAt('09:00');

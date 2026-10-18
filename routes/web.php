@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminLandownerPermissionController;
 use App\Http\Controllers\FoundingSupporterAdminController;
 use App\Http\Controllers\LandownerIntroductionController;
 use App\Http\Controllers\LandownerPermissionController;
@@ -354,3 +355,7 @@ Route::middleware(['auth', 'verified'])->prefix('account/permissions')->name('ac
 });
 Route::get('/landowner/permission/{token}', [LandownerPermissionController::class, 'respond'])->name('landowner-permissions.respond');
 Route::post('/landowner/permission/{token}', [LandownerPermissionController::class, 'decision'])->middleware('throttle:10,1')->name('landowner-permissions.decision');
+
+// Permission oversight is restricted to administrators and never exposes response tokens.
+Route::get('/admin/landowner-permissions', [AdminLandownerPermissionController::class, 'index'])
+    ->middleware(['auth', 'verified', 'admin'])->name('admin.landowner-permissions.index');

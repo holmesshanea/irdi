@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\LandownerPermissionNotice;
 use App\Models\LandownerPermission;
 use App\Models\MemberProfile;
 use Illuminate\Http\RedirectResponse;
@@ -79,7 +80,7 @@ class LandownerPermissionController extends Controller
     public function decision(Request $request, string $token): RedirectResponse
     {
         $data = $request->validate(['decision' => ['required', 'in:approved,declined,withdrawn'], 'landowner_conditions' => ['nullable', 'string', 'max:3000']]);
-        DB::transaction(function () use ($token, $data): void {
+        $permission = DB::transaction(function () use ($token, $data): LandownerPermission {
             $permission = LandownerPermission::query()->where('access_token_hash', hash('sha256', $token))->lockForUpdate()->firstOrFail();
             if ($data['decision'] === 'withdrawn') {
                 abort_unless($permission->status === 'approved' && ! $permission->withdrawn_at, 409);
@@ -91,7 +92,18 @@ class LandownerPermissionController extends Controller
                 $permission->landowner_conditions = $data['landowner_conditions'] ?? null;
             }
             $permission->save();
+
+            return $permission->load('memberProfile.user');
         });
+
+        // Do not send the private landowner access token to the member.
+        $memberEmail = $permission->memberProfile->user?->email;
+        if ($memberEmail) {
+            Mail::to($memberEmail)->send(new LandownerPermissionNotice(
+                'IRDI: Landowner permission status updated',
+                'A landowner has updated the status of your permission request for '.$permission->property_label.'. Current status: '.$permission->effectiveStatus().'. Sign in to your IRDI account to view the record and conditions.',
+            ));
+        }
 
         return back()->with('status', 'Your decision has been recorded.');
     }
