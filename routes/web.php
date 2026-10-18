@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FoundingSupporterAdminController;
 use App\Http\Controllers\LandownerIntroductionController;
+use App\Http\Controllers\LandownerPermissionController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PrivateProfileImageController;
 use App\Http\Controllers\PropertyReviewInvitationController;
@@ -344,3 +345,12 @@ Route::livewire(
 )
     ->middleware(['auth', 'verified', 'moderator-or-admin'])
     ->name('admin.members.show');
+
+// Phase 5: permission records are private; token links allow landowner responses.
+Route::middleware(['auth', 'verified'])->prefix('account/permissions')->name('account.permissions.')->group(function (): void {
+    Route::get('/', [LandownerPermissionController::class, 'index'])->name('index');
+    Route::post('/', [LandownerPermissionController::class, 'store'])->name('store');
+    Route::get('/{permission}', [LandownerPermissionController::class, 'show'])->name('show');
+});
+Route::get('/landowner/permission/{token}', [LandownerPermissionController::class, 'respond'])->name('landowner-permissions.respond');
+Route::post('/landowner/permission/{token}', [LandownerPermissionController::class, 'decision'])->middleware('throttle:10,1')->name('landowner-permissions.decision');
