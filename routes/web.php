@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FoundingSupporterAdminController;
 use App\Http\Controllers\LandownerIntroductionController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\PrivateProfileImageController;
@@ -26,6 +27,14 @@ Route::get('/', function () {
             ->count(),
     ]);
 })->name('home');
+
+// Supporter management is restricted to administrators, not moderators.
+Route::middleware(['auth', 'verified'])->prefix('admin/founding-supporters')->name('admin.founding-supporters.')->group(function () {
+    Route::get('/', [FoundingSupporterAdminController::class, 'index'])->name('index');
+    Route::post('/', [FoundingSupporterAdminController::class, 'store'])->name('store');
+    Route::put('/{supporter}', [FoundingSupporterAdminController::class, 'update'])->name('update');
+    Route::delete('/{supporter}', [FoundingSupporterAdminController::class, 'destroy'])->name('destroy');
+});
 
 Route::get('/founding-supporters', function () {
     $supporters = FoundingSupporter::query()

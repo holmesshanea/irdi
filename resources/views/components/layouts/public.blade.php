@@ -398,6 +398,12 @@
                                 {{ __('common.member_management') }}
                             </flux:navmenu.item>
 
+                            @if ($navUser->isAdministrator())
+                                <flux:navmenu.item href="{{ route('admin.founding-supporters.index') }}" icon="star">
+                                    Founding Supporters
+                                </flux:navmenu.item>
+                            @endif
+
                             <flux:navmenu.item
                                 href="{{ route('admin.reviews.index') }}"
                                 icon="shield-check"
@@ -691,6 +697,12 @@
                 >
                     {{ __('common.member_management') }}
                 </flux:sidebar.item>
+
+                @if ($navUser->isAdministrator())
+                    <flux:sidebar.item href="{{ route('admin.founding-supporters.index') }}" :current="request()->routeIs('admin.founding-supporters.*')" icon="star">
+                        Founding Supporters
+                    </flux:sidebar.item>
+                @endif
 
                 <flux:sidebar.item
                     href="{{ route('admin.reviews.index') }}"
